@@ -25,23 +25,24 @@ builder.Services
     .AddScoped<IRelayInformationService, RelayInformationService>()
     .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString));
 
-var application = builder.Build();
-var options = application.Services.GetRequiredService<IOptions<ConnectionOptions>>();
+var app = builder.Build();
+var options = app.Services.GetRequiredService<IOptions<ConnectionOptions>>();
 
 // Setup pipeline + init DB
-application
+app
     .UseCors()
     .UseWebSockets()
     .UseStaticFiles()
     .UseRouting()
+    .UseHttpsRedirection()
     .AcceptWebSocketsConnections()
     .EnsureDbContextMigrations<NetstrDbContext>();
 
 // Controllers maps
-application.MapDefaultControllerRoute();
+app.MapDefaultControllerRoute();
 
-// Start the application
-application.Run();
+// Start the app
+app.Run();
 
 // Required for tests
 public partial class Program { }
