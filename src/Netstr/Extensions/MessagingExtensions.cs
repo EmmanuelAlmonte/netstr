@@ -1,4 +1,4 @@
-﻿using Netstr.Messaging;
+﻿﻿using Netstr.Messaging;
 using Netstr.Messaging.Events;
 using Netstr.Messaging.Events.Handlers;
 using Netstr.Messaging.Events.Handlers.Replaceable;
@@ -66,7 +66,6 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventValidator, ExpiredEventValidator>();
             services.AddSingleton<IEventValidator, EventTagsValidator>();
             services.AddSingleton<IEventValidator, UserVanishedValidator>();
-
             return services;
         }
 
