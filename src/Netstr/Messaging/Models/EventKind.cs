@@ -1,39 +1,58 @@
-﻿﻿namespace Netstr.Messaging.Models
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
 {
-    public static class EventKind
-    {
-        // Basic event kinds
-        public static int UserMetadata = 0;
-        public static int Delete = 5;
-        public static int RequestToVanish = 62;
-        public static int GiftWrap = 1059;
-        public static int Auth = 22242;
+/// <summary>
+/// Represents the different kinds of events in the NOSTR protocol.
+/// </summary>
+public enum EventKind
+{
+    // Basic event kinds
+    UserMetadata = 0,
+    Delete = 5,
+    RequestToVanish = 62,
+    GiftWrap = 1059,
+    Auth = 22242,
 
-        // NIP-51 Standard Lists (10000-10999)
-        public static int MuteList = 10000;
-        public static int PinnedNotes = 10001;
-        public static int Bookmarks = 10003;
-        public static int Communities = 10004;
-        public static int PublicChats = 10005;
-        public static int BlockedRelays = 10006;
-        public static int SearchRelays = 10007;
-        public static int SimpleGroups = 10009;
-        public static int Interests = 10015;
-        public static int Emojis = 10030;
-        public static int DmRelays = 10050;
-        public static int GoodWikiAuthors = 10101;
-        public static int GoodWikiRelays = 10102;
+    // NIP-51 Standard Lists (10000-10999)
+    MuteList = 10000,
+    PinnedNotes = 10001,
+    Bookmarks = 10003,
+    Communities = 10004,
+    PublicChats = 10005,
+    BlockedRelays = 10006,
+    SearchRelays = 10007,
+    SimpleGroups = 10009,
+    Interests = 10015,
+    Emojis = 10030,
+    DmRelays = 10050,
+    GoodWikiAuthors = 10101,
+    GoodWikiRelays = 10102,
 
-        // NIP-51 Sets (30000-30999)
-        public static int FollowSets = 30000;
-        public static int RelaySets = 30002;
-        public static int BookmarkSets = 30003;
-        public static int ArticleCurationSets = 30004;
-        public static int VideoCurationSets = 30005;
-        public static int KindMuteSets = 30007;
-        public static int InterestSets = 30015;
-        public static int EmojiSets = 30030;
-        public static int ReleaseArtifactSets = 30063;
-        public static int AppCurationSets = 30267;
-    }
+    // NIP-51 Sets (30000-30999)
+    FollowSets = 30000,
+    RelaySets = 30002,
+    BookmarkSets = 30003,
+    ArticleCurationSets = 30004,
+    VideoCurationSets = 30005,
+    KindMuteSets = 30007,
+    InterestSets = 30015,
+    EmojiSets = 30030,
+    ReleaseArtifactSets = 30063,
+    AppCurationSets = 30267
+}
+
+/// <summary>
+/// Extension methods for working with EventKind values.
+/// </summary>
+public static class EventKindExtensions
+{
+    /// <summary>
+    /// Converts an EventKind to its long value.
+    /// </summary>
+    public static long ToLong(this EventKind kind) => (long)kind;
+
+    /// <summary>
+    /// Converts a long value to an EventKind.
+    /// </summary>
+    public static EventKind ToEventKind(this long value) => (EventKind)value;
+}
 }

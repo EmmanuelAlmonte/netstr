@@ -16,13 +16,13 @@ namespace Netstr.Messaging.Events.Validators
         public string? Validate(Event e, ClientContext context)
         {
             // Only validate list events
-            if (!IsListEvent(e.Kind))
+            if (!IsListEvent((long)e.Kind))
             {
                 return null;
             }
 
             // Sets (30000-30999) require a 'd' tag
-            if (IsSetEvent(e.Kind) && !HasDTag(e))
+            if (IsSetEvent((long)e.Kind) && !HasDTag(e))
             {
                 return InvalidSetIdentifier;
             }
@@ -31,14 +31,14 @@ namespace Netstr.Messaging.Events.Validators
             return ValidateListType(e);
         }
 
-        private static bool IsListEvent(int kind)
+        private static bool IsListEvent(long kind)
         {
-            return (kind >= 10000 && kind <= 10999) || (kind >= 30000 && kind <= 30999);
+            return (kind >= 10000L && kind <= 10999L) || (kind >= 30000L && kind <= 30999L);
         }
 
-        private static bool IsSetEvent(int kind)
+        private static bool IsSetEvent(long kind)
         {
-            return kind >= 30000 && kind <= 30999;
+            return kind >= 30000L && kind <= 30999L;
         }
 
         private static bool HasDTag(Event e)
@@ -49,7 +49,7 @@ namespace Netstr.Messaging.Events.Validators
         private static string? ValidateListType(Event e)
         {
             // Validate tags based on event kind
-            return e.Kind switch
+            return (EventKind)e.Kind switch
             {
                 EventKind.MuteList => ValidateMuteList(e),
                 EventKind.PinnedNotes => ValidatePinnedNotes(e),

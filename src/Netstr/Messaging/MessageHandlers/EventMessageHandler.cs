@@ -53,6 +53,18 @@ namespace Netstr.Messaging.MessageHandlers
                 throw new UnknownMessageProcessingException(Messages.ErrorProcessingEvent);
             }
 
+            // Log NIP-51 events (kinds 10000-10999 and 30000-30999)
+            /*if ((e.Kind >= 10000 && e.Kind <= 10999) || (e.Kind >= 30000 && e.Kind <= 30999))
+            {
+                this.logger.LogInformation(
+                    "NIP-51 Event Received: Kind {Kind}\nFull Event:\n{@Event}\nTags:\n{@Tags}\nContent:\n{Content}",
+                    (EventKind)e.Kind,
+                    e,
+                    e.Tags,
+                    e.Content
+                );
+            }*/
+
             using var lease = this.rateLimiter.AttemptAcquire(sender.Context.IpAddress);
 
             if (!lease.IsAcquired)

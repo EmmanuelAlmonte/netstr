@@ -34,7 +34,7 @@ namespace Netstr.Middleware
             var events = await db.Events
                 .AsNoTracking()
                 .GroupBy(x => new { x.EventKind, x.EventPublicKey })
-                .Where(x => x.Key.EventKind == EventKind.RequestToVanish)
+                .Where(x => x.Key.EventKind == EventKind.RequestToVanish.ToLong())
                 .Select(x => new { x.Key.EventPublicKey, VanishedAt = x.Max(x => x.EventCreatedAt) })
                 .ToArrayAsync(cancellationToken);
 
