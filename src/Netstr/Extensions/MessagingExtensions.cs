@@ -1,4 +1,4 @@
-﻿﻿using Netstr.Messaging;
+﻿﻿﻿﻿﻿﻿using Netstr.Messaging;
 using Netstr.Messaging.Events;
 using Netstr.Messaging.Events.Handlers;
 using Netstr.Messaging.Events.Handlers.Replaceable;
@@ -46,6 +46,8 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventHandler, EphemeralEventHandler>();
             services.AddSingleton<IEventHandler, AddressableEventHandler>();
             services.AddSingleton<IEventHandler, VanishEventHandler>();
+            services.AddSingleton<IEventHandler, RelayListEventHandler>();
+            services.AddSingleton<IEventHandler, TestRelayListEventHandler>();
 
             // RegularEventHandler needs to go last
             services.AddSingleton<IEventHandler, RegularEventHandler>();

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
 {
 /// <summary>
 /// Represents the different kinds of events in the NOSTR protocol.
@@ -15,6 +15,7 @@ public enum EventKind
     // NIP-51 Standard Lists (10000-10999)
     MuteList = 10000,
     PinnedNotes = 10001,
+    RelayList = 10002,
     Bookmarks = 10003,
     Communities = 10004,
     PublicChats = 10005,
