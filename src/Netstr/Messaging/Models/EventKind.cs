@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
 {
 /// <summary>
 /// Represents the different kinds of events in the NOSTR protocol.
@@ -11,6 +11,10 @@ public enum EventKind
     RequestToVanish = 62,
     GiftWrap = 1059,
     Auth = 22242,
+    
+    // NIP-57 Lightning Zaps
+    ZapRequest = 9734,
+    ZapReceipt = 9735,
 
     // NIP-51 Standard Lists (10000-10999)
     MuteList = 10000,

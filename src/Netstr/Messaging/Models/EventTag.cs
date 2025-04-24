@@ -11,5 +11,13 @@
         public const string Relay = "r";
         public const string Protected = "-";
         public const string Expiration = "expiration";
+        
+        // NIP-57 Zap tags
+        public const string Amount = "amount";
+        public const string Bolt11 = "bolt11";
+        public const string Description = "description";
+        public const string Preimage = "preimage";
+        public const string Lnurl = "lnurl";
+        public const string Relays = "relays";
     }
 }
