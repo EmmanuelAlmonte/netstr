@@ -70,6 +70,7 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventValidator, EventTagsValidator>();
             services.AddSingleton<IEventValidator, UserVanishedValidator>();
             services.AddSingleton<IEventValidator, ZapEventValidator>();
+            services.AddSingleton<IEventValidator, WhitelistValidator>();
             return services;
         }
 
@@ -78,6 +79,7 @@ namespace Netstr.Extensions
             services.AddSingleton<ISubscriptionRequestValidator, SubscriptionLimitsValidator>();
             services.AddSingleton<ISubscriptionRequestValidator, NegentropyLimitsValidator>();
             services.AddSingleton<ISubscriptionRequestValidator, AuthProtectedKindsValidator>();
+            services.AddSingleton<ISubscriptionRequestValidator, WhitelistSubscriptionValidator>();
 
             return services;
         }

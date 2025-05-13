@@ -19,12 +19,15 @@ namespace Netstr.Data
                 EventDeduplication = e.IsAddressable() 
                     ? e.GetDeduplicationValue() 
                     : null,
-                Tags = e.Tags.Select(x => new TagEntity
-                {
-                    Name = x.First(),
-                    Value = x.Skip(1).FirstOrDefault(),
-                    OtherValues = x.Skip(2).ToArray()
-                }).ToArray(),
+                Tags = e.Tags
+                    .GroupBy(x => new { Name = x.First(), Value = x.Skip(1).FirstOrDefault() })
+                    .Select(g => new TagEntity
+                    {
+                        Name = g.Key.Name,
+                        Value = g.Key.Value,
+                        OtherValues = g.First().Skip(2).ToArray()
+                    })
+                    .ToArray(),
             };
         }
     }

@@ -29,6 +29,10 @@ NIPs with a relay-specific implementation are listed here.
 - [x] NIP-77: [Negentropy syncing](https://github.com/nostr-protocol/nips/pull/1494)
 - [x] NIP-119: [AND operator for filters](https://github.com/nostr-protocol/nips/pull/1365)
 
+## Additional Features
+
+- [x] **Public Key Whitelist**: Restrict which public keys can publish events and/or subscribe to your relay. [Learn more](docs/Whitelist.md)
+
 ## Tests
 
 Each supported NIP has a set of tests written in [Specflow / Gherkin language](https://docs.specflow.org/projects/specflow/en/latest/Gherkin/Gherkin-Reference.html). 
