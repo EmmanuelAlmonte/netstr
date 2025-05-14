@@ -11,18 +11,30 @@ namespace Netstr.Messaging.Subscriptions.Validators
     public class WhitelistSubscriptionValidator : ISubscriptionRequestValidator
     {
         private readonly ILogger<WhitelistSubscriptionValidator> logger;
-        private readonly IOptions<WhitelistOptions> options;
-        private readonly HashSet<string> allowedPublicKeys;
+        private readonly IOptionsMonitor<WhitelistOptions> options;
+        private HashSet<string> allowedPublicKeys;
 
         public WhitelistSubscriptionValidator(
             ILogger<WhitelistSubscriptionValidator> logger,
-            IOptions<WhitelistOptions> options)
+            IOptionsMonitor<WhitelistOptions> options)
         {
             this.logger = logger;
             this.options = options;
+            
+            // Initialize the whitelist
+            this.UpdateAllowedPublicKeys(options.CurrentValue);
+            
+            // Subscribe to changes
+            options.OnChange(UpdateAllowedPublicKeys);
+        }
+
+        private void UpdateAllowedPublicKeys(WhitelistOptions options)
+        {
             this.allowedPublicKeys = new HashSet<string>(
-                options.Value.AllowedPublicKeys ?? Array.Empty<string>(),
+                options.AllowedPublicKeys ?? Array.Empty<string>(),
                 StringComparer.OrdinalIgnoreCase);
+            
+            this.logger.LogInformation("Subscription whitelist updated with {Count} public keys", this.allowedPublicKeys.Count);
         }
 
         public bool IsApplicable(FilterMessageHandlerBase handler)
@@ -33,7 +45,7 @@ namespace Netstr.Messaging.Subscriptions.Validators
 
         public string? CanSubscribe(string id, ClientContext context, IEnumerable<SubscriptionFilter> filters)
         {
-            var whitelistOptions = this.options.Value;
+            var whitelistOptions = this.options.CurrentValue;
             
             if (!whitelistOptions.Enabled || !whitelistOptions.RestrictSubscribing)
             {

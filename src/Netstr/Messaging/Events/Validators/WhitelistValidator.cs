@@ -10,23 +10,35 @@ namespace Netstr.Messaging.Events.Validators
     public class WhitelistValidator : IEventValidator
     {
         private readonly ILogger<WhitelistValidator> logger;
-        private readonly IOptions<WhitelistOptions> options;
-        private readonly HashSet<string> allowedPublicKeys;
+        private readonly IOptionsMonitor<WhitelistOptions> options;
+        private HashSet<string> allowedPublicKeys;
 
         public WhitelistValidator(
             ILogger<WhitelistValidator> logger,
-            IOptions<WhitelistOptions> options)
+            IOptionsMonitor<WhitelistOptions> options)
         {
             this.logger = logger;
             this.options = options;
+            
+            // Initialize the whitelist
+            this.UpdateAllowedPublicKeys(options.CurrentValue);
+            
+            // Subscribe to changes
+            options.OnChange(UpdateAllowedPublicKeys);
+        }
+
+        private void UpdateAllowedPublicKeys(WhitelistOptions options)
+        {
             this.allowedPublicKeys = new HashSet<string>(
-                options.Value.AllowedPublicKeys ?? Array.Empty<string>(),
+                options.AllowedPublicKeys ?? Array.Empty<string>(),
                 StringComparer.OrdinalIgnoreCase);
+            
+            this.logger.LogInformation("Whitelist updated with {Count} public keys", this.allowedPublicKeys.Count);
         }
 
         public string? Validate(Event e, ClientContext context)
         {
-            var whitelistOptions = this.options.Value;
+            var whitelistOptions = this.options.CurrentValue;
             
             if (!whitelistOptions.Enabled || !whitelistOptions.RestrictPublishing)
             {

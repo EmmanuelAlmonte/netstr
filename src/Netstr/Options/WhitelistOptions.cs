@@ -21,5 +21,10 @@ namespace Netstr.Options
         /// Whether to apply the whitelist to subscribing.
         /// </summary>
         public bool RestrictSubscribing { get; init; } = false;
+        
+        /// <summary>
+        /// The owner's public key that cannot be removed from the whitelist.
+        /// </summary>
+        public string OwnerPublicKey { get; init; } = string.Empty;
     }
 }

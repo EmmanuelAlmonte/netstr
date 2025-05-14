@@ -23,7 +23,8 @@ builder.Services
     .AddHostedService<NegentropyBackgroundWatcher>()
     .AddHostedService<CleanupBackgroundService>()
     .AddScoped<IRelayInformationService, RelayInformationService>()
-    .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString));
+    .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString))
+    .AddSingleton<IConfigurationWriter, ConfigurationWriter>();
 
 var app = builder.Build();
 var options = app.Services.GetRequiredService<IOptions<ConnectionOptions>>();

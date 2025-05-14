@@ -9,6 +9,7 @@ The whitelist feature allows you to:
 1. Restrict which public keys can publish events to your relay
 2. Optionally restrict which public keys can subscribe to events from your relay
 3. Enable or disable the whitelist feature without changing your configuration
+4. Designate an owner public key that cannot be removed from the whitelist
 
 ## Configuration
 
@@ -22,7 +23,8 @@ The whitelist is configured in the `appsettings.json` and `appsettings.Developme
     "07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9"
   ],
   "RestrictPublishing": true,
-  "RestrictSubscribing": false
+  "RestrictSubscribing": false,
+  "OwnerPublicKey": "854043ae8f1f97430ca8c1f1a090bdde6488bd5115c7a45307a2a212750ae4cb"
 }
 ```
 
@@ -32,6 +34,7 @@ The whitelist is configured in the `appsettings.json` and `appsettings.Developme
 - `AllowedPublicKeys`: An array of public keys that are allowed to interact with the relay.
 - `RestrictPublishing`: When set to `true`, only whitelisted public keys can publish events to the relay.
 - `RestrictSubscribing`: When set to `true`, only whitelisted public keys can subscribe to events from the relay.
+- `OwnerPublicKey`: The public key of the relay owner. This key cannot be removed from the whitelist, ensuring the owner always has access to the relay.
 
 ## How It Works
 
@@ -113,3 +116,68 @@ The whitelist feature works alongside the existing authentication modes:
   "RestrictSubscribing": false
 }
 ```
+
+## API Endpoints
+
+The relay provides a set of API endpoints to manage the whitelist. These endpoints allow you to get, add, and remove public keys from the whitelist, as well as update whitelist settings.
+
+### Get Whitelist Settings
+
+```
+GET /api/whitelist
+```
+
+Returns the current whitelist settings, including whether the whitelist is enabled, the list of allowed public keys, and the restriction settings.
+
+### Get Whitelisted Keys
+
+```
+GET /api/whitelist/keys
+```
+
+Returns the list of public keys currently in the whitelist.
+
+### Add Public Key to Whitelist
+
+```
+POST /api/whitelist/keys
+Content-Type: application/json
+
+"<public_key>"
+```
+
+Adds a public key to the whitelist. The public key should be provided as a JSON string in the request body.
+
+### Remove Public Key from Whitelist
+
+```
+DELETE /api/whitelist/keys/{publicKey}
+```
+
+Removes a public key from the whitelist. The public key is provided as a path parameter. Note that the owner's public key cannot be removed.
+
+### Update Whitelist Settings
+
+```
+PUT /api/whitelist/settings
+Content-Type: application/json
+
+{
+  "enabled": true,
+  "restrictPublishing": true,
+  "restrictSubscribing": false
+}
+```
+
+Updates the whitelist settings. The settings are provided as a JSON object in the request body.
+
+### Set Owner Public Key
+
+```
+PUT /api/whitelist/owner
+Content-Type: application/json
+
+"<public_key>"
+```
+
+Sets the owner's public key. The public key should be provided as a JSON string in the request body. The owner's public key cannot be removed from the whitelist.
