@@ -69,7 +69,7 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventValidator, ExpiredEventValidator>();
             services.AddSingleton<IEventValidator, EventTagsValidator>();
             services.AddSingleton<IEventValidator, UserVanishedValidator>();
-            services.AddSingleton<IEventValidator, ZapEventValidator>();
+            //services.AddSingleton<IEventValidator, ZapEventValidator>();
             services.AddSingleton<IEventValidator, WhitelistValidator>();
             return services;
         }

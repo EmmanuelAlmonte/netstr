@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Netstr.Messaging;
+using Netstr.Messaging.MessageHandlers;
 using Netstr.Messaging.Models;
 using Netstr.Messaging.Subscriptions.Validators;
 using Netstr.Options;
@@ -37,7 +38,20 @@ namespace Netstr.Tests.Subscriptions
         }
 
         [Fact]
-        public void Validate_WhitelistDisabled_ReturnsNull()
+        public void IsApplicable_AlwaysReturnsTrue()
+        {
+            // Arrange
+            var handlerMock = new Mock<FilterMessageHandlerBase>();
+
+            // Act
+            var result = validator.IsApplicable(handlerMock.Object);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CanSubscribe_WhitelistDisabled_ReturnsNull()
         {
             // Arrange
             options.Enabled = false;
@@ -45,14 +59,14 @@ namespace Netstr.Tests.Subscriptions
             var filters = Array.Empty<SubscriptionFilter>();
 
             // Act
-            var result = validator.Validate(context, filters);
+            var result = validator.CanSubscribe("test_id", context, filters);
 
             // Assert
             Assert.Null(result);
         }
 
         [Fact]
-        public void Validate_RestrictSubscribingDisabled_ReturnsNull()
+        public void CanSubscribe_RestrictSubscribingDisabled_ReturnsNull()
         {
             // Arrange
             options.RestrictSubscribing = false;
@@ -60,63 +74,63 @@ namespace Netstr.Tests.Subscriptions
             var filters = Array.Empty<SubscriptionFilter>();
 
             // Act
-            var result = validator.Validate(context, filters);
+            var result = validator.CanSubscribe("test_id", context, filters);
 
             // Assert
             Assert.Null(result);
         }
 
         [Fact]
-        public void Validate_NotAuthenticated_ReturnsAuthRequiredError()
+        public void CanSubscribe_NotAuthenticated_ReturnsAuthRequiredError()
         {
             // Arrange
             var context = new ClientContext("client1", "127.0.0.1");
             var filters = Array.Empty<SubscriptionFilter>();
 
             // Act
-            var result = validator.Validate(context, filters);
+            var result = validator.CanSubscribe("test_id", context, filters);
 
             // Assert
             Assert.Equal("auth-required: authentication required for subscription", result);
         }
 
         [Fact]
-        public void Validate_AllowedPublicKey_ReturnsNull()
+        public void CanSubscribe_AllowedPublicKey_ReturnsNull()
         {
             // Arrange
             var context = CreateAuthenticatedContext("allowed_pubkey1");
             var filters = Array.Empty<SubscriptionFilter>();
 
             // Act
-            var result = validator.Validate(context, filters);
+            var result = validator.CanSubscribe("test_id", context, filters);
 
             // Assert
             Assert.Null(result);
         }
 
         [Fact]
-        public void Validate_NotAllowedPublicKey_ReturnsError()
+        public void CanSubscribe_NotAllowedPublicKey_ReturnsError()
         {
             // Arrange
             var context = CreateAuthenticatedContext("not_allowed_pubkey");
             var filters = Array.Empty<SubscriptionFilter>();
 
             // Act
-            var result = validator.Validate(context, filters);
+            var result = validator.CanSubscribe("test_id", context, filters);
 
             // Assert
             Assert.Equal(Messages.WhitelistRestricted, result);
         }
 
         [Fact]
-        public void Validate_CaseInsensitiveMatch_ReturnsNull()
+        public void CanSubscribe_CaseInsensitiveMatch_ReturnsNull()
         {
             // Arrange
             var context = CreateAuthenticatedContext("ALLOWED_PUBKEY1");
             var filters = Array.Empty<SubscriptionFilter>();
 
             // Act
-            var result = validator.Validate(context, filters);
+            var result = validator.CanSubscribe("test_id", context, filters);
 
             // Assert
             Assert.Null(result);

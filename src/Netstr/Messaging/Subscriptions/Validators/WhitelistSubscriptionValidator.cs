@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Netstr.Messaging.MessageHandlers;
 using Netstr.Messaging.Models;
 using Netstr.Options;
 
@@ -24,7 +25,13 @@ namespace Netstr.Messaging.Subscriptions.Validators
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        public string? Validate(ClientContext context, SubscriptionFilter[] filters)
+        public bool IsApplicable(FilterMessageHandlerBase handler)
+        {
+            // This validator is applicable to all filter message handlers
+            return true;
+        }
+
+        public string? CanSubscribe(string id, ClientContext context, IEnumerable<SubscriptionFilter> filters)
         {
             var whitelistOptions = this.options.Value;
             
