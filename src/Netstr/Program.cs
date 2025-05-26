@@ -5,6 +5,7 @@ using Netstr.Extensions;
 using Netstr.Middleware;
 using Netstr.Options;
 using Netstr.RelayInformation;
+using Netstr.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
