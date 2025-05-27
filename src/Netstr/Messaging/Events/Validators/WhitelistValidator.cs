@@ -45,6 +45,13 @@ namespace Netstr.Messaging.Events.Validators
                 return null;
             }
 
+            // Check if this event kind is exempt from whitelist restrictions
+            if (whitelistOptions.ExemptKinds.Contains(e.Kind))
+            {
+                this.logger.LogInformation($"Event kind {e.Kind} is exempt from whitelist restrictions");
+                return null;
+            }
+
             if (!this.allowedPublicKeys.Contains(e.PublicKey))
             {
                 this.logger.LogWarning($"Rejected event from non-whitelisted public key: {e.PublicKey}");

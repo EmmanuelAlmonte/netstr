@@ -26,5 +26,10 @@ namespace Netstr.Options
         /// The owner's public key that cannot be removed from the whitelist.
         /// </summary>
         public string OwnerPublicKey { get; init; } = string.Empty;
+
+        /// <summary>
+        /// List of event kinds that are exempt from whitelist restrictions.
+        /// </summary>
+        public long[] ExemptKinds { get; init; } = [];
     }
 }

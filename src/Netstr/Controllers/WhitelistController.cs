@@ -163,6 +163,81 @@ namespace Netstr.Controllers
                 return StatusCode(500, "Failed to update whitelist");
             }
         }
+
+        [HttpGet("exempt-kinds")]
+        public ActionResult<IEnumerable<long>> GetExemptKinds()
+        {
+            return Ok(_whitelistOptions.CurrentValue.ExemptKinds);
+        }
+
+        [HttpPost("exempt-kinds")]
+        public async Task<ActionResult> AddExemptKind([FromBody] long kind)
+        {
+            try
+            {
+                var currentExemptKinds = _whitelistOptions.CurrentValue.ExemptKinds.ToList();
+                
+                if (currentExemptKinds.Contains(kind))
+                {
+                    return Ok($"Event kind {kind} is already exempt from whitelist");
+                }
+                
+                currentExemptKinds.Add(kind);
+                
+                await _configWriter.UpdateConfigurationAsync("Whitelist:ExemptKinds", currentExemptKinds);
+                
+                _logger.LogInformation("Added event kind {Kind} to whitelist exemptions", kind);
+                return Ok($"Event kind {kind} added to whitelist exemptions");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to add event kind {Kind} to whitelist exemptions", kind);
+                return StatusCode(500, "Failed to update whitelist exemptions");
+            }
+        }
+
+        [HttpDelete("exempt-kinds/{kind}")]
+        public async Task<ActionResult> RemoveExemptKind(long kind)
+        {
+            try
+            {
+                var currentExemptKinds = _whitelistOptions.CurrentValue.ExemptKinds.ToList();
+                
+                if (!currentExemptKinds.Contains(kind))
+                {
+                    return NotFound($"Event kind {kind} not found in whitelist exemptions");
+                }
+                
+                currentExemptKinds.Remove(kind);
+                
+                await _configWriter.UpdateConfigurationAsync("Whitelist:ExemptKinds", currentExemptKinds);
+                
+                _logger.LogInformation("Removed event kind {Kind} from whitelist exemptions", kind);
+                return Ok($"Event kind {kind} removed from whitelist exemptions");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to remove event kind {Kind} from whitelist exemptions", kind);
+                return StatusCode(500, "Failed to update whitelist exemptions");
+            }
+        }
+
+        [HttpPut("exempt-kinds")]
+        public async Task<ActionResult> UpdateExemptKinds([FromBody] List<long> exemptKinds)
+        {
+            try
+            {
+                await _configWriter.UpdateConfigurationAsync("Whitelist:ExemptKinds", exemptKinds);
+                
+                _logger.LogInformation("Updated whitelist exempt kinds: {ExemptKinds}", string.Join(", ", exemptKinds));
+                return Ok("Whitelist exempt kinds updated");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update whitelist exempt kinds");
+                return StatusCode(500, "Failed to update whitelist exempt kinds");
+            }
+        }
     }
 
     public class WhitelistSettingsDto

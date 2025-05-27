@@ -35,6 +35,7 @@ The whitelist is configured in the `appsettings.json` and `appsettings.Developme
 - `RestrictPublishing`: When set to `true`, only whitelisted public keys can publish events to the relay.
 - `RestrictSubscribing`: When set to `true`, only whitelisted public keys can subscribe to events from the relay.
 - `OwnerPublicKey`: The public key of the relay owner. This key cannot be removed from the whitelist, ensuring the owner always has access to the relay.
+- `ExemptKinds`: An array of event kinds that are exempt from whitelist restrictions. Events of these kinds can be published by any public key, even if the whitelist is enabled and the public key is not in the whitelist.
 
 ## How It Works
 
@@ -44,8 +45,9 @@ When a client attempts to publish an event to the relay:
 
 1. If `Enabled` is `false`, the event is accepted (subject to other validation rules).
 2. If `RestrictPublishing` is `false`, the event is accepted (subject to other validation rules).
-3. If the event's public key is in the `AllowedPublicKeys` list, the event is accepted (subject to other validation rules).
-4. Otherwise, the event is rejected with the message: `restricted: your public key is not in the whitelist`.
+3. If the event's kind is in the `ExemptKinds` list, the event is accepted (subject to other validation rules).
+4. If the event's public key is in the `AllowedPublicKeys` list, the event is accepted (subject to other validation rules).
+5. Otherwise, the event is rejected with the message: `restricted: your public key is not in the whitelist`.
 
 ### Subscribing to Events
 
@@ -117,6 +119,24 @@ The whitelist feature works alongside the existing authentication modes:
 }
 ```
 
+### Whitelist with Exempt Kinds
+
+```json
+"Whitelist": {
+  "Enabled": true,
+  "AllowedPublicKeys": [
+    "pubkey1",
+    "pubkey2",
+    "pubkey3"
+  ],
+  "RestrictPublishing": true,
+  "RestrictSubscribing": false,
+  "ExemptKinds": [9735, 1059]
+}
+```
+
+In this configuration, only whitelisted public keys can publish most event kinds, but any public key can publish events of kind 9735 (zaps) and 1059 (without being restricted by the whitelist).
+
 ## API Endpoints
 
 The relay provides a set of API endpoints to manage the whitelist. These endpoints allow you to get, add, and remove public keys from the whitelist, as well as update whitelist settings.
@@ -181,3 +201,41 @@ Content-Type: application/json
 ```
 
 Sets the owner's public key. The public key should be provided as a JSON string in the request body. The owner's public key cannot be removed from the whitelist.
+
+### Get Exempt Kinds
+
+```
+GET /api/whitelist/exempt-kinds
+```
+
+Returns the list of event kinds that are exempt from whitelist restrictions.
+
+### Add Exempt Kind
+
+```
+POST /api/whitelist/exempt-kinds
+Content-Type: application/json
+
+9735
+```
+
+Adds an event kind to the list of exempt kinds. The event kind should be provided as a JSON number in the request body.
+
+### Remove Exempt Kind
+
+```
+DELETE /api/whitelist/exempt-kinds/{kind}
+```
+
+Removes an event kind from the list of exempt kinds. The event kind is provided as a path parameter.
+
+### Update Exempt Kinds
+
+```
+PUT /api/whitelist/exempt-kinds
+Content-Type: application/json
+
+[9735, 1059]
+```
+
+Updates the entire list of exempt kinds. The exempt kinds are provided as a JSON array of numbers in the request body.
