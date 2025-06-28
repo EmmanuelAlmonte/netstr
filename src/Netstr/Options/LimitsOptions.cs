@@ -9,6 +9,7 @@ namespace Netstr.Options
             Subscriptions = new();
             Events = new();
             Negentropy = new();
+            Search = new();
         }
 
         public int MaxPayloadSize { get; init; }
@@ -18,5 +19,7 @@ namespace Netstr.Options
         public required EventLimits Events { get; init; }
         
         public required NegentropyLimits Negentropy { get; init; }
+        
+        public required SearchLimits Search { get; init; }
     }
 }

@@ -11,32 +11,33 @@ using TechTalk.SpecFlow.Assist;
 
 namespace Netstr.Tests.NIPs.Steps
 {
-    [Binding]
-    public class RelayListSteps : StepsBase
+    public partial class Steps
     {
-        private readonly ScenarioContext context;
-
-        public RelayListSteps(ScenarioContext context, TestContext testContext)
-            : base(testContext)
-        {
-            this.context = context;
-        }
 
         [Given("I have published relay configurations")]
         public async Task GivenIHavePublishedRelayConfigurations()
         {
-            var tags = new[]
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            
+            var tags = new string[][]
             {
                 new[] { "r", "wss://relay1.com", "read", "write" },
                 new[] { "r", "wss://relay2.com", "read" }
             };
 
-            await this.PublishEvent(new Event
+            var e = new Event
             {
-                Kind = (int)EventKind.RelayList,
-                Tags = tags.ToList(),
-                Content = string.Empty
-            });
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.UtcNow,
+                PublicKey = c.Keys.PublicKey,
+                Tags = tags,
+                Kind = (long)EventKind.RelayList
+            };
+
+            e = Helpers.FinalizeEvent(e, c.Keys.PrivateKey);
+            await c.WebSocket.SendEventAsync(e);
 
             await Task.Delay(100); // Allow time for processing
         }
@@ -44,42 +45,61 @@ namespace Netstr.Tests.NIPs.Steps
         [When(@"I publish an event with kind 10002 and tags:")]
         public async Task WhenIPublishAnEventWithKindAndTags(Table table)
         {
-            var tags = table.Rows.Select(row => row.Values.ToArray()).ToList();
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            var tags = table.Rows.Select(row => row.Values.ToArray()).ToArray();
             
-            await this.PublishEvent(new Event
+            var e = new Event
             {
-                Kind = (int)EventKind.RelayList,
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.UtcNow,
+                PublicKey = c.Keys.PublicKey,
                 Tags = tags,
-                Content = string.Empty
-            });
+                Kind = (long)EventKind.RelayList
+            };
+
+            e = Helpers.FinalizeEvent(e, c.Keys.PrivateKey);
+            await c.WebSocket.SendEventAsync(e);
         }
 
         [When(@"I publish an event with kind 10002 and no tags")]
         public async Task WhenIPublishAnEventWithKindAndNoTags()
         {
-            await this.PublishEvent(new Event
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            
+            var e = new Event
             {
-                Kind = (int)EventKind.RelayList,
-                Tags = new List<string[]>(),
-                Content = string.Empty
-            });
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.UtcNow,
+                PublicKey = c.Keys.PublicKey,
+                Tags = Array.Empty<string[]>(),
+                Kind = (long)EventKind.RelayList
+            };
+
+            e = Helpers.FinalizeEvent(e, c.Keys.PrivateKey);
+            await c.WebSocket.SendEventAsync(e);
         }
 
         [When(@"I request relay configurations for my public key")]
         public async Task WhenIRequestRelayConfigurationsForMyPublicKey()
         {
-            var response = await this.Client.GetAsync($"/api/relay/{this.Alice.PublicKey}");
-            context.Set(response);
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            var response = await c.HttpClient.GetAsync($"/api/relay/{c.Keys.PublicKey}");
+            this.scenarioContext.Set(response);
         }
 
         [Then(@"the relay configurations should be stored for my public key")]
         public async Task ThenTheRelayConfigurationsShouldBeStoredForMyPublicKey()
         {
-            using var scope = this.Factory.Services.CreateScope();
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            using var scope = this.factory.Services.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<NetstrDbContext>();
 
             var configs = await db.RelayConfigs
-                .Where(r => r.PubKey == this.Alice.PublicKey)
+                .Where(r => r.PubKey == c.Keys.PublicKey)
                 .ToListAsync();
 
             configs.Should().NotBeEmpty();
@@ -91,11 +111,12 @@ namespace Netstr.Tests.NIPs.Steps
         [Then(@"my old relay configurations should be replaced")]
         public async Task ThenMyOldRelayConfigurationsShouldBeReplaced()
         {
-            using var scope = this.Factory.Services.CreateScope();
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            using var scope = this.factory.Services.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<NetstrDbContext>();
 
             var configs = await db.RelayConfigs
-                .Where(r => r.PubKey == this.Alice.PublicKey)
+                .Where(r => r.PubKey == c.Keys.PublicKey)
                 .ToListAsync();
 
             configs.Should().NotContain(c => c.RelayUrl == "wss://relay2.com");
@@ -104,11 +125,12 @@ namespace Netstr.Tests.NIPs.Steps
         [Then(@"the new relay configurations should be stored")]
         public async Task ThenTheNewRelayConfigurationsShouldBeStored()
         {
-            using var scope = this.Factory.Services.CreateScope();
+            var c = this.scenarioContext.Get<Clients>()["Alice"];
+            using var scope = this.factory.Services.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<NetstrDbContext>();
 
             var configs = await db.RelayConfigs
-                .Where(r => r.PubKey == this.Alice.PublicKey)
+                .Where(r => r.PubKey == c.Keys.PublicKey)
                 .ToListAsync();
 
             configs.Should().NotBeEmpty();
@@ -119,7 +141,7 @@ namespace Netstr.Tests.NIPs.Steps
         [Then(@"I should receive my relay configurations")]
         public async Task ThenIShouldReceiveMyRelayConfigurations()
         {
-            var response = context.Get<HttpResponseMessage>();
+            var response = this.scenarioContext.Get<HttpResponseMessage>();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var content = await response.Content.ReadAsStringAsync();

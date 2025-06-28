@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.e2encrypted.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(dotnet build)",
+      "Bash(dotnet test:*)",
+      "Bash(export PATH=\"$PATH:$HOME/.dotnet\")",
+      "Bash(dotnet --version)",
+      "Bash(dotnet build:*)"
+    ],
+    "deny": []
+  }
+}

@@ -41,8 +41,8 @@ Feature: NIP-51 Lists
         When Alice publishes an event with kind 30030 and tags:
             | d | custom-emojis |
             | name | My Custom Emojis |
-            | emoji | happy | https://example.com/happy.png |
-            | emoji | sad | https://example.com/sad.png |
+            | emoji | happy,https://example.com/happy.png |
+            | emoji | sad,https://example.com/sad.png |
         Then the relay accepts the event
         When Alice subscribes to events with kind 30030
         Then Alice receives 1 event

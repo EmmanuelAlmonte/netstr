@@ -10,6 +10,7 @@ using Netstr.Messaging.Subscriptions;
 using Netstr.Messaging.Subscriptions.Validators;
 using Netstr.Messaging.WebSockets;
 using Netstr.Middleware;
+using Netstr.Services;
 
 namespace Netstr.Extensions
 {
@@ -21,6 +22,9 @@ namespace Netstr.Extensions
             services.AddSingleton<IWebSocketAdapterCollection, WebSocketAdapterCollection>();
             services.AddSingleton<IUserCache, UserCache>();
             services.AddTransient<ICleanupService, CleanupService>();
+            
+            // NIP-05 verification service
+            services.AddHttpClient<INip05VerificationService, Nip05VerificationService>();
 
             // message
             services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
@@ -72,6 +76,7 @@ namespace Netstr.Extensions
 
             //services.AddSingleton<IEventValidator, ZapEventValidator>();
             services.AddSingleton<IEventValidator, WhitelistValidator>();
+            services.AddSingleton<IEventValidator, Nip05Validator>();
 
             services.AddSingleton<IEventValidator, ZapEventValidator>();
 

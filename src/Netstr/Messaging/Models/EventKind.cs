@@ -42,7 +42,10 @@ public enum EventKind
     InterestSets = 30015,
     EmojiSets = 30030,
     ReleaseArtifactSets = 30063,
-    AppCurationSets = 30267
+    AppCurationSets = 30267,
+    
+    // NIP-78 Application-specific Data
+    ApplicationSpecificData = 30078
 }
 
 /// <summary>

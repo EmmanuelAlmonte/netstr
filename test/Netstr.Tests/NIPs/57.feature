@@ -8,7 +8,7 @@ Feature: NIP-57 Lightning Zaps
 
     Scenario: Create and retrieve a zap request
         When Alice publishes an event with kind 9734 and tags:
-            | relays | wss://relay1.example.com | wss://relay2.example.com |
+            | relays | wss://relay1.example.com,wss://relay2.example.com |
             | amount | 21000 |
             | lnurl | lnurl1dp68gurn8ghj7um5v93kketj9ehx2amn9uh8wetvdskkkmn0wahz7mrww4excup0dajx2mrv92x9xp |
             | p | 04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9 |

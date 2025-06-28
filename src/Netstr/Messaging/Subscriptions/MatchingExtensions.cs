@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Netstr.Data;
+using Netstr.Messaging.Events;
 using Netstr.Messaging.Models;
 
 namespace Netstr.Messaging.Subscriptions
@@ -33,6 +34,7 @@ namespace Netstr.Messaging.Subscriptions
                         (filter.Kinds.Contains(x.EventKind) || !filter.Kinds.Any()) &&
                         (filter.Since <= x.EventCreatedAt || !filter.Since.HasValue) &&
                         (filter.Until >= x.EventCreatedAt || !filter.Until.HasValue))
+                    .WhereMatchesSearch(filter.Search)
                     .WhereOrTags(filter.OrTags)
                     .WhereAndTags(filter.AndTags)
                     .Where(x => !protectedKinds.Contains(x.EventKind) || x.EventPublicKey == authenticatedPublicKey || x.Tags.Any(tag => tag.Name == EventTag.PublicKey && tag.Value == authenticatedPublicKey))

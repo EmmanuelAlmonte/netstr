@@ -40,8 +40,8 @@ namespace Netstr.Tests.NIPs
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-65 Relay List Metadata", "    As a NOSTR client\r\n    I want to publish and retrieve my relay preferences\r\n " +
-                    "   So that other clients know which relays I use", ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-65 Relay List Metadata", "    As a NOSTR client\n    I want to publish and retrieve my relay preferences\n   " +
+                    " So that other clients know which relays I use", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -114,23 +114,23 @@ namespace Netstr.Tests.NIPs
 #line 6
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table142 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table150 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "wss://relay1.com",
                             "read",
                             "write"});
-                table142.AddRow(new string[] {
+                table150.AddRow(new string[] {
                             "r",
                             "wss://relay2.com",
                             "read",
                             ""});
-                table142.AddRow(new string[] {
+                table150.AddRow(new string[] {
                             "r",
                             "wss://relay3.com",
                             "write",
                             ""});
 #line 11
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table142, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table150, "When ");
 #line hidden
 #line 15
         testRunner.Then("I should receive an \"OK\" message", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -166,16 +166,16 @@ namespace Netstr.Tests.NIPs
 #line 19
         testRunner.Given("I have published relay configurations", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table143 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table151 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "wss://relay1.com",
                             "read"});
-                table143.AddRow(new string[] {
+                table151.AddRow(new string[] {
                             "r",
                             "wss://relay4.com",
                             "write"});
 #line 20
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table143, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table151, "When ");
 #line hidden
 #line 23
         testRunner.Then("I should receive an \"OK\" message", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -243,13 +243,13 @@ namespace Netstr.Tests.NIPs
 #line 6
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table144 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table152 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "invalid-url",
                             "read",
                             "write"});
 #line 32
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table144, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table152, "When ");
 #line hidden
 #line 34
         testRunner.Then("I should receive an error message containing \"Invalid relay URL format\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -279,12 +279,12 @@ namespace Netstr.Tests.NIPs
 #line 6
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table145 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table153 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "wss://relay1.com",
                             "invalid"});
 #line 37
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table145, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table153, "When ");
 #line hidden
 #line 39
         testRunner.Then("I should receive an error message containing \"Invalid relay permission marker\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

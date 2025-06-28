@@ -154,6 +154,7 @@ namespace Netstr.Messaging.MessageHandlers
                 r.Since,
                 r.Until,
                 r.Limit,
+                r.Search,
                 orTags,
                 andTags);
         }
