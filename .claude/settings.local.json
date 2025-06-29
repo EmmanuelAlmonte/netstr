@@ -10,7 +10,12 @@
       "Bash(dotnet build:*)",
       "Bash(grep:*)",
       "Bash(rg:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(dotnet run:*)",
+      "Bash(csc:*)",
+      "Bash(rm:*)",
+      "Bash(/usr/bin/dotnet test:*)"
     ],
     "deny": []
   }

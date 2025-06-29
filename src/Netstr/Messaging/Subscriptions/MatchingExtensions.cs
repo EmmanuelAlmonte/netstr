@@ -25,9 +25,18 @@ namespace Netstr.Messaging.Subscriptions
             string? authenticatedPublicKey,
             int maxLimit)
         {
-            return filters
-                .Select(filter => entities
-                    .Include(x => x.Tags)
+            var filterArray = filters.ToArray();
+            if (!filterArray.Any())
+            {
+                return entities.Where(x => false).AsNoTracking(); // Return empty result
+            }
+
+            // Build a single query that handles OR semantics between filters
+            IQueryable<EventEntity> query = entities.Where(x => false); // Start with empty query
+            
+            foreach (var filter in filterArray)
+            {
+                var filterQuery = entities
                     .Where(x =>
                         (filter.Authors.Contains(x.EventPublicKey) || !filter.Authors.Any()) &&
                         (filter.Ids.Contains(x.EventId) || !filter.Ids.Any()) &&
@@ -37,11 +46,17 @@ namespace Netstr.Messaging.Subscriptions
                     .WhereMatchesSearch(filter.Search)
                     .WhereOrTags(filter.OrTags)
                     .WhereAndTags(filter.AndTags)
-                    .Where(x => !protectedKinds.Contains(x.EventKind) || x.EventPublicKey == authenticatedPublicKey || x.Tags.Any(tag => tag.Name == EventTag.PublicKey && tag.Value == authenticatedPublicKey))
-                    .OrderByDescending(x => x.EventCreatedAt)
-                    .ThenBy(x => x.EventId)
-                    .Take(filter.Limit.HasValue && filter.Limit.Value < maxLimit ? filter.Limit.Value : maxLimit))
-                .Aggregate((acc, x) => acc.Union(x))
+                    .Where(x => !protectedKinds.Contains(x.EventKind) || x.EventPublicKey == authenticatedPublicKey || x.Tags.Any(tag => tag.Name == EventTag.PublicKey && tag.Value == authenticatedPublicKey));
+
+                // Union with previous results to implement OR semantics
+                query = query.Union(filterQuery);
+            }
+
+            return query
+                .Include(x => x.Tags)
+                .OrderByDescending(x => x.EventCreatedAt)
+                .ThenBy(x => x.EventId)
+                .Take(maxLimit)
                 .AsNoTracking();
         }
 
@@ -76,6 +91,36 @@ namespace Netstr.Messaging.Subscriptions
                 }
             }
 
+            return entities;
+        }
+
+        private static IQueryable<EventEntity> WhereMatchesSearchAny(this IQueryable<EventEntity> entities, SubscriptionFilter[] filters)
+        {
+            // Apply search filters (for now, apply each one - this could be optimized further)
+            foreach (var filter in filters.Where(f => !string.IsNullOrEmpty(f.Search)))
+            {
+                entities = entities.WhereMatchesSearch(filter.Search);
+            }
+            return entities;
+        }
+
+        private static IQueryable<EventEntity> WhereOrTagsAny(this IQueryable<EventEntity> entities, SubscriptionFilter[] filters)
+        {
+            // Apply OR tag filters from any filter
+            foreach (var filter in filters)
+            {
+                entities = entities.WhereOrTags(filter.OrTags);
+            }
+            return entities;
+        }
+
+        private static IQueryable<EventEntity> WhereAndTagsAny(this IQueryable<EventEntity> entities, SubscriptionFilter[] filters)
+        {
+            // Apply AND tag filters from any filter
+            foreach (var filter in filters)
+            {
+                entities = entities.WhereAndTags(filter.AndTags);
+            }
             return entities;
         }
     }

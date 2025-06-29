@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Netstr.Messaging;
 using Netstr.Messaging.Models;
 using Netstr.Options;
+using Netstr.Tests.NIPs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,8 @@ namespace Netstr.Tests
             using var ws = await this.factory.ConnectWebSocketAsync();
 
             // Act
-            var e = new Event { Kind = 1, Content = "Hello from whitelisted user", CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = Alice.PublicKey, Signature = "test", Tags = [] };
+            var e = new Event { Kind = 1, Content = "Hello from whitelisted user", CreatedAt = DateTimeOffset.UtcNow, Id = "", PublicKey = Alice.PublicKey, Signature = "", Tags = [] };
+            e = NIPs.Helpers.FinalizeEvent(e, Alice.PrivateKey);
             await ws.SendEventAsync(e);
 
             // Assert

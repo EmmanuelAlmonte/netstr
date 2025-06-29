@@ -17,6 +17,11 @@ namespace Netstr.Tests
             {
                 services.AddScoped<NetstrDbContext>(x => TestDbContext.InitializeAndSeed(false).context);
                 services.AddSingleton<IDbContextFactory<NetstrDbContext>>(x => new DbContextFactory());
+                
+                // Register missing services for tests
+                services.AddHttpClient();
+                services.AddMemoryCache();
+                services.AddHttpClient<Netstr.Services.INip05VerificationService, Netstr.Services.Nip05VerificationService>();
             });
 
             builder.ConfigureAppConfiguration((ctx, b) =>

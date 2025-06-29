@@ -40,11 +40,10 @@ namespace Netstr.Tests.Subscriptions
         [Fact]
         public void IsApplicable_AlwaysReturnsTrue()
         {
-            // Arrange
-            var handlerMock = new Mock<FilterMessageHandlerBase>();
+            // Arrange - No handler mock needed since method always returns true
 
             // Act
-            var result = validator.IsApplicable(handlerMock.Object);
+            var result = validator.IsApplicable(null!);
 
             // Assert
             Assert.True(result);

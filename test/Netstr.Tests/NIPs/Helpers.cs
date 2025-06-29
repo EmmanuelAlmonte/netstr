@@ -1,5 +1,6 @@
 ﻿using NBitcoin.Secp256k1;
 using Netstr.Messaging.Models;
+using Netstr.Json;
 using System.Text.Json;
 
 namespace Netstr.Tests.NIPs
@@ -44,7 +45,12 @@ namespace Netstr.Tests.NIPs
                 e.Content
             ];
 
-            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(obj))).ToLower();
+            var serializerOptions = new JsonSerializerOptions
+            {
+                Encoder = new NostrJsonEncoder()
+            };
+
+            return Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(obj, serializerOptions)));
         }
 
         public static Event FinalizeEvent(Event e, string privateKey)

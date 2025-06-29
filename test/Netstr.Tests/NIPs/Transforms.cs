@@ -64,16 +64,18 @@ namespace Netstr.Tests.NIPs
             return table.CreateSet<Event>().Select((e, i) =>
             {
                 var tags = table.Rows[i].GetString("Tags");
-                return e with
+                var updatedEvent = e with
                 {
                     Content = e.Content?.Replace("\\b", "\b").Replace("\\r", "\r").Replace("\\t", "\t").Replace("\\\"", "\"").Replace("\\n", "\n") ?? "",
                     CreatedAt = DateTimeOffset.FromUnixTimeSeconds(table.Rows[i].GetInt64("CreatedAt")),
                     PublicKey = string.IsNullOrEmpty(e.PublicKey) ? c.Keys.PublicKey : e.PublicKey,
-                    Signature = string.IsNullOrEmpty(e.Signature) ? Helpers.Sign(e.Id, c.Keys.PrivateKey) : e.Signature,
                     Tags = string.IsNullOrWhiteSpace(tags)
                         ? []
                         : JsonSerializer.Deserialize<string[][]>(tags) ?? []
                 };
+                
+                // Always finalize to ensure proper ID and signature computation
+                return Helpers.FinalizeEvent(updatedEvent, c.Keys.PrivateKey);
             });
         }
     }

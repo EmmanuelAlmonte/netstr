@@ -53,7 +53,7 @@ namespace Netstr.Tests
                 CreatedAt = DateTimeOffset.UtcNow,
                 PublicKey = Alice.PublicKey,
                 Tags = [
-                    ["relay", "ws://localhost"],
+                    ["relay", "wss://relay.damus.io"],
                     ["challenge", auth[1].ToString()]
                 ],
                 Kind = (long)EventKind.Auth
@@ -94,7 +94,7 @@ namespace Netstr.Tests
                 CreatedAt = DateTimeOffset.UtcNow,
                 PublicKey = Alice.PublicKey,
                 Tags = [
-                    ["relay", "ws://localhost"],
+                    ["relay", "wss://relay.damus.io"],
                     ["challenge", auth[1].ToString()]
                 ],
                 Kind = (long)EventKind.Auth + 1
