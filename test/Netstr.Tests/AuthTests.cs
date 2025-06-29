@@ -56,7 +56,7 @@ namespace Netstr.Tests
                     ["relay", "ws://localhost"],
                     ["challenge", auth[1].ToString()]
                 ],
-                Kind = EventKind.Auth
+                Kind = (long)EventKind.Auth
             };
 
             e = Helpers.FinalizeEvent(e, Alice.PrivateKey);
@@ -97,7 +97,7 @@ namespace Netstr.Tests
                     ["relay", "ws://localhost"],
                     ["challenge", auth[1].ToString()]
                 ],
-                Kind = EventKind.Auth + 1
+                Kind = (long)EventKind.Auth + 1
             };
 
             e = Helpers.FinalizeEvent(e, Alice.PrivateKey);

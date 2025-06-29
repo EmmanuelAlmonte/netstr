@@ -17,14 +17,14 @@ namespace Netstr.Tests.Events
     public class WhitelistValidatorTests
     {
         private readonly Mock<ILogger<WhitelistValidator>> loggerMock;
-        private readonly Mock<IOptions<WhitelistOptions>> optionsMock;
-        private readonly WhitelistOptions options;
+        private readonly Mock<IOptionsMonitor<WhitelistOptions>> optionsMock;
+        private WhitelistOptions options;
         private readonly WhitelistValidator validator;
 
         public WhitelistValidatorTests()
         {
             loggerMock = new Mock<ILogger<WhitelistValidator>>();
-            optionsMock = new Mock<IOptions<WhitelistOptions>>();
+            optionsMock = new Mock<IOptionsMonitor<WhitelistOptions>>();
             options = new WhitelistOptions
             {
                 Enabled = true,
@@ -32,7 +32,7 @@ namespace Netstr.Tests.Events
                 RestrictPublishing = true,
                 RestrictSubscribing = true
             };
-            optionsMock.Setup(x => x.Value).Returns(options);
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
             validator = new WhitelistValidator(loggerMock.Object, optionsMock.Object);
         }
 
@@ -40,7 +40,8 @@ namespace Netstr.Tests.Events
         public void Validate_WhitelistDisabled_ReturnsNull()
         {
             // Arrange
-            options.Enabled = false;
+            options = new WhitelistOptions { Enabled = false };
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
             var e = CreateEvent("not_allowed_pubkey");
             var context = new ClientContext("client1", "127.0.0.1");
 
@@ -55,7 +56,8 @@ namespace Netstr.Tests.Events
         public void Validate_RestrictPublishingDisabled_ReturnsNull()
         {
             // Arrange
-            options.RestrictPublishing = false;
+            options = new WhitelistOptions { RestrictPublishing = false };
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
             var e = CreateEvent("not_allowed_pubkey");
             var context = new ClientContext("client1", "127.0.0.1");
 

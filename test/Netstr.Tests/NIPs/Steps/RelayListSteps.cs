@@ -87,7 +87,7 @@ namespace Netstr.Tests.NIPs.Steps
         public async Task WhenIRequestRelayConfigurationsForMyPublicKey()
         {
             var c = this.scenarioContext.Get<Clients>()["Alice"];
-            var response = await c.HttpClient.GetAsync($"/api/relay/{c.Keys.PublicKey}");
+            var response = await this.factory.CreateClient().GetAsync($"/api/relay/{c.Keys.PublicKey}");
             this.scenarioContext.Set(response);
         }
 

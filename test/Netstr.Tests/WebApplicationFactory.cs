@@ -29,6 +29,7 @@ namespace Netstr.Tests
                 b.AddInMemoryObject(SubscriptionLimits, "Limits:Subscriptions");
                 b.AddInMemoryObject(NegentropyLimits, "Limits:Negentropy");
                 b.AddInMemoryCollection([ KeyValuePair.Create("Auth:Mode", AuthMode.ToString())]);
+                b.AddInMemoryObject(WhitelistOptions, "Whitelist");
             });
         }
 
@@ -37,6 +38,7 @@ namespace Netstr.Tests
         public NegentropyLimits? NegentropyLimits { get; set; }
         public int MaxPayloadSize { get; set; } = 524288;
         public AuthMode AuthMode { get; set; } = AuthMode.Disabled;
+        public WhitelistOptions? WhitelistOptions { get; set; }
 
         public async Task<WebSocket> ConnectWebSocketAsync(AuthMode authMode = AuthMode.Disabled)
         {

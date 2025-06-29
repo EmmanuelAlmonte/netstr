@@ -40,8 +40,8 @@ namespace Netstr.Tests.NIPs
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-65 Relay List Metadata", "    As a NOSTR client\n    I want to publish and retrieve my relay preferences\n   " +
-                    " So that other clients know which relays I use", ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-65 Relay List Metadata", "    As a NOSTR client\r\n    I want to publish and retrieve my relay preferences\r\n " +
+                    "   So that other clients know which relays I use", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         

@@ -52,7 +52,8 @@ namespace Netstr.Tests.Events
                     MaxPendingEvents = 10
                 },
                 Subscriptions = new Options.Limits.SubscriptionLimits(),
-                Negentropy = new Options.Limits.NegentropyLimits()
+                Negentropy = new Options.Limits.NegentropyLimits(),
+                Search = new Options.Limits.SearchLimits()
             });
 
             // receiver is a client with 2 registered subscriptions

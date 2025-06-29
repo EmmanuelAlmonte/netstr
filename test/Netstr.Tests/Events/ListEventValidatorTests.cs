@@ -11,7 +11,7 @@ namespace Netstr.Tests.Events
         {
             // Arrange
             var validator = new ListEventValidator();
-            var unknownEvent = new Event { Kind = 99999 }; // Unknown kind
+            var unknownEvent = new Event { Kind = 99999, Content = string.Empty, CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = "test", Signature = "test", Tags = [] }; // Unknown kind
 
             // Act
             var result = validator.Validate(unknownEvent, null);
@@ -25,7 +25,7 @@ namespace Netstr.Tests.Events
         {
             // Arrange
             var validator = new ListEventValidator();
-            var muteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "p" } } };
+            var muteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "p" } }, Content = string.Empty, CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = "test", Signature = "test" };
 
             // Act
             var result = validator.Validate(muteListEvent, null);
@@ -39,7 +39,7 @@ namespace Netstr.Tests.Events
         {
             // Arrange
             var validator = new ListEventValidator();
-            var invalidMuteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "invalid" } } };
+            var invalidMuteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "invalid" } }, Content = string.Empty, CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = "test", Signature = "test" };
 
             // Act
             var result = validator.Validate(invalidMuteListEvent, null);

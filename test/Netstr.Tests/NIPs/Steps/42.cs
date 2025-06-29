@@ -34,7 +34,7 @@ namespace Netstr.Tests.NIPs.Steps
                     ["relay", "ws://localhost"],
                     ["challenge", "invalid"]
                 ],
-                Kind = EventKind.Auth
+                Kind = (long)EventKind.Auth
             };
 
             e = Helpers.FinalizeEvent(e, c.Keys.PrivateKey);
@@ -60,7 +60,7 @@ namespace Netstr.Tests.NIPs.Steps
                     ["relay", "ws://localhost"],
                     ["challenge", auth[1].ToString() ?? ""]
                 ],
-                Kind = EventKind.Auth
+                Kind = (long)EventKind.Auth
             };
 
             e = Helpers.FinalizeEvent(e, c.Keys.PrivateKey);

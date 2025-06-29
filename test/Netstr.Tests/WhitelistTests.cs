@@ -27,7 +27,7 @@ namespace Netstr.Tests
         public async Task WhitelistedPublicKey_CanPublishEvents()
         {
             // Arrange
-            var options = new WhitelistOptions
+            this.factory.WhitelistOptions = new WhitelistOptions
             {
                 Enabled = true,
                 AllowedPublicKeys = new[] { Alice.PublicKey },
@@ -35,25 +35,19 @@ namespace Netstr.Tests
                 RestrictSubscribing = false
             };
 
-            using var client = factory.CreateClient();
-            using var ws = await client.ConnectWebSocketAsync();
-
-            // Override the whitelist options for this test
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.Enabled = options.Enabled;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.AllowedPublicKeys = options.AllowedPublicKeys;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.RestrictPublishing = options.RestrictPublishing;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.RestrictSubscribing = options.RestrictSubscribing;
+            using var client = this.factory.CreateClient();
+            using var ws = await this.factory.ConnectWebSocketAsync();
 
             // Act
-            var e = Alice.CreateEvent(1, "Hello from whitelisted user");
+            var e = new Event { Kind = 1, Content = "Hello from whitelisted user", CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = Alice.PublicKey, Signature = "test", Tags = [] };
             await ws.SendEventAsync(e);
 
             // Assert
-            var response = await ws.ReceiveMessageAsync();
-            var okMessage = JsonDocument.Parse(response);
-            var messageType = okMessage.RootElement[0].GetString();
-            var eventId = okMessage.RootElement[1].GetString();
-            var success = okMessage.RootElement[2].GetBoolean();
+            var response = await ws.ReceiveOnceAsync();
+            var okMessage = response;
+            var messageType = okMessage[0].GetString();
+            var eventId = okMessage[1].GetString();
+            var success = okMessage[2].GetBoolean();
 
             Assert.Equal("OK", messageType);
             Assert.Equal(e.Id, eventId);
@@ -64,7 +58,7 @@ namespace Netstr.Tests
         public async Task NonWhitelistedPublicKey_CannotPublishEvents()
         {
             // Arrange
-            var options = new WhitelistOptions
+            this.factory.WhitelistOptions = new WhitelistOptions
             {
                 Enabled = true,
                 AllowedPublicKeys = new[] { Alice.PublicKey },
@@ -72,14 +66,8 @@ namespace Netstr.Tests
                 RestrictSubscribing = false
             };
 
-            using var client = factory.CreateClient();
-            using var ws = await client.ConnectWebSocketAsync();
-
-            // Override the whitelist options for this test
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.Enabled = options.Enabled;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.AllowedPublicKeys = options.AllowedPublicKeys;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.RestrictPublishing = options.RestrictPublishing;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.RestrictSubscribing = options.RestrictSubscribing;
+            using var client = this.factory.CreateClient();
+            using var ws = await this.factory.ConnectWebSocketAsync();
 
             // Act
             var e = new Event
@@ -95,12 +83,12 @@ namespace Netstr.Tests
             await ws.SendEventAsync(e);
 
             // Assert
-            var response = await ws.ReceiveMessageAsync();
-            var okMessage = JsonDocument.Parse(response);
-            var messageType = okMessage.RootElement[0].GetString();
-            var eventId = okMessage.RootElement[1].GetString();
-            var success = okMessage.RootElement[2].GetBoolean();
-            var message = okMessage.RootElement[3].GetString();
+            var response = await ws.ReceiveOnceAsync();
+            var okMessage = response;
+            var messageType = okMessage[0].GetString();
+            var eventId = okMessage[1].GetString();
+            var success = okMessage[2].GetBoolean();
+            var message = okMessage[3].GetString();
 
             Assert.Equal("OK", messageType);
             Assert.Equal(e.Id, eventId);
@@ -112,7 +100,7 @@ namespace Netstr.Tests
         public async Task WhitelistDisabled_AllowsAnyPublicKey()
         {
             // Arrange
-            var options = new WhitelistOptions
+            this.factory.WhitelistOptions = new WhitelistOptions
             {
                 Enabled = false,
                 AllowedPublicKeys = new[] { Alice.PublicKey },
@@ -120,14 +108,8 @@ namespace Netstr.Tests
                 RestrictSubscribing = false
             };
 
-            using var client = factory.CreateClient();
-            using var ws = await client.ConnectWebSocketAsync();
-
-            // Override the whitelist options for this test
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.Enabled = options.Enabled;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.AllowedPublicKeys = options.AllowedPublicKeys;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.RestrictPublishing = options.RestrictPublishing;
-            factory.Services.GetRequiredService<IOptions<WhitelistOptions>>().Value.RestrictSubscribing = options.RestrictSubscribing;
+            using var client = this.factory.CreateClient();
+            using var ws = await this.factory.ConnectWebSocketAsync();
 
             // Act
             var e = new Event
@@ -143,18 +125,18 @@ namespace Netstr.Tests
             await ws.SendEventAsync(e);
 
             // Assert
-            var response = await ws.ReceiveMessageAsync();
-            var okMessage = JsonDocument.Parse(response);
-            var messageType = okMessage.RootElement[0].GetString();
-            var eventId = okMessage.RootElement[1].GetString();
+            var response = await ws.ReceiveOnceAsync();
+            var okMessage = response;
+            var messageType = okMessage[0].GetString();
+            var eventId = okMessage[1].GetString();
 
             // Note: This might fail due to other validations like signature check
             // We're just checking that it doesn't fail with the whitelist error
             Assert.Equal("OK", messageType);
             Assert.Equal(e.Id, eventId);
-            if (okMessage.RootElement.GetArrayLength() > 3)
+            if (okMessage.Length > 3)
             {
-                var message = okMessage.RootElement[3].GetString();
+                var message = okMessage[3].GetString();
                 Assert.NotEqual(Messages.WhitelistRestricted, message);
             }
         }

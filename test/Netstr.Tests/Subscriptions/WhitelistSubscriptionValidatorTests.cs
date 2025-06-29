@@ -18,14 +18,14 @@ namespace Netstr.Tests.Subscriptions
     public class WhitelistSubscriptionValidatorTests
     {
         private readonly Mock<ILogger<WhitelistSubscriptionValidator>> loggerMock;
-        private readonly Mock<IOptions<WhitelistOptions>> optionsMock;
-        private readonly WhitelistOptions options;
+        private readonly Mock<IOptionsMonitor<WhitelistOptions>> optionsMock;
+        private WhitelistOptions options;
         private readonly WhitelistSubscriptionValidator validator;
 
         public WhitelistSubscriptionValidatorTests()
         {
             loggerMock = new Mock<ILogger<WhitelistSubscriptionValidator>>();
-            optionsMock = new Mock<IOptions<WhitelistOptions>>();
+            optionsMock = new Mock<IOptionsMonitor<WhitelistOptions>>();
             options = new WhitelistOptions
             {
                 Enabled = true,
@@ -33,7 +33,7 @@ namespace Netstr.Tests.Subscriptions
                 RestrictPublishing = true,
                 RestrictSubscribing = true
             };
-            optionsMock.Setup(x => x.Value).Returns(options);
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
             validator = new WhitelistSubscriptionValidator(loggerMock.Object, optionsMock.Object);
         }
 
@@ -54,7 +54,8 @@ namespace Netstr.Tests.Subscriptions
         public void CanSubscribe_WhitelistDisabled_ReturnsNull()
         {
             // Arrange
-            options.Enabled = false;
+            options = new WhitelistOptions { Enabled = false };
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
             var context = CreateAuthenticatedContext("not_allowed_pubkey");
             var filters = Array.Empty<SubscriptionFilter>();
 
@@ -69,7 +70,8 @@ namespace Netstr.Tests.Subscriptions
         public void CanSubscribe_RestrictSubscribingDisabled_ReturnsNull()
         {
             // Arrange
-            options.RestrictSubscribing = false;
+            options = new WhitelistOptions { RestrictSubscribing = false };
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
             var context = CreateAuthenticatedContext("not_allowed_pubkey");
             var filters = Array.Empty<SubscriptionFilter>();
 
