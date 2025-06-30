@@ -9,6 +9,10 @@ using Netstr.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load local configuration for secrets (not committed to git)
+builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
+
 var connectionString = builder.Configuration.GetConnectionString("NetstrDatabase");
 
 // Setup Serilog logging

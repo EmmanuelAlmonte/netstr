@@ -19,7 +19,8 @@ namespace Netstr.Tests
             this.factory = new WebApplicationFactory();
         }
 
-        [Fact]
+        [Fact
+            ]
         public async Task PublishAuthModeTest()
         {
             using WebSocket ws = await this.factory.ConnectWebSocketAsync(AuthMode.Publishing);

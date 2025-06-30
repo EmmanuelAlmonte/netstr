@@ -402,3 +402,9 @@ src/Netstr/appsettings.Development.json
 
 .vscode/tasks.json
 .vscode/launch.json
+
+# Local configuration files (secrets)
+appsettings.local.json
+appsettings.*.local.json
+.env
+*.env

@@ -44,6 +44,9 @@ public enum EventKind
     ReleaseArtifactSets = 30063,
     AppCurationSets = 30267,
     
+    // NIP-64 Chess (Portable Game Notation)
+    Chess = 64,
+    
     // NIP-78 Application-specific Data
     ApplicationSpecificData = 30078
 }
