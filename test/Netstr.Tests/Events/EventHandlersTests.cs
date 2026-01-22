@@ -63,7 +63,7 @@ namespace Netstr.Tests.Events
                 auth,
                 Mock.Of<IMessageDispatcher>(),
                 Mock.Of<INegentropyAdapterFactory>(),
-                new SubscriptionsAdapterFactory(Mock.Of<ILogger<SubscriptionsAdapter>>()),
+                new SubscriptionsAdapterFactory(Mock.Of<ILogger<SubscriptionsAdapter>>(), limits),
                 CancellationToken.None,
                 this.ws.Object,
                 Mock.Of<IHeaderDictionary>(),
