@@ -1,4 +1,5 @@
-﻿using Netstr.Messaging.Models;
+using Netstr.Messaging.Models;
+using System.Text.Json;
 
 namespace Netstr.Data
 {
@@ -15,9 +16,10 @@ namespace Netstr.Data
                 EventKind = e.Kind,
                 EventPublicKey = e.PublicKey,
                 EventSignature = e.Signature,
+                EventJson = JsonSerializer.Serialize(e),
                 EventExpiration = e.GetExpirationValue(),
-                EventDeduplication = e.IsAddressable() 
-                    ? e.GetDeduplicationValue() 
+                EventDeduplication = e.IsAddressable()
+                    ? e.GetDeduplicationValue()
                     : null,
                 Tags = e.Tags
                     .GroupBy(x => new { Name = x.First(), Value = x.Skip(1).FirstOrDefault() })

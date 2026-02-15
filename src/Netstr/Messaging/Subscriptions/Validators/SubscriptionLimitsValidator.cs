@@ -23,7 +23,11 @@ namespace Netstr.Messaging.Subscriptions.Validators
         {
             var limits = GetLimits();
 
-            if (limits.MaxSubscriptionIdLength > 0 && id.Length > limits.MaxSubscriptionIdLength)
+            if (string.IsNullOrEmpty(id))
+            {
+                return Messages.InvalidSubscriptionIdEmpty;
+            }
+            else if (limits.MaxSubscriptionIdLength > 0 && id.Length > limits.MaxSubscriptionIdLength)
             {
                 return Messages.InvalidSubscriptionIdTooLong;
             }

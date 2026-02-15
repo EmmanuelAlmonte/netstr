@@ -28,7 +28,11 @@ namespace Netstr.Tests
             {
                 b.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Limits:MaxPayloadSize"] = $"{MaxPayloadSize}"
+                    ["Limits:MaxPayloadSize"] = $"{MaxPayloadSize}",
+                    // Many fixtures use hard-coded 2024 timestamps; keep tests stable even as wall-clock time moves on.
+                    ["Limits:Events:MaxCreatedAtLowerOffset"] = $"{60 * 60 * 24 * 365 * 10}",
+                    ["Limits:Events:MaxCreatedAtUpperOffset"] = $"{60 * 60 * 24 * 365 * 10}",
+                    ["Filters:AllowAndTagFilters"] = AllowAndTagFilters.ToString()
                 });
                 b.AddInMemoryObject(EventLimits, "Limits:Events");
                 b.AddInMemoryObject(SubscriptionLimits, "Limits:Subscriptions");
@@ -44,6 +48,7 @@ namespace Netstr.Tests
         public int MaxPayloadSize { get; set; } = 524288;
         public AuthMode AuthMode { get; set; } = AuthMode.Disabled;
         public WhitelistOptions? WhitelistOptions { get; set; }
+        public bool AllowAndTagFilters { get; set; } = true;
 
         public async Task<WebSocket> ConnectWebSocketAsync(AuthMode authMode = AuthMode.Disabled)
         {

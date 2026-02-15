@@ -20,8 +20,9 @@ namespace Netstr.Messaging.MessageHandlers.Negentropy
             IEnumerable<ISubscriptionRequestValidator> validators,
             IOptions<LimitsOptions> limits,
             IOptions<AuthOptions> auth,
+            IOptions<FiltersOptions> filters,
             ILogger<NegentropyOpenHandler> logger)
-            : base(validators, limits, auth, logger)
+            : base(validators, limits, auth, filters, logger)
         {
             this.db = db;
         }

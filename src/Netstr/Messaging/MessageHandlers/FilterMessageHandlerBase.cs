@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using Netstr.Data;
 using Netstr.Extensions;
 using Netstr.Json;
@@ -25,6 +26,7 @@ namespace Netstr.Messaging.MessageHandlers
         protected readonly IEnumerable<ISubscriptionRequestValidator> validators;
         protected readonly IOptions<LimitsOptions> limits;
         protected readonly IOptions<AuthOptions> auth;
+        protected readonly IOptions<FiltersOptions> filters;
         protected readonly ILogger<FilterMessageHandlerBase> logger;
         protected readonly PartitionedRateLimiter<string> rateLimiter;
 
@@ -32,11 +34,13 @@ namespace Netstr.Messaging.MessageHandlers
             IEnumerable<ISubscriptionRequestValidator> validators,
             IOptions<LimitsOptions> limits,
             IOptions<AuthOptions> auth,
+            IOptions<FiltersOptions> filters,
             ILogger<FilterMessageHandlerBase> logger)
         {
             this.validators = validators;
             this.limits = limits;
             this.auth = auth;
+            this.filters = filters;
             this.logger = logger;
             this.rateLimiter = PartitionedRateLimiter.Create<string, string>(
                 x => RateLimitPartition.GetSlidingWindowLimiter(x, _ => {
@@ -114,14 +118,33 @@ namespace Netstr.Messaging.MessageHandlers
             var protectedKinds = auth.Mode == AuthMode.Disabled ? [] : auth.ProtectedKinds;
             var now = DateTimeOffset.UtcNow;
             var limits = GetLimits();
+            var searchLimits = this.limits.Value.Search;
+            var isPostgres = db.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+            var useFullTextSearch = searchLimits.EnableFullTextSearch && isPostgres;
 
             return db.Events
-                .WhereAnyFilterMatches(filters, protectedKinds, clientPublicKey, limits.MaxInitialLimit)
                 .Where(x =>
                     !x.DeletedAt.HasValue &&
                     (!x.EventExpiration.HasValue || x.EventExpiration.Value > now))
-                .OrderByDescending(x => x.EventCreatedAt)
-                .ThenBy(x => x.EventId);
+                .WhereAnyFilterMatchesForInitialQuery(filters, protectedKinds, clientPublicKey, limits.MaxInitialLimit, useFullTextSearch);
+        }
+
+        protected IQueryable<EventEntity> GetFilteredEventsForCount(NetstrDbContext db, IEnumerable<SubscriptionFilter> filters, string? clientPublicKey)
+        {
+            // if auth is disabled ignore any set ProtectedKinds
+            var auth = this.auth.Value;
+            var protectedKinds = auth.Mode == AuthMode.Disabled ? [] : auth.ProtectedKinds;
+            var now = DateTimeOffset.UtcNow;
+            var searchLimits = this.limits.Value.Search;
+            var isPostgres = db.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+            var useFullTextSearch = searchLimits.EnableFullTextSearch && isPostgres;
+
+            return db.Events
+                .Where(x =>
+                    !x.DeletedAt.HasValue &&
+                    (!x.EventExpiration.HasValue || x.EventExpiration.Value > now))
+                .WhereAnyFilterMatchesBase(filters, protectedKinds, clientPublicKey, useFullTextSearch)
+                .AsNoTracking();
         }
 
         protected virtual void RaiseSubscriptionException(string subscriptionId, string message, string? logMessage = null)
@@ -132,9 +155,13 @@ namespace Netstr.Messaging.MessageHandlers
         private SubscriptionFilter GetSubscriptionFilter(string subscriptionId, JsonDocument json)
         {
             var r = DeserializeFilter(subscriptionId, json);
+            var allowAndTagFilters = this.filters.Value.AllowAndTagFilters;
 
             // only single letter tags with AND and OR modifiers are allowed as tag filters
-            if (r.AdditionalData?.Any(x => (!x.Key.StartsWith(TagModifierOr) && !x.Key.StartsWith(TagModifierAnd)) || x.Key.Length != 2) ?? false)
+            if (r.AdditionalData?.Any(x =>
+                x.Key.Length != 2 ||
+                (x.Key[0] != TagModifierOr && x.Key[0] != TagModifierAnd) ||
+                (x.Key[0] == TagModifierAnd && !allowAndTagFilters)) ?? false)
             {
                 RaiseSubscriptionException(subscriptionId, Messages.UnsupportedFilter);
             }
@@ -145,7 +172,7 @@ namespace Netstr.Messaging.MessageHandlers
                 ?? new();
 
             var orTags = getTags(r.AdditionalData, TagModifierOr);
-            var andTags = getTags(r.AdditionalData, TagModifierAnd);
+            var andTags = allowAndTagFilters ? getTags(r.AdditionalData, TagModifierAnd) : new();
 
             return new SubscriptionFilter(
                 r.Ids.EmptyIfNull(),

@@ -17,8 +17,8 @@ namespace Netstr.Messaging.Subscriptions
                 () => !filter.Since.HasValue || filter.Since <= e.CreatedAt,
                 () => !filter.Until.HasValue || filter.Until >= e.CreatedAt,
                 () => SearchMatcher.MatchesSearch(e, filter.Search),
-                () => filter.OrTags.All(tag => e.Tags.Any(x => tag.Key == x[0] && tag.Value.Contains(x[1]))),
-                () => filter.AndTags.All(tag => tag.Value.All(tagValue => e.Tags.Any(eTag => eTag[0] == tag.Key && eTag[1] == tagValue)))
+                () => filter.OrTags.All(tag => e.Tags.Any(x => x.Length > 1 && tag.Key == x[0] && tag.Value.Contains(x[1]))),
+                () => filter.AndTags.All(tag => tag.Value.All(tagValue => e.Tags.Any(eTag => eTag.Length > 1 && eTag[0] == tag.Key && eTag[1] == tagValue)))
             ];
 
             return filters.All(x => x());

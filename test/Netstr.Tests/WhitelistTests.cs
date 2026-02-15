@@ -15,20 +15,14 @@ using Xunit;
 
 namespace Netstr.Tests
 {
-    public class WhitelistTests : IClassFixture<WebApplicationFactory>
+    public class WhitelistTests
     {
-        private readonly WebApplicationFactory factory;
-
-        public WhitelistTests(WebApplicationFactory factory)
-        {
-            this.factory = factory;
-        }
-
         [Fact]
         public async Task WhitelistedPublicKey_CanPublishEvents()
         {
             // Arrange
-            this.factory.WhitelistOptions = new WhitelistOptions
+            using var factory = new WebApplicationFactory();
+            factory.WhitelistOptions = new WhitelistOptions
             {
                 Enabled = true,
                 AllowedPublicKeys = new[] { Alice.PublicKey },
@@ -36,8 +30,8 @@ namespace Netstr.Tests
                 RestrictSubscribing = false
             };
 
-            using var client = this.factory.CreateClient();
-            using var ws = await this.factory.ConnectWebSocketAsync();
+            using var client = factory.CreateClient();
+            using var ws = await factory.ConnectWebSocketAsync();
 
             // Act
             var e = new Event { Kind = 1, Content = "Hello from whitelisted user", CreatedAt = DateTimeOffset.UtcNow, Id = "", PublicKey = Alice.PublicKey, Signature = "", Tags = [] };
@@ -60,7 +54,8 @@ namespace Netstr.Tests
         public async Task NonWhitelistedPublicKey_CannotPublishEvents()
         {
             // Arrange
-            this.factory.WhitelistOptions = new WhitelistOptions
+            using var factory = new WebApplicationFactory();
+            factory.WhitelistOptions = new WhitelistOptions
             {
                 Enabled = true,
                 AllowedPublicKeys = new[] { Alice.PublicKey },
@@ -68,20 +63,12 @@ namespace Netstr.Tests
                 RestrictSubscribing = false
             };
 
-            using var client = this.factory.CreateClient();
-            using var ws = await this.factory.ConnectWebSocketAsync();
+            using var client = factory.CreateClient();
+            using var ws = await factory.ConnectWebSocketAsync();
 
             // Act
-            var e = new Event
-            {
-                Id = "non_whitelisted_event_id",
-                PublicKey = "non_whitelisted_pubkey",
-                Kind = 1,
-                Tags = Array.Empty<string[]>(),
-                Content = "Hello from non-whitelisted user",
-                Signature = "fake_signature",
-                CreatedAt = DateTimeOffset.UtcNow
-            };
+            var e = new Event { Kind = 1, Content = "Hello from non-whitelisted user", CreatedAt = DateTimeOffset.UtcNow, Id = "", PublicKey = Bob.PublicKey, Signature = "", Tags = [] };
+            e = NIPs.Helpers.FinalizeEvent(e, Bob.PrivateKey);
             await ws.SendEventAsync(e);
 
             // Assert
@@ -102,7 +89,8 @@ namespace Netstr.Tests
         public async Task WhitelistDisabled_AllowsAnyPublicKey()
         {
             // Arrange
-            this.factory.WhitelistOptions = new WhitelistOptions
+            using var factory = new WebApplicationFactory();
+            factory.WhitelistOptions = new WhitelistOptions
             {
                 Enabled = false,
                 AllowedPublicKeys = new[] { Alice.PublicKey },
@@ -110,20 +98,12 @@ namespace Netstr.Tests
                 RestrictSubscribing = false
             };
 
-            using var client = this.factory.CreateClient();
-            using var ws = await this.factory.ConnectWebSocketAsync();
+            using var client = factory.CreateClient();
+            using var ws = await factory.ConnectWebSocketAsync();
 
             // Act
-            var e = new Event
-            {
-                Id = "non_whitelisted_event_id",
-                PublicKey = "non_whitelisted_pubkey",
-                Kind = 1,
-                Tags = Array.Empty<string[]>(),
-                Content = "Hello with whitelist disabled",
-                Signature = "fake_signature",
-                CreatedAt = DateTimeOffset.UtcNow
-            };
+            var e = new Event { Kind = 1, Content = "Hello with whitelist disabled", CreatedAt = DateTimeOffset.UtcNow, Id = "", PublicKey = Bob.PublicKey, Signature = "", Tags = [] };
+            e = NIPs.Helpers.FinalizeEvent(e, Bob.PrivateKey);
             await ws.SendEventAsync(e);
 
             // Assert
@@ -131,14 +111,16 @@ namespace Netstr.Tests
             var okMessage = response;
             var messageType = okMessage[0].GetString();
             var eventId = okMessage[1].GetString();
+            var success = okMessage[2].GetBoolean();
+            var message = okMessage.Length > 3 ? okMessage[3].GetString() : null;
 
             // Note: This might fail due to other validations like signature check
             // We're just checking that it doesn't fail with the whitelist error
             Assert.Equal("OK", messageType);
             Assert.Equal(e.Id, eventId);
+            Assert.True(success, $"Publish rejected: {message ?? "<no message>"}");
             if (okMessage.Length > 3)
             {
-                var message = okMessage[3].GetString();
                 Assert.NotEqual(Messages.WhitelistRestricted, message);
             }
         }

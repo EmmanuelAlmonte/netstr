@@ -20,8 +20,9 @@ namespace Netstr.Messaging.MessageHandlers
             IEnumerable<ISubscriptionRequestValidator> validators, 
             IOptions<LimitsOptions> limits, 
             IOptions<AuthOptions> auth,
+            IOptions<FiltersOptions> filters,
             ILogger<CountMessageHandler> logger) 
-            : base(validators, limits, auth, logger)
+            : base(validators, limits, auth, filters, logger)
         {
             this.db = db;
 
@@ -38,7 +39,10 @@ namespace Netstr.Messaging.MessageHandlers
             using var context = this.db.CreateDbContext();
 
             // get stored events count
-            var count = await GetFilteredEvents(context, filters, adapter.Context.PublicKey).CountAsync();
+            var count = await GetFilteredEventsForCount(context, filters, adapter.Context.PublicKey)
+                .Select(x => x.EventId)
+                .Distinct()
+                .CountAsync();
 
             // send count back
             adapter.SendCount(subscriptionId, count);

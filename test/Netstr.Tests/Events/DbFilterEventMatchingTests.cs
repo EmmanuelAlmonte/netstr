@@ -34,7 +34,7 @@ namespace Netstr.Tests.Events
                 ]
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             results.Should().BeEquivalentTo(filter.Ids);
         }
@@ -52,7 +52,7 @@ namespace Netstr.Tests.Events
                 ]
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "1a621c1ff8f6ea2641205bcb8a2908c80f7e70338179ac6f0dab8dfebf748132",
@@ -72,7 +72,7 @@ namespace Netstr.Tests.Events
                 Kinds = [5, 6, 150]
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "20942205680e130a7602fd735fe715f52edf814a0b6e6e7f0990a02b257504ed",
@@ -93,7 +93,7 @@ namespace Netstr.Tests.Events
                 Until = DateTimeOffset.FromUnixTimeSeconds(1660424316)
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "cf8de9db67a1d7203512d1d81e6190f5e53abfdc0ac90275f67172b65a5b09a0",
@@ -114,7 +114,7 @@ namespace Netstr.Tests.Events
                 Limit = 2
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "444cec7f44c53eee60ba62858920c74173aa6bbb76c622f484a88cfcca2e07ad",
@@ -141,7 +141,7 @@ namespace Netstr.Tests.Events
                 new SubscriptionFilter { Kinds = [5], Since = DateTimeOffset.FromUnixTimeSeconds(1660449145) },
             };
 
-            var results = db.Events.WhereAnyFilterMatches(filters, 3).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery(filters, 3).Select(x => x.EventId).ToArray();
 
             var expectedIds = new[] {
                 "444cec7f44c53eee60ba62858920c74173aa6bbb76c622f484a88cfcca2e07ad",
@@ -168,7 +168,7 @@ namespace Netstr.Tests.Events
                 },
             };
 
-            var results = db.Events.WhereAnyFilterMatches(filters, 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery(filters, 100).Select(x => x.EventId).ToArray();
 
             var expectedIds = new[] { "23677e3d035be5de01172de203103e292126d542897086bf797d8794fe6b1081" };
 

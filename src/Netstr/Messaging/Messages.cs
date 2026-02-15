@@ -7,6 +7,7 @@
         public const string InvalidId = "invalid: event id does not match";
         public const string InvalidSignature = "invalid: event signature verification failed";
         public const string InvalidCreatedAt = "invalid: event creation date is too far off from the current time";
+        public const string InvalidSubscriptionIdEmpty = "invalid: subscription id is empty";
         public const string InvalidSubscriptionIdTooLong = "invalid: subscription id is too long";
         public const string InvalidTooManyFilters = "invalid: too many filters";
         public const string InvalidCannotProcessFilters = "invalid: cannot process filters";
