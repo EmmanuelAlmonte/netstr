@@ -83,6 +83,7 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventValidator, WhitelistValidator>();
             services.AddSingleton<IEventValidator, Nip05Validator>();
 
+            services.AddSingleton<IEventValidator, Nip04DirectMessageValidator>();
             services.AddSingleton<IEventValidator, ZapEventValidator>();
             services.AddSingleton<IEventValidator, ChessEventValidator>();
             services.AddSingleton<IEventValidator, FollowListValidator>();

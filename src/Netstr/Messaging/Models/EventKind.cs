@@ -9,6 +9,7 @@ public enum EventKind
     UserMetadata = 0,
     ShortTextNote = 1,
     FollowList = 3,
+    EncryptedDirectMessage = 4,
     Delete = 5,
     RequestToVanish = 62,
     GiftWrap = 1059,

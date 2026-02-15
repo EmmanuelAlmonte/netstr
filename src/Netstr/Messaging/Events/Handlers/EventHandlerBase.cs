@@ -68,16 +68,30 @@ namespace Netstr.Messaging.Events.Handlers
 
         private void BroadcastEventForAdapterAsync(IWebSocketAdapter adapter, Event e)
         {
-            if (
-                this.auth.Value.ProtectedKinds.Contains(e.Kind) &&
-                this.auth.Value.Mode != AuthMode.Disabled &&
-                adapter.Context.PublicKey != e.PublicKey &&
-                e.Tags.Any(x => x.Length >= 2 && x[0] == EventTag.PublicKey && x[1] != adapter.Context.PublicKey))
-            {
-                this.logger.LogInformation($"Not going to broadcast event {e.Id}");
+            var isProtectedKind = this.auth.Value.Mode != AuthMode.Disabled &&
+                this.auth.Value.ProtectedKinds.Contains(e.Kind);
 
-                // not going to send the event to this client
-                return;
+            if (isProtectedKind)
+            {
+                if (!adapter.Context.IsAuthenticated())
+                {
+                    this.logger.LogInformation($"Not going to broadcast event {e.Id}");
+                    return;
+                }
+
+                if (adapter.Context.PublicKey != e.PublicKey)
+                {
+                    var isRecipient = e.Tags.Any(x =>
+                        x.Length >= 2 &&
+                        x[0] == EventTag.PublicKey &&
+                        x[1] == adapter.Context.PublicKey);
+
+                    if (!isRecipient)
+                    {
+                        this.logger.LogInformation($"Not going to broadcast event {e.Id}");
+                        return;
+                    }
+                }
             }
 
             var subs = adapter.Subscriptions
