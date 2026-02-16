@@ -18,7 +18,7 @@ namespace Netstr.Messaging.Events.Validators
         {
             if (e.IsProtected())
             {
-                if (!context.IsAuthenticated() || context.PublicKey != e.PublicKey)
+                if (!context.IsAuthenticated() || !context.IsAuthenticated(e.PublicKey))
                 {
                     return Messages.AuthRequiredProtected;
                 }

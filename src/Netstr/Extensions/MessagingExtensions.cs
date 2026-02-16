@@ -73,7 +73,9 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventValidator, EventHashValidator>();
             services.AddSingleton<IEventValidator, EventSignatureValidator>();
             services.AddSingleton<IEventValidator, EventPowValidator>();
+            services.AddSingleton<IEventValidator, AuthCreatedAtValidator>();
             services.AddSingleton<IEventValidator, EventCreatedAtValidator>();
+            services.AddSingleton<IEventValidator, SealEventValidator>();
             services.AddSingleton<IEventValidator, ProtectedEventValidator>();
             services.AddSingleton<IEventValidator, ExpiredEventValidator>();
             services.AddSingleton<IEventValidator, EventTagsValidator>();

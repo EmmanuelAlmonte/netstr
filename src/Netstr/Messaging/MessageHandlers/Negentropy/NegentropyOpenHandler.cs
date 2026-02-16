@@ -47,7 +47,7 @@ namespace Netstr.Messaging.MessageHandlers.Negentropy
             using var context = this.db.CreateDbContext();
             
             var query = remainingParameters.First().DeserializeRequired<string>();
-            var events = await GetFilteredEvents(context, filters, adapter.Context.PublicKey)
+            var events = await GetFilteredEvents(context, filters, adapter.Context.AuthenticatedPublicKeys)
                 .Select(x => new NegentropyEvent(x.EventId, x.EventCreatedAt.UtcTicks))
                 .ToArrayAsync();
 

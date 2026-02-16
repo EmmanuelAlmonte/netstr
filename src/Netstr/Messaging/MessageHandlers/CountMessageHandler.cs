@@ -39,7 +39,7 @@ namespace Netstr.Messaging.MessageHandlers
             using var context = this.db.CreateDbContext();
 
             // get stored events count
-            var count = await GetFilteredEventsForCount(context, filters, adapter.Context.PublicKey)
+            var count = await GetFilteredEventsForCount(context, filters, adapter.Context.AuthenticatedPublicKeys)
                 .Select(x => x.EventId)
                 .Distinct()
                 .CountAsync();

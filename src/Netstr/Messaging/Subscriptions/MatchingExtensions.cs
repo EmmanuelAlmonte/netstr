@@ -23,7 +23,7 @@ namespace Netstr.Messaging.Subscriptions
             this IQueryable<EventEntity> entities,
             IEnumerable<SubscriptionFilter> filters,
             IEnumerable<long> protectedKinds,
-            string? authenticatedPublicKey,
+            IReadOnlyCollection<string> authenticatedPublicKeys,
             bool useFullTextSearch = false)
         {
             var filterArray = filters.ToArray();
@@ -36,7 +36,12 @@ namespace Netstr.Messaging.Subscriptions
 
             foreach (var filter in filterArray)
             {
-                var filterQuery = ApplyFilterPredicates(entities, filter, protectedKinds, authenticatedPublicKey, useFullTextSearch);
+                var filterQuery = ApplyFilterPredicates(
+                    entities,
+                    filter,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    useFullTextSearch);
                 query = query.Union(filterQuery);
             }
 
@@ -51,7 +56,7 @@ namespace Netstr.Messaging.Subscriptions
             this IQueryable<EventEntity> entities,
             IEnumerable<SubscriptionFilter> filters,
             IEnumerable<long> protectedKinds,
-            string? authenticatedPublicKey,
+            IReadOnlyCollection<string> authenticatedPublicKeys,
             int maxLimit,
             bool useFullTextSearch = false)
         {
@@ -73,7 +78,12 @@ namespace Netstr.Messaging.Subscriptions
             {
                 var perFilterLimit = filter.Limit.HasValue ? Math.Min(filter.Limit.Value, max) : max;
 
-                var filterQuery = ApplyFilterPredicates(entities, filter, protectedKinds, authenticatedPublicKey, useFullTextSearch)
+                var filterQuery = ApplyFilterPredicates(
+                    entities,
+                    filter,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    useFullTextSearch)
                     .OrderBySearchQuality(filter.Search, useFullTextSearch)
                     .Take(perFilterLimit);
 
@@ -99,14 +109,20 @@ namespace Netstr.Messaging.Subscriptions
             IEnumerable<SubscriptionFilter> filters,
             int maxLimit)
         {
-            return WhereAnyFilterMatchesForInitialQuery(entities, filters, [], null, maxLimit, useFullTextSearch: false);
+            return WhereAnyFilterMatchesForInitialQuery(
+                entities,
+                filters,
+                [],
+                Array.Empty<string>(),
+                maxLimit,
+                useFullTextSearch: false);
         }
 
         private static IQueryable<EventEntity> ApplyFilterPredicates(
             IQueryable<EventEntity> entities,
             SubscriptionFilter filter,
             IEnumerable<long> protectedKinds,
-            string? authenticatedPublicKey,
+            IReadOnlyCollection<string> authenticatedPublicKeys,
             bool useFullTextSearch)
         {
             return entities
@@ -119,7 +135,11 @@ namespace Netstr.Messaging.Subscriptions
                 .WhereMatchesSearch(filter.Search, useFullTextSearch)
                 .WhereOrTags(filter.OrTags)
                 .WhereAndTags(filter.AndTags)
-                .Where(x => !protectedKinds.Contains(x.EventKind) || x.EventPublicKey == authenticatedPublicKey || x.Tags.Any(tag => tag.Name == EventTag.PublicKey && tag.Value == authenticatedPublicKey));
+                .Where(x =>
+                    !protectedKinds.Contains(x.EventKind) ||
+                    authenticatedPublicKeys.Contains(x.EventPublicKey) ||
+                    x.Tags.Any(tag => tag.Name == EventTag.PublicKey &&
+                                      authenticatedPublicKeys.Contains(tag.Value)));
         }
 
         private static IQueryable<EventEntity> WhereOrTags(this IQueryable<EventEntity> entities, IDictionary<string, string[]> tags)

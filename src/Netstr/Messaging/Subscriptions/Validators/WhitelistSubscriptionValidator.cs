@@ -58,9 +58,9 @@ namespace Netstr.Messaging.Subscriptions.Validators
                 return "auth-required: authentication required for subscription";
             }
 
-            if (!this.allowedPublicKeys.Contains(context.PublicKey!))
+            if (!context.AuthenticatedPublicKeys.Any(contextKey => this.allowedPublicKeys.Contains(contextKey)))
             {
-                this.logger.LogWarning($"Rejected subscription from non-whitelisted public key: {context.PublicKey}");
+                this.logger.LogWarning("Rejected subscription from non-whitelisted public key(s): {Keys}", string.Join(", ", context.AuthenticatedPublicKeys));
                 return Messages.WhitelistRestricted;
             }
 

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Netstr.Messaging;
 using Netstr.Messaging.Models;
@@ -76,7 +76,7 @@ namespace Netstr.Tests
 
             for (var i = 0; i < tooManyCount; i++)
             {
-                await ws.SendReqAsync("toomanytest", [ new SubscriptionFilterRequest { Ids = ["1"] }]);
+                await ws.SendReqAsync($"toomanytest-{i}", [new SubscriptionFilterRequest { Ids = ["1"] }]);
             }
 
             await Task.Delay(1000);
@@ -86,7 +86,7 @@ namespace Netstr.Tests
 
             var last = replies.Last();
             last[0].GetString().Should().Be("CLOSED");
-            last[1].GetString().Should().Be("toomanytest");
+            last[1].GetString().Should().Be($"toomanytest-{tooManyCount - 1}");
             last[2].GetString().Should().Be(Messages.RateLimited);
         }
     }

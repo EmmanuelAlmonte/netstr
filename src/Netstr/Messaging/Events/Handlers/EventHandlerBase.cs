@@ -79,12 +79,12 @@ namespace Netstr.Messaging.Events.Handlers
                     return;
                 }
 
-                if (adapter.Context.PublicKey != e.PublicKey)
+                if (!adapter.Context.IsAuthenticated(e.PublicKey))
                 {
                     var isRecipient = e.Tags.Any(x =>
                         x.Length >= 2 &&
                         x[0] == EventTag.PublicKey &&
-                        x[1] == adapter.Context.PublicKey);
+                        adapter.Context.IsAuthenticated(x[1]));
 
                     if (!isRecipient)
                     {

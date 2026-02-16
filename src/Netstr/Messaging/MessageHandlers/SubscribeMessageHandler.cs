@@ -66,7 +66,7 @@ namespace Netstr.Messaging.MessageHandlers
             var subscription = adapter.Subscriptions.Add(subscriptionId, filters);
 
             // get stored events
-            var entities = await GetFilteredEvents(context, filters, adapter.Context.PublicKey).ToArrayAsync();
+            var entities = await GetFilteredEvents(context, filters, adapter.Context.AuthenticatedPublicKeys).ToArrayAsync();
             var events = entities.Select(CreateEvent).ToArray();
 
             this.logger.LogInformation($"Found {entities.Length} stored events for subscription {subscriptionId}");

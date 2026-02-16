@@ -98,6 +98,71 @@ namespace Netstr.Tests
             storedEvents.Should().BeEquivalentTo(["foo stored"]);
         }
 
+        [Fact]
+        public async Task Search_OnlyUnsupportedExtensions_DoesNotReduceRecall()
+        {
+            var factory = new WebApplicationFactory();
+            factory.CreateDefaultClient();
+
+            using (var db = factory.Services.GetRequiredService<IDbContextFactory<NetstrDbContext>>().CreateDbContext())
+            {
+                var now = DateTimeOffset.UtcNow;
+                db.Events.AddRange(
+                    CreateEvent("stored-foo", "pk", 1, now.AddMinutes(-2), "foo stored"),
+                    CreateEvent("stored-bar", "pk", 1, now.AddMinutes(-1), "bar stored"));
+                db.SaveChanges();
+            }
+
+            using WebSocket ws = await factory.ConnectWebSocketAsync();
+
+            var replies = new List<JsonElement[]>();
+            _ = ws.ReceiveAsync(replies.Add);
+
+            await ws.SendReqAsync("s", [new SubscriptionFilterRequest { Kinds = [1], Search = "language:en" }]);
+
+            await Task.Delay(1000);
+
+            var storedEvents = replies
+                .Where(x => x.Length >= 3 && x[0].GetString() == "EVENT" && x[1].GetString() == "s")
+                .Select(x => x[2].GetProperty("content").GetString())
+                .ToArray();
+
+            storedEvents.Should().HaveCount(2);
+            replies.Select(x => x[0].GetString()).Should().Contain("EOSE");
+        }
+
+        [Fact]
+        public async Task Search_IgnoresUnsupportedExtensions_WithBasicTerms()
+        {
+            var factory = new WebApplicationFactory();
+            factory.CreateDefaultClient();
+
+            using (var db = factory.Services.GetRequiredService<IDbContextFactory<NetstrDbContext>>().CreateDbContext())
+            {
+                var now = DateTimeOffset.UtcNow;
+                db.Events.AddRange(
+                    CreateEvent("stored-foo", "pk", 1, now.AddMinutes(-2), "foo stored"),
+                    CreateEvent("stored-bar", "pk", 1, now.AddMinutes(-1), "bar stored"));
+                db.SaveChanges();
+            }
+
+            using WebSocket ws = await factory.ConnectWebSocketAsync();
+
+            var replies = new List<JsonElement[]>();
+            _ = ws.ReceiveAsync(replies.Add);
+
+            await ws.SendReqAsync("s", [new SubscriptionFilterRequest { Kinds = [1], Search = "foo unknown:tag" }]);
+
+            await Task.Delay(1000);
+
+            var storedEvents = replies
+                .Where(x => x.Length >= 3 && x[0].GetString() == "EVENT" && x[1].GetString() == "s")
+                .Select(x => x[2].GetProperty("content").GetString())
+                .ToArray();
+
+            storedEvents.Should().BeEquivalentTo(["foo stored"]);
+        }
+
         private static EventEntity CreateEvent(string id, string pubkey, long kind, DateTimeOffset createdAt, string content)
         {
             return new EventEntity
@@ -114,4 +179,3 @@ namespace Netstr.Tests
         }
     }
 }
-

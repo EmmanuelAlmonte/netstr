@@ -111,7 +111,10 @@ namespace Netstr.Messaging.MessageHandlers
             return this.limits.Value.Subscriptions;
         }
 
-        protected IQueryable<EventEntity> GetFilteredEvents(NetstrDbContext db, IEnumerable<SubscriptionFilter> filters, string? clientPublicKey)
+        protected IQueryable<EventEntity> GetFilteredEvents(
+            NetstrDbContext db,
+            IEnumerable<SubscriptionFilter> filters,
+            IReadOnlyCollection<string> authenticatedPublicKeys)
         {
             // if auth is disabled ignore any set ProtectedKinds
             var auth = this.auth.Value;
@@ -126,10 +129,18 @@ namespace Netstr.Messaging.MessageHandlers
                 .Where(x =>
                     !x.DeletedAt.HasValue &&
                     (!x.EventExpiration.HasValue || x.EventExpiration.Value > now))
-                .WhereAnyFilterMatchesForInitialQuery(filters, protectedKinds, clientPublicKey, limits.MaxInitialLimit, useFullTextSearch);
+                .WhereAnyFilterMatchesForInitialQuery(
+                    filters,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    limits.MaxInitialLimit,
+                    useFullTextSearch);
         }
 
-        protected IQueryable<EventEntity> GetFilteredEventsForCount(NetstrDbContext db, IEnumerable<SubscriptionFilter> filters, string? clientPublicKey)
+        protected IQueryable<EventEntity> GetFilteredEventsForCount(
+            NetstrDbContext db,
+            IEnumerable<SubscriptionFilter> filters,
+            IReadOnlyCollection<string> authenticatedPublicKeys)
         {
             // if auth is disabled ignore any set ProtectedKinds
             var auth = this.auth.Value;
@@ -143,7 +154,11 @@ namespace Netstr.Messaging.MessageHandlers
                 .Where(x =>
                     !x.DeletedAt.HasValue &&
                     (!x.EventExpiration.HasValue || x.EventExpiration.Value > now))
-                .WhereAnyFilterMatchesBase(filters, protectedKinds, clientPublicKey, useFullTextSearch)
+                .WhereAnyFilterMatchesBase(
+                    filters,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    useFullTextSearch)
                 .AsNoTracking();
         }
 

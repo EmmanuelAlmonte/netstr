@@ -40,7 +40,7 @@ namespace Netstr.Messaging.Events.Validators
         {
             return kind == 30000L || kind == 30002L || kind == 30003L || kind == 30004L
                 || kind == 30005L || kind == 30007L || kind == 30015L
-                || kind == 30030L || kind == 30063L || kind == 30267L;
+                || kind == 30030L || kind == 30063L || kind == 30267L || kind == (long)EventKind.ApplicationSpecificData;
         }
 
         private static bool HasDTag(Event e)
