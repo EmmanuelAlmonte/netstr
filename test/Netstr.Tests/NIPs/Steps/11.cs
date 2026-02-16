@@ -1,5 +1,7 @@
-﻿using FluentAssertions;
+using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using Netstr.Options;
 using System.Linq;
 using System.Text.Json;
 using TechTalk.SpecFlow;
@@ -13,14 +15,16 @@ namespace Netstr.Tests.NIPs.Steps
         public async Task WhenClientSendsAnHTTPRequest(string client, string method, Dictionary<string, string> headers)
         {
             var c = this.scenarioContext.Get<Clients>()[client];
+            var connectionOptions = this.factory.Services.GetRequiredService<IOptions<ConnectionOptions>>().Value;
             var message = new HttpRequestMessage
             {
-                Method = HttpMethod.Parse(method)
+                Method = HttpMethod.Parse(method),
+                RequestUri = new Uri(connectionOptions.WebSocketsPath, UriKind.Relative)
             };
 
             headers.ToList().ForEach(x => message.Headers.Add(x.Key, x.Value));
             message.Headers.TryAddWithoutValidation(HeaderNames.Origin, "test");
-            
+
             var response = await c.http.SendAsync(message);
 
             c.AddResponse(response);

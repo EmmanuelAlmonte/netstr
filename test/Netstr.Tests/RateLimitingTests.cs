@@ -76,7 +76,9 @@ namespace Netstr.Tests
 
             for (var i = 0; i < tooManyCount; i++)
             {
-                await ws.SendReqAsync($"toomanytest-{i}", [new SubscriptionFilterRequest { Ids = ["1"] }]);
+                await ws.SendReqAsync(
+                    $"toomanytest-{i}",
+                    [new SubscriptionFilterRequest { Ids = ["1111111111111111111111111111111111111111111111111111111111111111"] }]);
             }
 
             await Task.Delay(1000);

@@ -27,6 +27,11 @@ namespace Netstr.Messaging.Events.Validators
                 return InvalidSetIdentifier;
             }
 
+            if ((EventKind)e.Kind == EventKind.DmRelays && !HasRelayTag(e))
+            {
+                return InvalidListTags;
+            }
+
             // Validate specific list types
             return ValidateListType(e);
         }
@@ -46,6 +51,11 @@ namespace Netstr.Messaging.Events.Validators
         private static bool HasDTag(Event e)
         {
             return e.Tags.Any(t => t.Length > 0 && t[0] == "d");
+        }
+
+        private static bool HasRelayTag(Event e)
+        {
+            return e.Tags.Any(t => t.Length > 0 && t[0] == "relay");
         }
 
         private static string? ValidateListType(Event e)

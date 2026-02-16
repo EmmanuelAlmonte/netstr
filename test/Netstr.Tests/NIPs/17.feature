@@ -54,11 +54,21 @@ Scenario: Authenticated client tries to fetch kind 1059 events through other fil
 	| Ids                                                              | Authors                                                             | Kinds |
 	|                                                                  |                                                                     | 1059  |
 	| fb90964eba126b74bc71bf31e9e198dc4fbdd79e3de4d4f02dacddbe8a6ac71c |                                                                     |       |
-	|                                                                  | fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f611059 |       |
-	|                                                                  | fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f611059 | 1059  |
+	|                                                                  | fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614 |       |
+	|                                                                  | fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614 | 1059  |
 	Then Alice receives messages
 	| Type  | Id   | EventId                                                          | Success |
 	| AUTH  | *    |                                                                  |         |
 	| OK    | *    |                                                                  | true    |
 	| EVENT | abcd | ff526515d15975c3839f027cd301ba49afca237fa0d84f53765e9c320a269d90 |         |
 	| EOSE  | abcd |                                                                  |         |
+
+Scenario: Reject kind 10050 event without relay tags
+	kind 10050 must include at least one relay tag.
+	When Alice publishes a kind 10050 event without relay tags
+	Then Alice relay list publish should be rejected
+
+Scenario: Accept kind 10050 event with valid relay tags
+	kind 10050 accepts a relay list with at least one relay tag.
+	When Alice publishes a kind 10050 event with a valid relay tag
+	Then Alice relay list publish should be accepted

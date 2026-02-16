@@ -15,8 +15,29 @@ Scenario: Relay sends an information document
 	| Header | Value                  |
 	| Accept | application/nostr+json |
 	Then Alice receives a response with headers
-	| Header                      | Value |
-	| Access-Control-Allow-Origin | *     |
+	| Header                       | Value        |
+	| Access-Control-Allow-Origin  | *            |
+	| Access-Control-Allow-Headers | *            |
+	| Access-Control-Allow-Methods | GET, OPTIONS |
+	And Alice receives a response with json content
+	| Field          | Type   |
+	| name           | string |
+	| description    | string |
+	| contact        | string |
+	| pubkey         | string |
+	| software       | string |
+	| version        | string |
+	| supported_nips | int[]  |
+
+Scenario: Relay accepts multi-value metadata Accept header
+	When Alice sends a GET HTTP request to its websockets endpoint
+	| Header | Value                                     |
+	| Accept | text/html, application/nostr+json; q=0.9 |
+	Then Alice receives a response with headers
+	| Header                       | Value        |
+	| Access-Control-Allow-Origin  | *            |
+	| Access-Control-Allow-Headers | *            |
+	| Access-Control-Allow-Methods | GET, OPTIONS |
 	And Alice receives a response with json content
 	| Field          | Type   |
 	| name           | string |

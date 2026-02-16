@@ -5,6 +5,7 @@ using Netstr.Data;
 using Netstr.Extensions;
 using Netstr.Messaging.Models;
 using Netstr.Options;
+using System.Text.RegularExpressions;
 
 namespace Netstr.Messaging.Events.Handlers
 {
@@ -14,6 +15,7 @@ namespace Netstr.Messaging.Events.Handlers
     public class DeleteEventHandler : EventHandlerBase
     {
         private static readonly long[] CannotDeleteKinds = [ (long)EventKind.Delete, (long)EventKind.RequestToVanish ];
+        private static readonly Regex Hex64Pattern = new("^[0-9a-fA-F]{64}$", RegexOptions.Compiled);
 
         private record ReplaceableEventRef(int Kind, string PublicKey, string? Deduplication) { }
 
@@ -35,6 +37,19 @@ namespace Netstr.Messaging.Events.Handlers
         {
             using var db = this.db.CreateDbContext();
             var now = DateTimeOffset.UtcNow;
+
+            if (!HasValidDeleteTargetReferences(e.Tags, out var isMalformedReference))
+            {
+                this.logger.LogWarning(
+                    "Delete event {EventId} has malformed {Malformed} target references",
+                    e.Id,
+                    isMalformedReference);
+
+                sender.SendNotOk(
+                    e.Id,
+                    isMalformedReference ? Messages.InvalidCannotDeleteMalformedReference : Messages.InvalidCannotDelete);
+                return;
+            }
 
             // delete events (= mark as deleted)
             var regularEventIds = GetRegularEventIds(e.Tags);
@@ -104,10 +119,51 @@ namespace Netstr.Messaging.Events.Handlers
         private IEnumerable<string> GetRegularEventIds(string[][] tags)
         {
             return tags
-                .Where(x => x.Length >= 2 && x[0] == EventTag.Event)
+                .Where(x => x.Length >= 2 && x[0] == EventTag.Event && IsValidHex64(x[1]))
                 .Select(x => x[1])
-                .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Distinct();
+        }
+
+        private static bool HasValidDeleteTargetReferences(string[][] tags, out bool hasMalformedReference)
+        {
+            var hasTargetReference = false;
+            hasMalformedReference = false;
+
+            foreach (var tag in tags)
+            {
+                if (tag.Length == 0)
+                {
+                    continue;
+                }
+
+                if (tag[0] == EventTag.Event)
+                {
+                    hasTargetReference = true;
+
+                    if (tag.Length < 2 || !IsValidHex64(tag[1]))
+                    {
+                        hasMalformedReference = true;
+                        return false;
+                    }
+                }
+                else if (tag[0] == EventTag.ReplaceableEvent)
+                {
+                    hasTargetReference = true;
+
+                    if (tag.Length < 2 || ParseReplaceableTag(tag[1]) == null)
+                    {
+                        hasMalformedReference = true;
+                        return false;
+                    }
+                }
+            }
+
+            return hasTargetReference;
+        }
+
+        private static bool IsValidHex64(string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) && Hex64Pattern.IsMatch(value);
         }
 
         private IQueryable<string> GetReplaceableQuery(NetstrDbContext db, Event e)
@@ -131,9 +187,9 @@ namespace Netstr.Messaging.Events.Handlers
                 .Select(x => x.EventId);
         }
 
-        private ReplaceableEventRef? ParseReplaceableTag(string tag)
+        private static ReplaceableEventRef? ParseReplaceableTag(string tag)
         {
-            var parsed = tag.Split(":", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var parsed = tag.Split(":", 3, StringSplitOptions.None);
 
             if (parsed.Length < 2)
             {
@@ -145,7 +201,14 @@ namespace Netstr.Messaging.Events.Handlers
                 return null;
             }
 
-            return new(kind, parsed[1], parsed.Length > 2 ? parsed[2] : null);
+            if (!IsValidHex64(parsed[1]))
+            {
+                return null;
+            }
+
+            var deduplication = parsed.Length > 2 && !string.IsNullOrEmpty(parsed[2]) ? parsed[2] : null;
+
+            return new(kind, parsed[1], deduplication);
         }
     }
 }

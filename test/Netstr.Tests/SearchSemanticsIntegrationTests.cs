@@ -163,6 +163,54 @@ namespace Netstr.Tests
             storedEvents.Should().BeEquivalentTo(["foo stored"]);
         }
 
+        [Fact]
+        public async Task Search_WithMultipleSearchFilters_IsOrderedDeterministically()
+        {
+            var factory = new WebApplicationFactory();
+            factory.CreateDefaultClient();
+
+            using (var db = factory.Services.GetRequiredService<IDbContextFactory<NetstrDbContext>>().CreateDbContext())
+            {
+                var baseTime = DateTimeOffset.FromUnixTimeSeconds(1_700_000_000);
+
+                db.Events.AddRange(
+                    CreateEvent(
+                        "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+                        "pk",
+                        1,
+                        baseTime.AddMinutes(1),
+                        "alpha beta note"),
+                    CreateEvent(
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                        "pk",
+                        1,
+                        baseTime.AddMinutes(-1),
+                        "alpha beta note"));
+                db.SaveChanges();
+            }
+
+            using WebSocket ws = await factory.ConnectWebSocketAsync();
+
+            var replies = new List<JsonElement[]>();
+            _ = ws.ReceiveAsync(replies.Add);
+
+            await ws.SendReqAsync("multi", [
+                new SubscriptionFilterRequest { Kinds = [1], Search = "alpha" },
+                new SubscriptionFilterRequest { Kinds = [1], Search = "beta" }
+            ]);
+
+            await Task.Delay(1000);
+
+            var eventIds = replies
+                .Where(x => x.Length >= 3 && x[0].GetString() == MessageType.Event && x[1].GetString() == "multi")
+                .Select(x => x[2].GetProperty("id").GetString())
+                .ToArray();
+
+            eventIds.Should().Equal(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+        }
+
         private static EventEntity CreateEvent(string id, string pubkey, long kind, DateTimeOffset createdAt, string content)
         {
             return new EventEntity

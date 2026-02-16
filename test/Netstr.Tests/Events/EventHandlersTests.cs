@@ -76,6 +76,11 @@ namespace Netstr.Tests.Events
                 new EphemeralEventHandler(Mock.Of<ILogger<EphemeralEventHandler>>(), auth, this.clients),
                 new ReplaceableEventHandler(Mock.Of<ILogger<ReplaceableEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object),
                 new AddressableEventHandler(Mock.Of<ILogger<ReplaceableEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object),
+                new DeleteEventHandler(
+                    Mock.Of<ILogger<DeleteEventHandler>>(),
+                    auth,
+                    this.clients,
+                    this.dbFactoryMock.Object),
                 new RegularEventHandler(Mock.Of<ILogger<RegularEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object)
             };
             this.dispatcher = new EventDispatcher(Mock.Of<ILogger<EventDispatcher>>(), handlers);
@@ -325,6 +330,209 @@ namespace Netstr.Tests.Events
             db.Events.Count(x => x.EventId == e1.Id).Should().Be(0);
             db.Events.Single(x => x.EventId == e2.Id).EventContent.Should().Be(e2.Content);
             db.Events.Single(x => x.EventId == e3.Id).EventContent.Should().Be(e3.Content);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind0_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.UserMetadata, []);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind10002_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.RelayList, []);
+        }
+
+        [Fact]
+        public async Task AddressableEventHandler_Kind30078_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.ApplicationSpecificData, [["d", "settings"]]);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsDeletionWithoutReferences()
+        {
+            var existingEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "Keep me",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = 1,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDelete });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events
+                .Single(x => x.EventId == existingEvent.Id)
+                .DeletedAt
+                .Should()
+                .BeNull();
+
+            db.Events.Count(x => x.EventId == deleteEvent.Id).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerAcceptsDeletionWithRegularEventReference()
+        {
+            var existingEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "Delete me",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = 1,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.Event, existingEvent.Id ]],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, true, "" });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events
+                .Single(x => x.EventId == existingEvent.Id)
+                .DeletedAt
+                .Should()
+                .NotBeNull();
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsDeletionWithMalformedRegularEventReference()
+        {
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.Event, "not-a-hex-id" ]],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMalformedReference });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events
+                .Count(x => x.EventId == deleteEvent.Id)
+                .Should()
+                .Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsDeletionWithMalformedReplaceableEventReference()
+        {
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.ReplaceableEvent, "nonnumeric:not-hex" ]],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMalformedReference });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+        }
+
+        private async Task AssertSameTimestampTieBreakForUniqueEntity(long kind, string[][] tags)
+        {
+            var ts = DateTimeOffset.FromUnixTimeSeconds(1722000000);
+
+            var firstHigher = new Event
+            {
+                Id = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = ts,
+                Kind = kind,
+                Tags = tags,
+                Content = "higher",
+                Signature = "sig"
+            };
+
+            var secondLower = new Event
+            {
+                Id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                PublicKey = firstHigher.PublicKey,
+                CreatedAt = ts,
+                Kind = kind,
+                Tags = tags,
+                Content = "lower",
+                Signature = "sig"
+            };
+
+            var thirdMiddle = new Event
+            {
+                Id = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                PublicKey = firstHigher.PublicKey,
+                CreatedAt = ts,
+                Kind = kind,
+                Tags = tags,
+                Content = "middle",
+                Signature = "sig"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, firstHigher);
+            await this.dispatcher.DispatchEventAsync(this.adapter, secondLower);
+            await this.dispatcher.DispatchEventAsync(this.adapter, thirdMiddle);
+
+            var firstOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, firstHigher.Id, true, "" });
+            var secondOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, secondLower.Id, true, "" });
+            var thirdRejected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, thirdMiddle.Id, false, Messages.DuplicateReplaceableEvent });
+
+            this.ws.Verify(x => x.SendAsync(firstOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(secondOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(thirdRejected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == firstHigher.Id).Should().Be(0);
+            db.Events.Count(x => x.EventId == thirdMiddle.Id).Should().Be(0);
+            db.Events.Single(x => x.EventId == secondLower.Id).EventContent.Should().Be(secondLower.Content);
         }
     }
 }

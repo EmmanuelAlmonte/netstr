@@ -16,7 +16,7 @@ namespace Netstr.Tests.Subscriptions
 
             using WebSocket ws = await factory.ConnectWebSocketAsync();
 
-            var req = @"[ ""REQ"", ""id"", { ""&p"": [""abc""] } ]";
+            var req = @"[ ""REQ"", ""id"", { ""&p"": [""5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627""] } ]";
             await ws.SendAsync(Encoding.UTF8.GetBytes(req), WebSocketMessageType.Text, true, CancellationToken.None);
 
             var result = await ws.ReceiveOnceAsync();
@@ -33,7 +33,7 @@ namespace Netstr.Tests.Subscriptions
 
             using WebSocket ws = await factory.ConnectWebSocketAsync();
 
-            var req = @"[ ""REQ"", ""id"", { ""&p"": [""abc""] } ]";
+            var req = @"[ ""REQ"", ""id"", { ""&p"": [""5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627""] } ]";
             await ws.SendAsync(Encoding.UTF8.GetBytes(req), WebSocketMessageType.Text, true, CancellationToken.None);
 
             var result = await ws.ReceiveOnceAsync();
@@ -41,4 +41,3 @@ namespace Netstr.Tests.Subscriptions
         }
     }
 }
-

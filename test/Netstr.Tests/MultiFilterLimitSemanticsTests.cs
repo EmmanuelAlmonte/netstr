@@ -74,7 +74,51 @@ namespace Netstr.Tests
             createdAts.Should().ContainInOrder(1_700_000_100, 1_700_000_095, 1_700_000_090, 1_700_000_085);
         }
 
-        private static EventEntity CreateEvent(string id, string pubkey, long kind, DateTimeOffset createdAt)
+        [Fact]
+        public async Task Req_AppliesLimitAfterSearchRankingAcrossFilters()
+        {
+            var factory = new WebApplicationFactory
+            {
+                SubscriptionLimits = new SubscriptionLimits
+                {
+                    MaxInitialLimit = 2
+                }
+            };
+
+            factory.CreateDefaultClient();
+
+            using (var db = factory.Services.GetRequiredService<IDbContextFactory<NetstrDbContext>>().CreateDbContext())
+            {
+                db.Events.AddRange(
+                    CreateEvent("cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "a", 1, DateTimeOffset.UtcNow.AddMinutes(5), "alpha beta note"),
+                    CreateEvent("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "a", 1, DateTimeOffset.UtcNow.AddMinutes(2), "alpha beta note"),
+                    CreateEvent("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "a", 1, DateTimeOffset.UtcNow.AddMinutes(3), "alpha beta note"));
+                db.SaveChanges();
+            }
+
+            using WebSocket ws = await factory.ConnectWebSocketAsync();
+
+            var replies = new List<JsonElement[]>();
+            _ = ws.ReceiveAsync(replies.Add);
+
+            await ws.SendReqAsync("search_sub", [
+                new SubscriptionFilterRequest { Kinds = [1], Search = "alpha", Limit = 1 },
+                new SubscriptionFilterRequest { Kinds = [1], Search = "beta", Limit = 1 }
+            ]);
+
+            await Task.Delay(1000);
+
+            var events = replies
+                .Where(x => x.Length >= 3 && x[0].GetString() == MessageType.Event && x[1].GetString() == "search_sub")
+                .Select(x => x[2])
+                .ToArray();
+
+            events.Select(x => x.GetProperty("id").GetString()).Should().Equal(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        }
+
+        private static EventEntity CreateEvent(string id, string pubkey, long kind, DateTimeOffset createdAt, string? content = null)
         {
             return new EventEntity
             {
@@ -82,7 +126,7 @@ namespace Netstr.Tests
                 EventPublicKey = pubkey,
                 EventKind = kind,
                 EventCreatedAt = createdAt,
-                EventContent = $"content-{id}",
+                EventContent = content ?? $"content-{id}",
                 EventSignature = "sig",
                 FirstSeen = createdAt,
                 Tags = []
@@ -90,4 +134,3 @@ namespace Netstr.Tests
         }
     }
 }
-

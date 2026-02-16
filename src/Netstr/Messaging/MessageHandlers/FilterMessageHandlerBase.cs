@@ -11,6 +11,7 @@ using Netstr.Options.Limits;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 
 namespace Netstr.Messaging.MessageHandlers
@@ -22,6 +23,7 @@ namespace Netstr.Messaging.MessageHandlers
     {
         const char TagModifierOr = '#';
         const char TagModifierAnd = '&';
+        private static readonly Regex Hex64Pattern = new("^[0-9a-f]{64}$", RegexOptions.Compiled);
 
         protected readonly IEnumerable<ISubscriptionRequestValidator> validators;
         protected readonly IOptions<LimitsOptions> limits;
@@ -170,6 +172,17 @@ namespace Netstr.Messaging.MessageHandlers
         private SubscriptionFilter GetSubscriptionFilter(string subscriptionId, JsonDocument json)
         {
             var r = DeserializeFilter(subscriptionId, json);
+
+            if (!IsValidHexFilterValueList(r.Ids))
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
+
+            if (!IsValidHexFilterValueList(r.Authors))
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
+
             var allowAndTagFilters = this.filters.Value.AllowAndTagFilters;
 
             // only single letter tags with AND and OR modifiers are allowed as tag filters
@@ -189,6 +202,12 @@ namespace Netstr.Messaging.MessageHandlers
             var orTags = getTags(r.AdditionalData, TagModifierOr);
             var andTags = allowAndTagFilters ? getTags(r.AdditionalData, TagModifierAnd) : new();
 
+            if (!IsValidHexFilterTagValues(orTags, "e") || !IsValidHexFilterTagValues(orTags, "p")
+                || !IsValidHexFilterTagValues(andTags, "e") || !IsValidHexFilterTagValues(andTags, "p"))
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
+
             return new SubscriptionFilter(
                 r.Ids.EmptyIfNull(),
                 r.Authors.EmptyIfNull(),
@@ -199,6 +218,29 @@ namespace Netstr.Messaging.MessageHandlers
                 r.Search,
                 orTags,
                 andTags);
+        }
+
+        private static bool IsValidHexFilterValueList(string[]? values)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return true;
+            }
+
+            foreach (var value in values)
+            {
+                if (string.IsNullOrWhiteSpace(value) || !Hex64Pattern.IsMatch(value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsValidHexFilterTagValues(Dictionary<string, string[]> tags, string tag)
+        {
+            return !tags.TryGetValue(tag, out var values) || IsValidHexFilterValueList(values);
         }
 
         private SubscriptionFilterRequest DeserializeFilter(string subscriptionId, JsonDocument json)

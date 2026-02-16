@@ -85,5 +85,43 @@ namespace Netstr.Tests.Events
             var result = validator.Validate(withDTag, null);
             Assert.Null(result);
         }
+
+        [Fact]
+        public void ValidateDmRelayList_ShouldReject_WithoutRelayTags()
+        {
+            var validator = new ListEventValidator();
+            var eventWithoutRelayTags = new Event
+            {
+                Kind = (long)EventKind.DmRelays,
+                Tags = Array.Empty<string[]>(),
+                Content = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Id = "test",
+                PublicKey = "test",
+                Signature = "test"
+            };
+
+            var result = validator.Validate(eventWithoutRelayTags, null);
+            Assert.Equal("invalid: list event missing required tags", result);
+        }
+
+        [Fact]
+        public void ValidateDmRelayList_ShouldAllow_WithValidRelayTags()
+        {
+            var validator = new ListEventValidator();
+            var eventWithRelayTags = new Event
+            {
+                Kind = (long)EventKind.DmRelays,
+                Tags = new[] { new[] { "relay", "wss://relay.example.com" } },
+                Content = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Id = "test",
+                PublicKey = "test",
+                Signature = "test"
+            };
+
+            var result = validator.Validate(eventWithRelayTags, null);
+            Assert.Null(result);
+        }
     }
 }

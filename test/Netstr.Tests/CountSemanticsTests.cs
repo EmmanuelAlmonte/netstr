@@ -9,6 +9,13 @@ namespace Netstr.Tests
 {
     public class CountSemanticsTests
     {
+        private const string EventId1 = "e111111111111111111111111111111111111111111111111111111111111111";
+        private const string EventId2 = "e222222222222222222222222222222222222222222222222222222222222222";
+        private const string EventId3 = "e333333333333333333333333333333333333333333333333333333333333333";
+        private const string AuthorA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        private const string AuthorB = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        private const string AuthorC = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+
         [Fact]
         public async Task Count_Ignores_FilterLimit_And_MaxInitialLimit()
         {
@@ -27,9 +34,9 @@ namespace Netstr.Tests
             {
                 var now = DateTimeOffset.UtcNow;
                 db.Events.AddRange(
-                    CreateEvent("e1", "a", 1, now.AddMinutes(-3)),
-                    CreateEvent("e2", "b", 1, now.AddMinutes(-2)),
-                    CreateEvent("e3", "c", 1, now.AddMinutes(-1)));
+                    CreateEvent(EventId1, AuthorA, 1, now.AddMinutes(-3)),
+                    CreateEvent(EventId2, AuthorB, 1, now.AddMinutes(-2)),
+                    CreateEvent(EventId3, AuthorC, 1, now.AddMinutes(-1)));
                 db.SaveChanges();
             }
 
@@ -54,15 +61,15 @@ namespace Netstr.Tests
             {
                 var now = DateTimeOffset.UtcNow;
                 db.Events.AddRange(
-                    CreateEvent("e1", "a", 1, now.AddMinutes(-2)), // matches both filters below
-                    CreateEvent("e2", "a", 2, now.AddMinutes(-1))); // matches author filter only
+                    CreateEvent(EventId1, AuthorA, 1, now.AddMinutes(-2)), // matches both filters below
+                    CreateEvent(EventId2, AuthorA, 2, now.AddMinutes(-1))); // matches author filter only
                 db.SaveChanges();
             }
 
             using WebSocket ws = await factory.ConnectWebSocketAsync();
 
             await ws.SendCountAsync("c2", [
-                new SubscriptionFilterRequest { Authors = ["a"] },
+                new SubscriptionFilterRequest { Authors = [AuthorA] },
                 new SubscriptionFilterRequest { Kinds = [1] }
             ]);
 
@@ -89,4 +96,3 @@ namespace Netstr.Tests
         }
     }
 }
-

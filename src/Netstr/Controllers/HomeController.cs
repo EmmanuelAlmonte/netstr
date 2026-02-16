@@ -19,15 +19,8 @@ namespace Netstr.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            if (Request.Headers["Accept"] == "application/nostr+json")
-            {
-                return Ok(this.service.GetDocument());
-            }
-            else
-            {
-                var vm = new HomeViewModel(this.service.GetDocument(), $"wss://{Request.Host}", this.environment.EnvironmentName);
-                return View(vm);
-            }
+            var vm = new HomeViewModel(this.service.GetDocument(), $"wss://{Request.Host}", this.environment.EnvironmentName);
+            return View(vm);
         }
     }
 }
