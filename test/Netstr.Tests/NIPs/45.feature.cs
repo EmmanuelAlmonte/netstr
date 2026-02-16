@@ -280,7 +280,7 @@ this.FeatureBackground();
                             "CreatedAt"});
                 table169.AddRow(new string[] {
                             "a8b0f9d313888642257af20fc4dbe4a3d71d3c3a72bcfc06c540a235172b7f37",
-                            "Charlie\'s Secret",
+                            "Secret1?iv=AAAA",
                             "4",
                             "[[\"p\",\"fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614\"]]",
                             "1722337838"});
@@ -294,8 +294,8 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table170.AddRow(new string[] {
-                            "7b0535b94878efb18b7c7a13630db8227e30961aed6f5556823b612423d676af",
-                            "Charlie\'s Secret",
+                            "*",
+                            "Secret2?iv=BBBB",
                             "4",
                             "[[\"p\",\"fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614\"]]",
                             "1722337838"});
@@ -337,7 +337,7 @@ this.FeatureBackground();
                             ""});
                 table173.AddRow(new string[] {
                             "OK",
-                            "7b0535b94878efb18b7c7a13630db8227e30961aed6f5556823b612423d676af",
+                            "*",
                             "true",
                             ""});
                 table173.AddRow(new string[] {

@@ -1,4 +1,5 @@
-﻿﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Netstr.Extensions;
 using Netstr.Json;
 using System.Linq;
 using System.Numerics;
@@ -81,12 +82,14 @@ namespace Netstr.Messaging.Models
 
         public IEnumerable<string> GetNormalizedRelayValues()
         {
-            return GetTagValues(EventTag.Relay).Select(x => x.Contains("://") ? x.Split("://")[1].TrimEnd('/') : x);
+            return GetTagValues(EventTag.Relay)
+                .Select(x => HttpExtensions.NormalizeRelayUrl(x));
         }
 
         public IEnumerable<string> GetAuthRelayValues()
         {
-            return GetTagValues(EventTag.AuthRelay).Select(x => x.Contains("://") ? x.Split("://")[1].TrimEnd('/') : x);
+            return GetTagValues(EventTag.AuthRelay)
+                .Select(x => HttpExtensions.NormalizeRelayUrl(x));
         }
 
         public DateTimeOffset? GetExpirationValue()

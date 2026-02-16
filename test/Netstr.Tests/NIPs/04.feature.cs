@@ -188,14 +188,14 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table70.AddRow(new string[] {
-                            "1bb0124244442abc3bf02234bf601e2a6fc6c262a412936182001cd21502d695",
-                            "Secret",
+                            "*",
+                            "Secret?iv=AAAA",
                             "4",
                             "[[\"p\",\"5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75\"]]",
                             "1722337838"});
                 table70.AddRow(new string[] {
-                            "a8b0f9d313888642257af20fc4dbe4a3d71d3c3a72bcfc06c540a235172b7f37",
-                            "Charlie\'s Secret",
+                            "*",
+                            "Charlie?iv=BBBB",
                             "4",
                             "[[\"p\",\"fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614\"]]",
                             "1722337838"});
@@ -216,14 +216,14 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table72.AddRow(new string[] {
-                            "3bf5ac066f40e02f2f4b4b8386e11fc7f9a482cc4ba9aee3758efb544471767b",
-                            "Secret 2",
+                            "*",
+                            "Secret2?iv=CCCC",
                             "4",
                             "[[\"p\",\"5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75\"]]",
                             "1722337838"});
                 table72.AddRow(new string[] {
-                            "97ded8973cfc285174a5736c44641d6e904d44b2763bef1b14c7f8f6075e581c",
-                            "Charlie\'s Secret 2",
+                            "*",
+                            "Charlie2?iv=DDDD",
                             "4",
                             "[[\"p\",\"fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614\"]]",
                             "1722337838"});
@@ -248,7 +248,7 @@ this.FeatureBackground();
                 table73.AddRow(new string[] {
                             "EVENT",
                             "abcd",
-                            "1bb0124244442abc3bf02234bf601e2a6fc6c262a412936182001cd21502d695",
+                            "*",
                             ""});
                 table73.AddRow(new string[] {
                             "EOSE",
@@ -258,7 +258,7 @@ this.FeatureBackground();
                 table73.AddRow(new string[] {
                             "EVENT",
                             "abcd",
-                            "3bf5ac066f40e02f2f4b4b8386e11fc7f9a482cc4ba9aee3758efb544471767b",
+                            "*",
                             ""});
 #line 39
  testRunner.Then("Alice receives messages", ((string)(null)), table73, "Then ");
@@ -299,14 +299,14 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table74.AddRow(new string[] {
-                            "1bb0124244442abc3bf02234bf601e2a6fc6c262a412936182001cd21502d695",
-                            "Secret",
+                            "*",
+                            "Secret3?iv=EEEE",
                             "4",
                             "[[\"p\",\"5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75\"]]",
                             "1722337838"});
                 table74.AddRow(new string[] {
-                            "a8b0f9d313888642257af20fc4dbe4a3d71d3c3a72bcfc06c540a235172b7f37",
-                            "Charlie\'s Secret",
+                            "*",
+                            "Charlie3?iv=FFFF",
                             "4",
                             "[[\"p\",\"fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614\"]]",
                             "1722337838"});
@@ -322,16 +322,12 @@ this.FeatureBackground();
                             "",
                             "4"});
                 table75.AddRow(new string[] {
-                            "a8b0f9d313888642257af20fc4dbe4a3d71d3c3a72bcfc06c540a235172b7f37",
-                            "",
-                            ""});
-                table75.AddRow(new string[] {
                             "",
                             "fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614",
-                            ""});
+                            "4"});
                 table75.AddRow(new string[] {
                             "",
-                            "fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614",
+                            "5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627",
                             "4"});
 #line 54
  testRunner.When("Alice sends a subscription request abcd", ((string)(null)), table75, "When ");
@@ -354,14 +350,14 @@ this.FeatureBackground();
                 table76.AddRow(new string[] {
                             "EVENT",
                             "abcd",
-                            "1bb0124244442abc3bf02234bf601e2a6fc6c262a412936182001cd21502d695",
+                            "*",
                             ""});
                 table76.AddRow(new string[] {
                             "EOSE",
                             "abcd",
                             "",
                             ""});
-#line 60
+#line 59
  testRunner.Then("Alice receives messages", ((string)(null)), table76, "Then ");
 #line hidden
             }

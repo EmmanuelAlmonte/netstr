@@ -27,7 +27,7 @@ namespace Netstr.Messaging.Events.Validators
             ArgumentNullException.ThrowIfNull(@event, nameof(@event));
             ArgumentNullException.ThrowIfNull(context, nameof(context));
 
-            if (!@event.Kind.Equals(EventKind.RelayList))
+            if (@event.Kind != (long)EventKind.RelayList)
             {
                 return null; // Not a relay list event, skip validation
             }

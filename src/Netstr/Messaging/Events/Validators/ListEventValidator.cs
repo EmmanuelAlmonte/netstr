@@ -38,7 +38,9 @@ namespace Netstr.Messaging.Events.Validators
 
         private static bool IsSetEvent(long kind)
         {
-            return kind >= 30000L && kind <= 30999L;
+            return kind == 30000L || kind == 30002L || kind == 30003L || kind == 30004L
+                || kind == 30005L || kind == 30007L || kind == 30015L
+                || kind == 30030L || kind == 30063L || kind == 30267L;
         }
 
         private static bool HasDTag(Event e)

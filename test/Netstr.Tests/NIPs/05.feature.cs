@@ -137,7 +137,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table79.AddRow(new string[] {
-                            "1111111111111111111111111111111111111111111111111111111111111111",
+                            "*",
                             "{\"name\":\"alice\",\"nip05\":\"alice@example.com\"}",
                             "0",
                             "",
@@ -151,7 +151,7 @@ this.FeatureBackground();
                             "Success"});
                 table80.AddRow(new string[] {
                             "OK",
-                            "1111111111111111111111111111111111111111111111111111111111111111",
+                            "*",
                             "true"});
 #line 20
  testRunner.Then("Alice receives a message", ((string)(null)), table80, "Then ");
@@ -188,7 +188,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table81.AddRow(new string[] {
-                            "2222222222222222222222222222222222222222222222222222222222222222",
+                            "*",
                             "{\"name\":\"alice\",\"about\":\"test\"}",
                             "0",
                             "",
@@ -202,7 +202,7 @@ this.FeatureBackground();
                             "Success"});
                 table82.AddRow(new string[] {
                             "OK",
-                            "2222222222222222222222222222222222222222222222222222222222222222",
+                            "*",
                             "true"});
 #line 29
  testRunner.Then("Alice receives a message", ((string)(null)), table82, "Then ");
@@ -239,7 +239,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table83.AddRow(new string[] {
-                            "3333333333333333333333333333333333333333333333333333333333333333",
+                            "*",
                             "{\"name\":\"alice\",\"nip05\":\"\"}",
                             "0",
                             "",
@@ -253,7 +253,7 @@ this.FeatureBackground();
                             "Success"});
                 table84.AddRow(new string[] {
                             "OK",
-                            "3333333333333333333333333333333333333333333333333333333333333333",
+                            "*",
                             "true"});
 #line 38
  testRunner.Then("Alice receives a message", ((string)(null)), table84, "Then ");
@@ -290,7 +290,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table85.AddRow(new string[] {
-                            "4444444444444444444444444444444444444444444444444444444444444444",
+                            "*",
                             "{\"name\":\"example.com\",\"nip05\":\"_@example.com\"}",
                             "0",
                             "",
@@ -304,7 +304,7 @@ this.FeatureBackground();
                             "Success"});
                 table86.AddRow(new string[] {
                             "OK",
-                            "4444444444444444444444444444444444444444444444444444444444444444",
+                            "*",
                             "true"});
 #line 47
  testRunner.Then("Alice receives a message", ((string)(null)), table86, "Then ");
@@ -341,7 +341,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table87.AddRow(new string[] {
-                            "5555555555555555555555555555555555555555555555555555555555555555",
+                            "*",
                             "{\"name\":\"alice\",\"nip05\":\"invalid-no-at-sign\"}",
                             "0",
                             "",
@@ -355,7 +355,7 @@ this.FeatureBackground();
                             "Success"});
                 table88.AddRow(new string[] {
                             "OK",
-                            "5555555555555555555555555555555555555555555555555555555555555555",
+                            "*",
                             "true"});
 #line 56
  testRunner.Then("Alice receives a message", ((string)(null)), table88, "Then ");
@@ -392,7 +392,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table89.AddRow(new string[] {
-                            "6666666666666666666666666666666666666666666666666666666666666666",
+                            "*",
                             "{\"name\":\"alice\",\"nip05\":\"alice@example.com\",\"picture\":\"https://example.com/pic.jp" +
                                 "g\"}",
                             "0",
@@ -417,7 +417,7 @@ this.FeatureBackground();
                 table91.AddRow(new string[] {
                             "EVENT",
                             "metadata_sub",
-                            "6666666666666666666666666666666666666666666666666666666666666666"});
+                            "*"});
                 table91.AddRow(new string[] {
                             "EOSE",
                             "metadata_sub",
@@ -457,13 +457,13 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table92.AddRow(new string[] {
-                            "7777777777777777777777777777777777777777777777777777777777777777",
+                            "*",
                             "{\"name\":\"alice_old\"}",
                             "0",
                             "",
                             "1722337838"});
                 table92.AddRow(new string[] {
-                            "8888888888888888888888888888888888888888888888888888888888888888",
+                            "*",
                             "{\"name\":\"alice_new\"}",
                             "0",
                             "",
@@ -487,7 +487,7 @@ this.FeatureBackground();
                 table94.AddRow(new string[] {
                             "EVENT",
                             "metadata_sub",
-                            "8888888888888888888888888888888888888888888888888888888888888888"});
+                            "*"});
                 table94.AddRow(new string[] {
                             "EOSE",
                             "metadata_sub",

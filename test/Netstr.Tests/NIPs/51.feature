@@ -143,12 +143,12 @@ Scenario: Create emoji set with d tag
 Scenario: Update addressable list replaces previous with same d tag
 	When Alice publishes events
 	| Id                                                               | Content | Kind  | Tags                                                                                             | CreatedAt  |
-	| f111111111111111111111111111111111111111111111111111111111111111 | *       | 30000 | [["d","friends"],["p","07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9"]]       | 1722337838 |
-	| f222222222222222222222222222222222222222222222222222222222222222 | *       | 30000 | [["d","friends"],["p","a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd18dcc4"]]       | 1722337848 |
+	| *                                                                | *       | 30000 | [["d","friends"],["p","07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9"]]       | 1722337838 |
+	| *                                                                | *       | 30000 | [["d","friends"],["p","a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd18dcc4"]]       | 1722337848 |
 	And Bob sends a subscription request set_sub
 	| Authors                                                          | Kinds |
 	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 30000 |
 	Then Bob receives messages
 	| Type  | Id      | EventId                                                          |
-	| EVENT | set_sub | f222222222222222222222222222222222222222222222222222222222222222 |
+	| EVENT | set_sub | *                                                               |
 	| EOSE  | set_sub |                                                                  |

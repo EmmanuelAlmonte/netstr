@@ -16,69 +16,69 @@ Scenario: Accept metadata event with NIP-05 identifier
 	NIP-05 validation runs asynchronously and never rejects events.
 	When Alice publishes an event
 	| Id                                                               | Content                                                                  | Kind | Tags | CreatedAt  |
-	| 1111111111111111111111111111111111111111111111111111111111111111 | {"name":"alice","nip05":"alice@example.com"}                            | 0    |      | 1722337838 |
+	| *                                                               | {"name":"alice","nip05":"alice@example.com"}                            | 0    |      | 1722337838 |
 	Then Alice receives a message
 	| Type | Id                                                               | Success |
-	| OK   | 1111111111111111111111111111111111111111111111111111111111111111 | true    |
+	| OK   | *                                                               | true    |
 
 Scenario: Accept metadata event without NIP-05 identifier
 	Events without NIP-05 field are valid.
 	When Alice publishes an event
 	| Id                                                               | Content                         | Kind | Tags | CreatedAt  |
-	| 2222222222222222222222222222222222222222222222222222222222222222 | {"name":"alice","about":"test"} | 0    |      | 1722337838 |
+	| *                                                               | {"name":"alice","about":"test"} | 0    |      | 1722337838 |
 	Then Alice receives a message
 	| Type | Id                                                               | Success |
-	| OK   | 2222222222222222222222222222222222222222222222222222222222222222 | true    |
+	| OK   | *                                                               | true    |
 
 Scenario: Accept metadata event with empty NIP-05 identifier
 	Empty NIP-05 field should be accepted.
 	When Alice publishes an event
 	| Id                                                               | Content                               | Kind | Tags | CreatedAt  |
-	| 3333333333333333333333333333333333333333333333333333333333333333 | {"name":"alice","nip05":""}          | 0    |      | 1722337838 |
+	| *                                                               | {"name":"alice","nip05":""}          | 0    |      | 1722337838 |
 	Then Alice receives a message
 	| Type | Id                                                               | Success |
-	| OK   | 3333333333333333333333333333333333333333333333333333333333333333 | true    |
+	| OK   | *                                                               | true    |
 
 Scenario: Accept metadata event with root identifier
 	Root identifier uses underscore: _@domain.com
 	When Alice publishes an event
 	| Id                                                               | Content                                                                  | Kind | Tags | CreatedAt  |
-	| 4444444444444444444444444444444444444444444444444444444444444444 | {"name":"example.com","nip05":"_@example.com"}                          | 0    |      | 1722337838 |
+	| *                                                               | {"name":"example.com","nip05":"_@example.com"}                          | 0    |      | 1722337838 |
 	Then Alice receives a message
 	| Type | Id                                                               | Success |
-	| OK   | 4444444444444444444444444444444444444444444444444444444444444444 | true    |
+	| OK   | *                                                               | true    |
 
 Scenario: Accept metadata event with invalid NIP-05 format
 	Invalid NIP-05 format is still accepted, verification just fails silently.
 	When Alice publishes an event
 	| Id                                                               | Content                                                                  | Kind | Tags | CreatedAt  |
-	| 5555555555555555555555555555555555555555555555555555555555555555 | {"name":"alice","nip05":"invalid-no-at-sign"}                           | 0    |      | 1722337838 |
+	| *                                                               | {"name":"alice","nip05":"invalid-no-at-sign"}                           | 0    |      | 1722337838 |
 	Then Alice receives a message
 	| Type | Id                                                               | Success |
-	| OK   | 5555555555555555555555555555555555555555555555555555555555555555 | true    |
+	| OK   | *                                                               | true    |
 
 Scenario: Query metadata by author
 	When Alice publishes an event
 	| Id                                                               | Content                                                                  | Kind | Tags | CreatedAt  |
-	| 6666666666666666666666666666666666666666666666666666666666666666 | {"name":"alice","nip05":"alice@example.com","picture":"https://example.com/pic.jpg"} | 0    |      | 1722337838 |
+	| *                                                               | {"name":"alice","nip05":"alice@example.com","picture":"https://example.com/pic.jpg"} | 0    |      | 1722337838 |
 	And Bob sends a subscription request metadata_sub
 	| Authors                                                          | Kinds |
 	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 0     |
 	Then Bob receives messages
 	| Type  | Id           | EventId                                                          |
-	| EVENT | metadata_sub | 6666666666666666666666666666666666666666666666666666666666666666 |
+	| EVENT | metadata_sub | * |
 	| EOSE  | metadata_sub |                                                                  |
 
 Scenario: Metadata event is replaceable
 	Only the latest metadata event should be stored per author.
 	When Alice publishes events
 	| Id                                                               | Content                    | Kind | Tags | CreatedAt  |
-	| 7777777777777777777777777777777777777777777777777777777777777777 | {"name":"alice_old"}      | 0    |      | 1722337838 |
-	| 8888888888888888888888888888888888888888888888888888888888888888 | {"name":"alice_new"}      | 0    |      | 1722337848 |
+	| *                                                               | {"name":"alice_old"}      | 0    |      | 1722337838 |
+	| *                                                               | {"name":"alice_new"}      | 0    |      | 1722337848 |
 	And Bob sends a subscription request metadata_sub
 	| Authors                                                          | Kinds |
 	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 0     |
 	Then Bob receives messages
 	| Type  | Id           | EventId                                                          |
-	| EVENT | metadata_sub | 8888888888888888888888888888888888888888888888888888888888888888 |
+	| EVENT | metadata_sub | * |
 	| EOSE  | metadata_sub |                                                                  |

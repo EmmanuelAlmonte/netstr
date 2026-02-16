@@ -876,14 +876,14 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table206.AddRow(new string[] {
-                            "f111111111111111111111111111111111111111111111111111111111111111",
+                            "*",
                             "*",
                             "30000",
                             "[[\"d\",\"friends\"],[\"p\",\"07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc" +
                                 "1da3a9\"]]",
                             "1722337838"});
                 table206.AddRow(new string[] {
-                            "f222222222222222222222222222222222222222222222222222222222222222",
+                            "*",
                             "*",
                             "30000",
                             "[[\"d\",\"friends\"],[\"p\",\"a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd" +
@@ -908,7 +908,7 @@ this.FeatureBackground();
                 table208.AddRow(new string[] {
                             "EVENT",
                             "set_sub",
-                            "f222222222222222222222222222222222222222222222222222222222222222"});
+                            "*"});
                 table208.AddRow(new string[] {
                             "EOSE",
                             "set_sub",

@@ -14,17 +14,23 @@ namespace Netstr.Tests.NIPs
     {
     }
 
-    public record Client(HttpClient http, WebSocket WebSocket, Keys Keys)
-    {
-        private const int WaitMessageAttempts = 5;
-        private const int WaitMessageTimeoutMilis = 200;
+public record Client(HttpClient http, WebSocket WebSocket, Keys Keys)
+{
+    private const int WaitMessageAttempts = 5;
+    private const int WaitMessageTimeoutMilis = 200;
 
-        private List<Message> messages { get; } = new();
-        private List<HttpResponseMessage> responses { get; } = new();
+    private List<Message> messages { get; } = new();
+    private List<Event> events { get; } = new();
+    private List<HttpResponseMessage> responses { get; } = new();
 
         public IEnumerable<object[]> GetReceivedMessages()
         {
             return this.messages.Select(x => x.Data);
+        }
+
+        public IEnumerable<Event> GetReceivedEvents()
+        {
+            return this.events.AsEnumerable();
         }
 
         public IEnumerable<HttpResponseMessage> GetHttpResponses()
@@ -34,15 +40,27 @@ namespace Netstr.Tests.NIPs
 
         public void AddReceivedMessage(JsonElement[] message)
         {
+            if (message[0].GetString() == MessageType.Notice)
+            {
+                var notice = message[1].GetString() ?? string.Empty;
+                this.messages.Add(new(DateTimeOffset.UtcNow, [MessageType.Notice, string.Empty, notice]));
+                return;
+            }
+
             object[] msg = message[0].GetString() switch
             {
                 MessageType.Event => [message[2].DeserializeRequired<EventId>().Id],
-                MessageType.Ok => [message[2].GetBoolean(), ""],
-                MessageType.Closed => [""],
+                MessageType.Ok => [message[2].GetBoolean(), message[3].GetString() ?? string.Empty],
+                MessageType.Closed => [message[2].GetString() ?? string.Empty],
                 MessageType.Auth => [],
                 MessageType.Count => [message[2].DeserializeRequired<CountValue>().Count],
                 _ => []
             };
+
+            if (message[0].GetString() == MessageType.Event)
+            {
+                this.events.Add(message[2].DeserializeRequired<Event>());
+            }
 
             this.messages.Add(new(DateTimeOffset.UtcNow, [message[0].ToString(), message[1].ToString(), ..msg]));
         }

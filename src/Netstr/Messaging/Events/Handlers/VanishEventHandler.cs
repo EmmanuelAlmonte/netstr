@@ -37,12 +37,16 @@ namespace Netstr.Messaging.Events.Handlers
             var user = this.userCache.GetByPublicKey(e.PublicKey);
 
             var path = ctx.GetNormalizedUrl();
-            var relays = e.GetNormalizedRelayValues();
+            var relays = e.GetTagValues(EventTag.Relay)
+                .Concat(e.GetTagValues(EventTag.AuthRelay))
+                .Select(x => HttpExtensions.NormalizeRelayUrl(x))
+                .Distinct();
 
             // check 'relay' tag matches current url or is set to ALL_RELAYS
             if (!relays.Any(x => x == path || x == AllRelaysValue))
             {
-                throw new EventProcessingException(e, string.Format(Messages.InvalidWrongTagValue, EventTag.Relay));
+                sender.SendNotOk(e.Id, string.Format(Messages.InvalidWrongTagValue, EventTag.AuthRelay));
+                return;
             }
 
             using var db = this.db.CreateDbContext();

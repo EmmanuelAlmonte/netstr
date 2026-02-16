@@ -146,7 +146,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table41.AddRow(new string[] {
-                            "1c5d9f9b8c3e4d6a7f8e9d0c1b2a3948576a5d4c3b2e1f0a9d8c7b6e5a4f3d2c",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\"],[\"p\",\"f" +
@@ -170,7 +170,7 @@ this.FeatureBackground();
                             "Success"});
                 table43.AddRow(new string[] {
                             "OK",
-                            "1c5d9f9b8c3e4d6a7f8e9d0c1b2a3948576a5d4c3b2e1f0a9d8c7b6e5a4f3d2c",
+                            "*",
                             "true"});
 #line 25
  testRunner.Then("Alice receives a message", ((string)(null)), table43, "Then ");
@@ -182,7 +182,7 @@ this.FeatureBackground();
                 table44.AddRow(new string[] {
                             "EVENT",
                             "abcd",
-                            "1c5d9f9b8c3e4d6a7f8e9d0c1b2a3948576a5d4c3b2e1f0a9d8c7b6e5a4f3d2c"});
+                            "*"});
                 table44.AddRow(new string[] {
                             "EOSE",
                             "abcd",
@@ -223,13 +223,13 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table45.AddRow(new string[] {
-                            "a1b2c3d4e5f6789012345678901234567890123456789012345678901234abcd",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\"]]",
                             "1722337838"});
                 table45.AddRow(new string[] {
-                            "b2c3d4e5f6789012345678901234567890123456789012345678901234abcdef",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"fe8d7a5726ea97ce6140f9fb06b1fe7d3259bcbf8de42c2a5d2ec9f8f0e2f614\"]]",
@@ -253,7 +253,7 @@ this.FeatureBackground();
                 table47.AddRow(new string[] {
                             "EVENT",
                             "abcd",
-                            "b2c3d4e5f6789012345678901234567890123456789012345678901234abcdef"});
+                            "*"});
                 table47.AddRow(new string[] {
                             "EOSE",
                             "abcd",
@@ -293,7 +293,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table48.AddRow(new string[] {
-                            "c3d4e5f6789012345678901234567890123456789012345678901234abcdef01",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\",\"wss://r" +
@@ -309,7 +309,7 @@ this.FeatureBackground();
                             "Success"});
                 table49.AddRow(new string[] {
                             "OK",
-                            "c3d4e5f6789012345678901234567890123456789012345678901234abcdef01",
+                            "*",
                             "true"});
 #line 52
  testRunner.Then("Alice receives a message", ((string)(null)), table49, "Then ");
@@ -346,7 +346,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table50.AddRow(new string[] {
-                            "d4e5f6789012345678901234567890123456789012345678901234abcdef0123",
+                            "*",
                             "*",
                             "3",
                             "",
@@ -360,7 +360,7 @@ this.FeatureBackground();
                             "Success"});
                 table51.AddRow(new string[] {
                             "OK",
-                            "d4e5f6789012345678901234567890123456789012345678901234abcdef0123",
+                            "*",
                             "true"});
 #line 61
  testRunner.Then("Alice receives a message", ((string)(null)), table51, "Then ");
@@ -397,7 +397,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table52.AddRow(new string[] {
-                            "e5f6789012345678901234567890123456789012345678901234abcdef012345",
+                            "*",
                             "{\"wss://relay.example.com\":{\"write\":true}}",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\"]]",
@@ -411,7 +411,7 @@ this.FeatureBackground();
                             "Success"});
                 table53.AddRow(new string[] {
                             "OK",
-                            "e5f6789012345678901234567890123456789012345678901234abcdef012345",
+                            "*",
                             "true"});
 #line 70
  testRunner.Then("Alice receives a message", ((string)(null)), table53, "Then ");
@@ -448,7 +448,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table54.AddRow(new string[] {
-                            "f6789012345678901234567890123456789012345678901234abcdef01234567",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"abc123\"]]",
@@ -463,7 +463,7 @@ this.FeatureBackground();
                             "Message"});
                 table55.AddRow(new string[] {
                             "OK",
-                            "f6789012345678901234567890123456789012345678901234abcdef01234567",
+                            "*",
                             "false",
                             "invalid: follow list contains invalid pubkey format"});
 #line 79
@@ -501,7 +501,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table56.AddRow(new string[] {
-                            "0789012345678901234567890123456789012345678901234abcdef0123456789",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\"]]",
@@ -516,7 +516,7 @@ this.FeatureBackground();
                             "Message"});
                 table57.AddRow(new string[] {
                             "OK",
-                            "0789012345678901234567890123456789012345678901234abcdef0123456789",
+                            "*",
                             "false",
                             "invalid: follow list contains invalid pubkey format"});
 #line 88
@@ -554,7 +554,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table58.AddRow(new string[] {
-                            "1890123456789012345678901234567890123456789012345abcdef012345678a",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\",\"not-a-v" +
@@ -570,7 +570,7 @@ this.FeatureBackground();
                             "Message"});
                 table59.AddRow(new string[] {
                             "OK",
-                            "1890123456789012345678901234567890123456789012345abcdef012345678a",
+                            "*",
                             "false",
                             "invalid: follow list contains invalid relay URL"});
 #line 97
@@ -608,7 +608,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table60.AddRow(new string[] {
-                            "2901234567890123456789012345678901234567890123456abcdef012345678b",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\"],[\"e\",\"a" +
@@ -624,7 +624,7 @@ this.FeatureBackground();
                             "Message"});
                 table61.AddRow(new string[] {
                             "OK",
-                            "2901234567890123456789012345678901234567890123456abcdef012345678b",
+                            "*",
                             "false",
                             "invalid: follow list must only contain \'p\' tags"});
 #line 106
@@ -662,7 +662,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table62.AddRow(new string[] {
-                            "3012345678901234567890123456789012345678901234567abcdef012345678c",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75\"]]",
@@ -677,7 +677,7 @@ this.FeatureBackground();
                             "Tags",
                             "CreatedAt"});
                 table63.AddRow(new string[] {
-                            "4123456789012345678901234567890123456789012345678abcdef012345678d",
+                            "*",
                             "*",
                             "3",
                             "[[\"p\",\"5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627\"]]",
@@ -701,7 +701,7 @@ this.FeatureBackground();
                 table65.AddRow(new string[] {
                             "EVENT",
                             "follow_sub",
-                            "3012345678901234567890123456789012345678901234567abcdef012345678c"});
+                            "*"});
                 table65.AddRow(new string[] {
                             "EOSE",
                             "follow_sub",

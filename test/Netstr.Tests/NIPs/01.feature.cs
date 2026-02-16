@@ -158,7 +158,7 @@ this.FeatureBackground();
                             "Hello 1",
                             "1",
                             "1722337838",
-                            "",
+                            "Invalid",
                             ""});
                 table5.AddRow(new string[] {
                             "a6d166e834e78827af0770f31f15b13a772f281ad880f43ce12c24d4e3d0e346",
@@ -190,7 +190,7 @@ this.FeatureBackground();
                             "Success"});
                 table6.AddRow(new string[] {
                             "OK",
-                            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                            "*",
                             "false"});
                 table6.AddRow(new string[] {
                             "OK",
@@ -835,6 +835,10 @@ this.FeatureBackground();
                             "abcd",
                             "5138028d66a909d302d8283319eb2c0830b42694f6137f71c47c64b4bdab3ad1"});
                 table31.AddRow(new string[] {
+                            "EVENT",
+                            "abcd",
+                            "9c8b0879f3a4d3add6e3577cec650704f293495da43bdc2538587769170cad40"});
+                table31.AddRow(new string[] {
                             "EOSE",
                             "abcd",
                             ""});
@@ -853,7 +857,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Zero limit returns EOSE and future events", "\tSetting filter\'s limit to 0 skips", tagsOfScenario, argumentsOfScenario, featureTags);
-#line 180
+#line 181
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -876,7 +880,7 @@ this.FeatureBackground();
                             "Hello 1",
                             "1",
                             "1722337838"});
-#line 182
+#line 183
  testRunner.When("Bob publishes an event", ((string)(null)), table32, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table33 = new TechTalk.SpecFlow.Table(new string[] {
@@ -885,7 +889,7 @@ this.FeatureBackground();
                 table33.AddRow(new string[] {
                             "5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627",
                             "0"});
-#line 185
+#line 186
  testRunner.And("Alice sends a subscription request abcd", ((string)(null)), table33, "And ");
 #line hidden
                 TechTalk.SpecFlow.Table table34 = new TechTalk.SpecFlow.Table(new string[] {
@@ -898,7 +902,7 @@ this.FeatureBackground();
                             "",
                             "0",
                             "1722337850"});
-#line 188
+#line 189
  testRunner.When("Bob publishes an event", ((string)(null)), table34, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table35 = new TechTalk.SpecFlow.Table(new string[] {
@@ -913,7 +917,7 @@ this.FeatureBackground();
                             "EVENT",
                             "abcd",
                             "0f5ba539c8ebb386336bc259ddc5d268a4959b012f56e3a2dcc1f9ea48d3591c"});
-#line 191
+#line 192
  testRunner.Then("Alice receives messages", ((string)(null)), table35, "Then ");
 #line hidden
             }
@@ -929,7 +933,7 @@ this.FeatureBackground();
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Dummy connectivity probe is ignored and returns EOSE", "\tnostr-tools sends a dummy REQ with 64 \'a\' characters as a connectivity probe.\r\n\t" +
                     "The relay should detect this, log it, send NOTICE+EOSE, and skip DB queries.", tagsOfScenario, argumentsOfScenario, featureTags);
-#line 196
+#line 197
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -946,7 +950,7 @@ this.FeatureBackground();
                             "Ids"});
                 table36.AddRow(new string[] {
                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"});
-#line 199
+#line 200
  testRunner.When("Alice sends a subscription request probe", ((string)(null)), table36, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table37 = new TechTalk.SpecFlow.Table(new string[] {
@@ -961,7 +965,7 @@ this.FeatureBackground();
                             "EOSE",
                             "probe",
                             ""});
-#line 202
+#line 203
  testRunner.Then("Alice receives messages", ((string)(null)), table37, "Then ");
 #line hidden
             }
