@@ -85,7 +85,9 @@ Netstr is c# app backed by a Postgres database. You have several options to get 
 
 * Install .NET: https://dotnet.microsoft.com/en-us/download
 * Install Postgres: https://www.postgresql.org/download/
-* Edit `appsettings.json` and set a `NetstrDatabase` Connection String to point to your Postgres instance
+* Copy `src/Netstr/appsettings.local.json.example` to `src/Netstr/appsettings.local.json`
+* Set `ConnectionStrings:NetstrDatabase` in `src/Netstr/appsettings.local.json` (or set env var `ConnectionStrings__NetstrDatabase`)
+* Use `src/Netstr/appsettings.example.json` as a safe baseline if you need a full config template
 * Run `dotnet run --project .\src\Netstr\Netstr.csproj`
 
 ### Docker run
