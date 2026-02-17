@@ -81,6 +81,11 @@ namespace Netstr.Tests.Events
                     auth,
                     this.clients,
                     this.dbFactoryMock.Object),
+                new ZapEventHandler(
+                    Mock.Of<ILogger<ZapEventHandler>>(),
+                    auth,
+                    this.clients,
+                    this.dbFactoryMock.Object),
                 new RegularEventHandler(Mock.Of<ILogger<RegularEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object)
             };
             this.dispatcher = new EventDispatcher(Mock.Of<ILogger<EventDispatcher>>(), handlers);
@@ -378,7 +383,7 @@ namespace Netstr.Tests.Events
             await this.dispatcher.DispatchEventAsync(this.adapter, existingEvent);
             await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
 
-            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDelete });
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMissingReference });
             this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
 
             using var db = this.dbFactoryMock.Object.CreateDbContext();
@@ -477,6 +482,33 @@ namespace Netstr.Tests.Events
 
             var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMalformedReference });
             this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+        }
+
+        [Fact]
+        public async Task ZapRequestEventHandlerRejectsRelayPublishedZapRequests()
+        {
+            var zapRequest = new Event
+            {
+                Id = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                Kind = (long)EventKind.ZapRequest,
+                Tags =
+                [
+                    [EventTag.PublicKey, "04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"],
+                    [EventTag.Relays, "wss://relay1.example.com"]
+                ],
+                Content = "",
+                Signature = "sig"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, zapRequest);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, zapRequest.Id, false, Messages.InvalidZapRequestRelayPublish });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            db.Events.Count(x => x.EventId == zapRequest.Id).Should().Be(0);
         }
 
         private async Task AssertSameTimestampTieBreakForUniqueEntity(long kind, string[][] tags)

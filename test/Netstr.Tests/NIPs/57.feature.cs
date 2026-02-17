@@ -41,8 +41,8 @@ namespace Netstr.Tests.NIPs
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-57", "\tLightning Zaps enable Bitcoin payments on nostr.\r\n\tZap Request (kind 9734) is se" +
-                    "nt to initiate a zap.\r\n\tZap Receipt (kind 9735) is published after payment confi" +
-                    "rmation.", ProgrammingLanguage.CSharp, featureTags);
+                    "nt to LNURL callback and is not relay-published.\r\n\tZap Receipt (kind 9735) is pu" +
+                    "blished after payment confirmation.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -109,14 +109,14 @@ namespace Netstr.Tests.NIPs
             this.TestTearDown();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Create valid zap request with required tags")]
+        [Xunit.SkippableFactAttribute(DisplayName="Relay rejects zap request publish with required tags")]
         [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
-        [Xunit.TraitAttribute("Description", "Create valid zap request with required tags")]
-        public void CreateValidZapRequestWithRequiredTags()
+        [Xunit.TraitAttribute("Description", "Relay rejects zap request publish with required tags")]
+        public void RelayRejectsZapRequestPublishWithRequiredTags()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create valid zap request with required tags", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Relay rejects zap request publish with required tags", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 16
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -149,11 +149,13 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table223 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
-                            "Success"});
+                            "Success",
+                            "Message"});
                 table223.AddRow(new string[] {
                             "OK",
                             "1111111111111111111111111111111111111111111111111111111111111111",
-                            "true"});
+                            "false",
+                            "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays"});
 #line 20
  testRunner.Then("Alice receives a message", ((string)(null)), table223, "Then ");
 #line hidden
@@ -161,14 +163,14 @@ this.FeatureBackground();
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Create zap request with amount and lnurl")]
+        [Xunit.SkippableFactAttribute(DisplayName="Relay rejects zap request publish with amount and lnurl")]
         [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
-        [Xunit.TraitAttribute("Description", "Create zap request with amount and lnurl")]
-        public void CreateZapRequestWithAmountAndLnurl()
+        [Xunit.TraitAttribute("Description", "Relay rejects zap request publish with amount and lnurl")]
+        public void RelayRejectsZapRequestPublishWithAmountAndLnurl()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create zap request with amount and lnurl", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Relay rejects zap request publish with amount and lnurl", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 24
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -202,11 +204,13 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table225 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
-                            "Success"});
+                            "Success",
+                            "Message"});
                 table225.AddRow(new string[] {
                             "OK",
                             "2222222222222222222222222222222222222222222222222222222222222222",
-                            "true"});
+                            "false",
+                            "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays"});
 #line 28
  testRunner.Then("Alice receives a message", ((string)(null)), table225, "Then ");
 #line hidden
@@ -214,14 +218,14 @@ this.FeatureBackground();
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Create zap request with e tag for specific event")]
+        [Xunit.SkippableFactAttribute(DisplayName="Relay rejects zap request publish with e tag for specific event")]
         [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
-        [Xunit.TraitAttribute("Description", "Create zap request with e tag for specific event")]
-        public void CreateZapRequestWithETagForSpecificEvent()
+        [Xunit.TraitAttribute("Description", "Relay rejects zap request publish with e tag for specific event")]
+        public void RelayRejectsZapRequestPublishWithETagForSpecificEvent()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create zap request with e tag for specific event", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Relay rejects zap request publish with e tag for specific event", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 32
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -255,11 +259,13 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table227 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
-                            "Success"});
+                            "Success",
+                            "Message"});
                 table227.AddRow(new string[] {
                             "OK",
                             "3333333333333333333333333333333333333333333333333333333333333333",
-                            "true"});
+                            "false",
+                            "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays"});
 #line 36
  testRunner.Then("Alice receives a message", ((string)(null)), table227, "Then ");
 #line hidden
@@ -312,7 +318,7 @@ this.FeatureBackground();
                             "OK",
                             "4444444444444444444444444444444444444444444444444444444444444444",
                             "false",
-                            "*"});
+                            "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays"});
 #line 44
  testRunner.Then("Alice receives a message", ((string)(null)), table229, "Then ");
 #line hidden
@@ -365,7 +371,7 @@ this.FeatureBackground();
                             "OK",
                             "5555555555555555555555555555555555555555555555555555555555555555",
                             "false",
-                            "*"});
+                            "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays"});
 #line 52
  testRunner.Then("Alice receives a message", ((string)(null)), table231, "Then ");
 #line hidden
@@ -687,17 +693,26 @@ this.FeatureBackground();
                 TechTalk.SpecFlow.Table table244 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
+                            "Success",
+                            "Message"});
+                table244.AddRow(new string[] {
+                            "OK",
+                            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                            "false",
+                            "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays"});
+#line 105
+ testRunner.Then("Alice receives a message", ((string)(null)), table244, "Then ");
+#line hidden
+                TechTalk.SpecFlow.Table table245 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
                             "EventId"});
-                table244.AddRow(new string[] {
-                            "EVENT",
-                            "zap_sub",
-                            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"});
-                table244.AddRow(new string[] {
+                table245.AddRow(new string[] {
                             "EOSE",
                             "zap_sub",
                             ""});
-#line 105
- testRunner.Then("Bob receives messages", ((string)(null)), table244, "Then ");
+#line 108
+ testRunner.Then("Bob receives messages", ((string)(null)), table245, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -711,7 +726,7 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Query zap receipts by kind", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 110
+#line 112
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -724,45 +739,45 @@ this.ScenarioInitialize(scenarioInfo);
 #line 6
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table245 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table246 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table245.AddRow(new string[] {
+                table246.AddRow(new string[] {
                             "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
                             "*",
                             "9735",
                             "[[\"p\",\"32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245\"],[\"bolt1" +
                                 "1\",\"lnbc10u1\"],[\"description\",\"{\\\"pubkey\\\":\\\"test\\\",\\\"kind\\\":9734}\"]]",
                             "1722337838"});
-#line 111
- testRunner.When("Alice publishes an event", ((string)(null)), table245, "When ");
-#line hidden
-                TechTalk.SpecFlow.Table table246 = new TechTalk.SpecFlow.Table(new string[] {
-                            "Authors",
-                            "Kinds"});
-                table246.AddRow(new string[] {
-                            "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
-                            "9735"});
-#line 114
- testRunner.And("Bob sends a subscription request zap_sub", ((string)(null)), table246, "And ");
+#line 113
+ testRunner.When("Alice publishes an event", ((string)(null)), table246, "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table247 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Authors",
+                            "Kinds"});
+                table247.AddRow(new string[] {
+                            "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                            "9735"});
+#line 116
+ testRunner.And("Bob sends a subscription request zap_sub", ((string)(null)), table247, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table248 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "EventId"});
-                table247.AddRow(new string[] {
+                table248.AddRow(new string[] {
                             "EVENT",
                             "zap_sub",
                             "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"});
-                table247.AddRow(new string[] {
+                table248.AddRow(new string[] {
                             "EOSE",
                             "zap_sub",
                             ""});
-#line 117
- testRunner.Then("Bob receives messages", ((string)(null)), table247, "Then ");
+#line 119
+ testRunner.Then("Bob receives messages", ((string)(null)), table248, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

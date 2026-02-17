@@ -20,6 +20,12 @@ namespace Netstr.Messaging.Events.Validators
 
         public string? Validate(Event e, ClientContext context)
         {
+            if (this.userCache.IsVanishDeletedEvent(e.Id))
+            {
+                this.logger.LogInformation($"Event {e.Id} was deleted by vanish");
+                return Messages.InvalidDeletedEvent;
+            }
+
             var user = this.userCache.GetByPublicKey(e.PublicKey);
             var vanished = user?.LastVanished ?? DateTimeOffset.MinValue;
 

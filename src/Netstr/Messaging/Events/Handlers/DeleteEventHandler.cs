@@ -47,7 +47,7 @@ namespace Netstr.Messaging.Events.Handlers
 
                 sender.SendNotOk(
                     e.Id,
-                    isMalformedReference ? Messages.InvalidCannotDeleteMalformedReference : Messages.InvalidCannotDelete);
+                    isMalformedReference ? Messages.InvalidCannotDeleteMalformedReference : Messages.InvalidCannotDeleteMissingReference);
                 return;
             }
 

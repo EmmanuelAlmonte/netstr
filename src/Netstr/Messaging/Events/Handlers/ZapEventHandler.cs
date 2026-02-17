@@ -28,6 +28,12 @@ namespace Netstr.Messaging.Events.Handlers
 
         protected override async Task HandleEventCoreAsync(IWebSocketAdapter sender, Event e)
         {
+            if (e.Kind == (long)EventKind.ZapRequest)
+            {
+                sender.SendNotOk(e.Id, Messages.InvalidZapRequestRelayPublish);
+                return;
+            }
+
             using var db = this.db.CreateDbContext();
 
             if (await db.Events.IsDeleted(e.Id))

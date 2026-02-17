@@ -82,14 +82,14 @@ namespace Netstr.Tests.NIPs
 #line 5
  testRunner.Given("a relay is running", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table248 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table249 = new TechTalk.SpecFlow.Table(new string[] {
                         "PublicKey",
                         "PrivateKey"});
-            table248.AddRow(new string[] {
+            table249.AddRow(new string[] {
                         "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
                         "512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02"});
 #line 6
- testRunner.And("Alice is connected to relay", ((string)(null)), table248, "And ");
+ testRunner.And("Alice is connected to relay", ((string)(null)), table249, "And ");
 #line hidden
         }
         
@@ -119,33 +119,33 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table249 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table250 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table249.AddRow(new string[] {
+                table250.AddRow(new string[] {
                             "1111111111111111111111111111111111111111111111111111111111111111",
                             "sealed rumor",
                             "13",
                             "[[\"p\",\"5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75\"]]",
                             "1722340500"});
 #line 11
- testRunner.When("Alice publishes events", ((string)(null)), table249, "When ");
+ testRunner.When("Alice publishes events", ((string)(null)), table250, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table250 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table251 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success",
                             "Message"});
-                table250.AddRow(new string[] {
+                table251.AddRow(new string[] {
                             "OK",
                             "1111111111111111111111111111111111111111111111111111111111111111",
                             "false",
                             "invalid: kind 13 events must not contain tags"});
 #line 14
- testRunner.Then("Alice receives a message", ((string)(null)), table250, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table251, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -172,31 +172,31 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table251 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table252 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table251.AddRow(new string[] {
+                table252.AddRow(new string[] {
                             "2222222222222222222222222222222222222222222222222222222222222222",
                             "sealed rumor",
                             "13",
                             "",
                             "1722340501"});
 #line 19
- testRunner.When("Alice publishes events", ((string)(null)), table251, "When ");
+ testRunner.When("Alice publishes events", ((string)(null)), table252, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table252 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table253 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table252.AddRow(new string[] {
+                table253.AddRow(new string[] {
                             "OK",
                             "2222222222222222222222222222222222222222222222222222222222222222",
                             "true"});
 #line 22
- testRunner.Then("Alice receives a message", ((string)(null)), table252, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table253, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
