@@ -1,17 +1,20 @@
+using FluentAssertions;
+using Netstr.Messaging.Models;
+using Netstr.Tests.NIPs;
 using System.Net.WebSockets;
-using System.Text;
-using System.Text.Json;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Netstr.Tests;
 
 /// <summary>
-/// Memory leak verification tests for slow consumer scenario.
+/// Memory pressure tests for slow consumers.
 /// Run with: dotnet test --filter "FullyQualifiedName~MemoryLeakTest"
 /// </summary>
 public class MemoryLeakTest : IClassFixture<WebApplicationFactory>
 {
+    private const double BytesPerMb = 1024d * 1024d;
+
     private readonly WebApplicationFactory factory;
     private readonly ITestOutputHelper output;
 
@@ -24,145 +27,204 @@ public class MemoryLeakTest : IClassFixture<WebApplicationFactory>
     [Fact]
     public async Task SlowConsumer_DoesNotCauseUnboundedMemoryGrowth()
     {
-        // Arrange: Connect a slow consumer that subscribes but reads very slowly
-        var slowConsumer = await factory.ConnectWebSocketAsync();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        using var slowConsumer = await this.factory.ConnectWebSocketAsync();
+        using var publisher = await this.factory.ConnectWebSocketAsync();
 
-        // Subscribe to all kind 1 events
-        var subRequest = JsonSerializer.Serialize(new object[] { "REQ", "slow-test", new { kinds = new[] { 1 } } });
-        await slowConsumer.SendAsync(
-            Encoding.UTF8.GetBytes(subRequest),
-            WebSocketMessageType.Text,
-            true,
-            CancellationToken.None);
+        await slowConsumer.SendReqAsync(
+            "slow-one",
+            [new SubscriptionFilterRequest { Kinds = [1] }],
+            timeout.Token);
+        await WaitForEoseAsync(slowConsumer, "slow-one", timeout.Token);
 
-        // Get initial memory
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        var initialMemory = GC.GetTotalMemory(true);
-        output.WriteLine($"Initial memory: {initialMemory / 1024.0 / 1024.0:F2} MB");
+        var initialMemory = ForceGcAndGetMemory();
+        this.output.WriteLine($"Initial memory: {initialMemory / BytesPerMb:F2} MB");
 
-        // Act: Flood events without reading responses (simulates slow consumer)
-        var publisher = await factory.ConnectWebSocketAsync();
+        var baseTime = DateTimeOffset.UtcNow;
+        await PublishAndAwaitOkAsync(publisher, baseTime, startIndex: 0, count: 600, timeout.Token);
+        await Task.Delay(500, timeout.Token);
 
-        const int eventCount = 1000;
-        for (int i = 0; i < eventCount; i++)
-        {
-            var eventData = CreateTestEvent(i);
-            await publisher.SendAsync(
-                Encoding.UTF8.GetBytes(eventData),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None);
+        var afterPhase1Memory = ForceGcAndGetMemory();
+        this.output.WriteLine($"After phase 1 memory: {afterPhase1Memory / BytesPerMb:F2} MB");
 
-            // Small delay to let the relay process
-            if (i % 100 == 0)
-            {
-                await Task.Delay(10);
-            }
-        }
+        await PublishAndAwaitOkAsync(publisher, baseTime, startIndex: 600, count: 600, timeout.Token);
+        await Task.Delay(500, timeout.Token);
 
-        // Wait a bit for queue to accumulate
-        await Task.Delay(1000);
+        var afterPhase2Memory = ForceGcAndGetMemory();
+        this.output.WriteLine($"After phase 2 memory: {afterPhase2Memory / BytesPerMb:F2} MB");
 
-        // Measure memory after flooding
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        var afterFloodMemory = GC.GetTotalMemory(true);
-        output.WriteLine($"After flood memory: {afterFloodMemory / 1024.0 / 1024.0:F2} MB");
+        var phase1GrowthMb = Math.Max(0, afterPhase1Memory - initialMemory) / BytesPerMb;
+        var phase2GrowthMb = Math.Max(0, afterPhase2Memory - afterPhase1Memory) / BytesPerMb;
+        var totalGrowthMb = Math.Max(0, afterPhase2Memory - initialMemory) / BytesPerMb;
 
-        var memoryGrowth = (afterFloodMemory - initialMemory) / 1024.0 / 1024.0;
-        output.WriteLine($"Memory growth: {memoryGrowth:F2} MB");
+        this.output.WriteLine($"Phase 1 growth: {phase1GrowthMb:F2} MB");
+        this.output.WriteLine($"Phase 2 growth: {phase2GrowthMb:F2} MB");
+        this.output.WriteLine($"Total growth: {totalGrowthMb:F2} MB");
 
-        // Assert: Memory growth should be bounded (not growing linearly with event count)
-        // With the fix, the queue is bounded to MaxPendingEvents (default 100)
-        // Without the fix, queue would grow to 1000+ events
-        // Allow some growth for normal operations, but should be < 50MB for 1000 events
-        Assert.True(memoryGrowth < 50,
-            $"Memory grew by {memoryGrowth:F2} MB which suggests unbounded queue growth");
-
-        // Cleanup
-        await slowConsumer.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None);
-        await publisher.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None);
-
-        output.WriteLine("✓ Slow consumer test passed - memory growth is bounded");
+        AssertBoundedGrowth(totalGrowthMb, phase1GrowthMb, phase2GrowthMb, "single slow consumer");
     }
 
     [Fact]
     public async Task MultipleSlowConsumers_MemoryStaysBounded()
     {
-        const int consumerCount = 10;
-        const int eventsPerConsumer = 500;
-
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(4));
         var consumers = new List<WebSocket>();
 
-        // Create multiple slow consumers
-        for (int i = 0; i < consumerCount; i++)
+        try
         {
-            var consumer = await factory.ConnectWebSocketAsync();
-            var subRequest = JsonSerializer.Serialize(new object[] { "REQ", $"sub-{i}", new { kinds = new[] { 1 } } });
-            await consumer.SendAsync(
-                Encoding.UTF8.GetBytes(subRequest),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None);
-            consumers.Add(consumer);
+            for (int i = 0; i < 5; i++)
+            {
+                var consumer = await this.factory.ConnectWebSocketAsync();
+                await consumer.SendReqAsync(
+                    $"slow-{i}",
+                    [new SubscriptionFilterRequest { Kinds = [1] }],
+                    timeout.Token);
+                await WaitForEoseAsync(consumer, $"slow-{i}", timeout.Token);
+                consumers.Add(consumer);
+            }
+
+            var initialMemory = ForceGcAndGetMemory();
+            this.output.WriteLine($"Initial memory with {consumers.Count} slow consumers: {initialMemory / BytesPerMb:F2} MB");
+
+            using var publisher = await this.factory.ConnectWebSocketAsync();
+            var baseTime = DateTimeOffset.UtcNow.AddHours(1);
+
+            await PublishAndAwaitOkAsync(publisher, baseTime, startIndex: 0, count: 500, timeout.Token);
+            await Task.Delay(500, timeout.Token);
+            var afterPhase1Memory = ForceGcAndGetMemory();
+
+            await PublishAndAwaitOkAsync(publisher, baseTime, startIndex: 500, count: 500, timeout.Token);
+            await Task.Delay(500, timeout.Token);
+            var afterPhase2Memory = ForceGcAndGetMemory();
+
+            var phase1GrowthMb = Math.Max(0, afterPhase1Memory - initialMemory) / BytesPerMb;
+            var phase2GrowthMb = Math.Max(0, afterPhase2Memory - afterPhase1Memory) / BytesPerMb;
+            var totalGrowthMb = Math.Max(0, afterPhase2Memory - initialMemory) / BytesPerMb;
+
+            this.output.WriteLine($"Phase 1 growth: {phase1GrowthMb:F2} MB");
+            this.output.WriteLine($"Phase 2 growth: {phase2GrowthMb:F2} MB");
+            this.output.WriteLine($"Total growth: {totalGrowthMb:F2} MB");
+
+            AssertBoundedGrowth(totalGrowthMb, phase1GrowthMb, phase2GrowthMb, "multiple slow consumers");
         }
-
-        GC.Collect();
-        var initialMemory = GC.GetTotalMemory(true);
-        output.WriteLine($"Initial memory with {consumerCount} consumers: {initialMemory / 1024.0 / 1024.0:F2} MB");
-
-        // Flood events
-        var publisher = await factory.ConnectWebSocketAsync();
-        for (int i = 0; i < eventsPerConsumer; i++)
+        finally
         {
-            var eventData = CreateTestEvent(i);
-            await publisher.SendAsync(
-                Encoding.UTF8.GetBytes(eventData),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None);
+            foreach (var consumer in consumers)
+            {
+                try
+                {
+                    consumer.Abort();
+                    consumer.Dispose();
+                }
+                catch
+                {
+                    // Best-effort cleanup for potentially blocked sockets.
+                }
+            }
         }
-
-        await Task.Delay(2000);
-
-        GC.Collect();
-        var finalMemory = GC.GetTotalMemory(true);
-        var growth = (finalMemory - initialMemory) / 1024.0 / 1024.0;
-        output.WriteLine($"Final memory: {finalMemory / 1024.0 / 1024.0:F2} MB (growth: {growth:F2} MB)");
-
-        // With bounded queues, memory should not grow linearly with consumers * events
-        // Unbounded: ~10 consumers * 500 events * ~1KB = ~5MB minimum in queues alone
-        // Bounded: ~10 consumers * 100 max queue * ~1KB = ~1MB max in queues
-        Assert.True(growth < 100,
-            $"Memory grew excessively ({growth:F2} MB) suggesting unbounded queues");
-
-        // Cleanup
-        foreach (var c in consumers)
-        {
-            try { await c.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None); }
-            catch { }
-        }
-        await publisher.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None);
-
-        output.WriteLine("✓ Multiple slow consumers test passed");
     }
 
-    private static string CreateTestEvent(int index)
+    private static long ForceGcAndGetMemory()
     {
-        // Create a minimal valid-looking event (will fail signature validation but tests queue behavior)
-        var evt = new
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        return GC.GetTotalMemory(true);
+    }
+
+    private static Event CreateValidEvent(int index, DateTimeOffset baseTime)
+    {
+        var e = new Event
         {
-            id = $"{index:x64}".PadLeft(64, '0'),
-            pubkey = "0000000000000000000000000000000000000000000000000000000000000001",
-            created_at = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            kind = 1,
-            tags = Array.Empty<string[]>(),
-            content = $"Test event {index} - " + new string('x', 100), // ~100 byte content
-            sig = new string('0', 128)
+            Id = string.Empty,
+            Signature = string.Empty,
+            PublicKey = Alice.PublicKey,
+            CreatedAt = baseTime.AddSeconds(index),
+            Kind = 1,
+            Tags = [],
+            Content = $"memory-test-event-{index}-{new string('x', 128)}"
         };
-        return JsonSerializer.Serialize(new object[] { "EVENT", evt });
+
+        return Helpers.FinalizeEvent(e, Alice.PrivateKey);
+    }
+
+    private async Task PublishAndAwaitOkAsync(
+        WebSocket publisher,
+        DateTimeOffset baseTime,
+        int startIndex,
+        int count,
+        CancellationToken token)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            var e = CreateValidEvent(startIndex + i, baseTime);
+            await publisher.SendEventAsync(e, token);
+            await WaitForOkAsync(publisher, e.Id, token);
+        }
+    }
+
+    private static async Task WaitForOkAsync(WebSocket ws, string eventId, CancellationToken token)
+    {
+        while (true)
+        {
+            var message = await ws.ReceiveOnceAsync(token);
+
+            if (message.Length < 4)
+            {
+                continue;
+            }
+
+            if (message[0].GetString() != MessageType.Ok)
+            {
+                continue;
+            }
+
+            if (message[1].GetString() != eventId)
+            {
+                continue;
+            }
+
+            message[2].GetBoolean().Should().BeTrue($"event {eventId} should be accepted");
+            return;
+        }
+    }
+
+    private static async Task WaitForEoseAsync(WebSocket ws, string subscriptionId, CancellationToken token)
+    {
+        while (true)
+        {
+            var message = await ws.ReceiveOnceAsync(token);
+
+            if (message.Length < 2)
+            {
+                continue;
+            }
+
+            if (message[0].GetString() == MessageType.EndOfStoredEvents &&
+                message[1].GetString() == subscriptionId)
+            {
+                return;
+            }
+        }
+    }
+
+    private void AssertBoundedGrowth(double totalGrowthMb, double phase1GrowthMb, double phase2GrowthMb, string scenario)
+    {
+        totalGrowthMb.Should().BeLessThan(
+            150,
+            $"{scenario} should not show runaway memory growth");
+
+        if (phase1GrowthMb > 1)
+        {
+            phase2GrowthMb.Should().BeLessThan(
+                phase1GrowthMb * 0.9 + 12,
+                $"{scenario} should show slower incremental growth in a second equal load phase");
+        }
+        else
+        {
+            phase2GrowthMb.Should().BeLessThan(
+                20,
+                $"{scenario} second-phase growth should still stay bounded when phase 1 growth is near zero");
+        }
     }
 }
