@@ -21,6 +21,7 @@
         public const string InvalidCannotDelete = "invalid: cannot delete deletions and someone else's events";
         public const string InvalidCannotDeleteMissingReference = "invalid: cannot delete without e/a reference";
         public const string InvalidCannotDeleteMalformedReference = "invalid: cannot delete malformed e/a reference";
+        public const string InvalidCannotDeleteMissingCashuTokenKindMarker = "invalid: deleting kind 7375 requires tag [\"k\",\"7375\"]";
         public const string InvalidZapRequestRelayPublish = "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays";
         public const string InvalidDeletedEvent = "invalid: this event was already deleted";
         public const string InvalidWrongTagValue = "invalid: this event has an unexpected value of tag {0}";

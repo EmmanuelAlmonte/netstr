@@ -13,7 +13,11 @@ public enum EventKind
     Delete = 5,
     RequestToVanish = 62,
     WalletResponse = 375,
+    CashuWalletToken = 7375,
+    CashuWalletHistory = 7376,
+    Nutzap = 9321,
     GiftWrap = 1059,
+    NutzapMintRecommendation = 10019,
     CashuWalletEvent = 17375,
     Auth = 22242,
     

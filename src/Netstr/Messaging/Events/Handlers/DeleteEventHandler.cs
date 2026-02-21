@@ -60,6 +60,7 @@ namespace Netstr.Messaging.Events.Handlers
                 .Select(x => new
                 {
                     x.Id,
+                    x.EventKind,
                     WrongKey = x.EventPublicKey != e.PublicKey,          // only delete own events
                     WrongKind = CannotDeleteKinds.Contains(x.EventKind), // cannnot delete some events
                     AlreadyDeleted = x.DeletedAt.HasValue                // was previously deleted
@@ -70,6 +71,20 @@ namespace Netstr.Messaging.Events.Handlers
             {
                 this.logger.LogWarning("Someone's trying to delete someone else's or undeletable event.");
                 sender.SendNotOk(e.Id, Messages.InvalidCannotDelete);
+                return;
+            }
+
+            var deletesCashuTokenEvents = events.Any(x =>
+                x.EventKind == (long)EventKind.CashuWalletToken &&
+                !x.WrongKey &&
+                !x.WrongKind);
+            if (deletesCashuTokenEvents && !HasKindTag(e.Tags, (long)EventKind.CashuWalletToken))
+            {
+                this.logger.LogWarning(
+                    "Delete event {EventId} is missing required kind marker for deleting kind {Kind}",
+                    e.Id,
+                    (long)EventKind.CashuWalletToken);
+                sender.SendNotOk(e.Id, Messages.InvalidCannotDeleteMissingCashuTokenKindMarker);
                 return;
             }
 
@@ -164,6 +179,12 @@ namespace Netstr.Messaging.Events.Handlers
         private static bool IsValidHex64(string value)
         {
             return !string.IsNullOrWhiteSpace(value) && Hex64Pattern.IsMatch(value);
+        }
+
+        private static bool HasKindTag(string[][] tags, long kind)
+        {
+            var expected = kind.ToString();
+            return tags.Any(x => x.Length >= 2 && x[0] == EventTag.Kind && x[1] == expected);
         }
 
         private IQueryable<string> GetReplaceableQuery(NetstrDbContext db, Event e)

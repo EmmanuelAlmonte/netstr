@@ -112,17 +112,31 @@ namespace Netstr.Tests.Events
 
         [Theory]
         [InlineData((long)EventKind.WalletResponse)]
+        [InlineData((long)EventKind.CashuWalletToken)]
+        [InlineData((long)EventKind.CashuWalletHistory)]
+        [InlineData((long)EventKind.Nutzap)]
+        [InlineData((long)EventKind.NutzapMintRecommendation)]
         [InlineData((long)EventKind.CashuWalletEvent)]
-        public void Validate_ExemptWalletKinds_ReturnNull(long walletKind)
+        public void Validate_ExemptCashuAndNutzapKinds_ReturnNull(long walletKind)
         {
             // Arrange
+            var exemptKinds = new[]
+            {
+                (long)EventKind.WalletResponse,
+                (long)EventKind.CashuWalletToken,
+                (long)EventKind.CashuWalletHistory,
+                (long)EventKind.Nutzap,
+                (long)EventKind.NutzapMintRecommendation,
+                (long)EventKind.CashuWalletEvent
+            };
+
             options = new WhitelistOptions
             {
                 Enabled = true,
                 AllowedPublicKeys = [],
                 RestrictPublishing = true,
                 RestrictSubscribing = true,
-                ExemptKinds = [(long)EventKind.WalletResponse, (long)EventKind.CashuWalletEvent]
+                ExemptKinds = exemptKinds
             };
             optionsMock.Setup(x => x.CurrentValue).Returns(options);
 
@@ -137,29 +151,38 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
-        public void Validate_NonExemptKindBlocked_WhileWalletExemptKindsAllowed()
+        public void Validate_NonExemptKindBlocked_WhileCashuAndNutzapExemptKindsAllowed()
         {
             // Arrange
+            var exemptKinds = new[]
+            {
+                (long)EventKind.WalletResponse,
+                (long)EventKind.CashuWalletToken,
+                (long)EventKind.CashuWalletHistory,
+                (long)EventKind.Nutzap,
+                (long)EventKind.NutzapMintRecommendation,
+                (long)EventKind.CashuWalletEvent
+            };
             options = new WhitelistOptions
             {
                 Enabled = true,
                 AllowedPublicKeys = [],
                 RestrictPublishing = true,
                 RestrictSubscribing = true,
-                ExemptKinds = [(long)EventKind.WalletResponse, (long)EventKind.CashuWalletEvent]
+                ExemptKinds = exemptKinds
             };
             optionsMock.Setup(x => x.CurrentValue).Returns(options);
             var context = new ClientContext("client1", "127.0.0.1");
 
             // Act
             var blocked = validator.Validate(CreateEvent("not_allowed_pubkey", (long)EventKind.ShortTextNote), context);
-            var walletResponseAllowed = validator.Validate(CreateEvent("not_allowed_pubkey", (long)EventKind.WalletResponse), context);
-            var cashuWalletAllowed = validator.Validate(CreateEvent("not_allowed_pubkey", (long)EventKind.CashuWalletEvent), context);
+            var exemptResults = exemptKinds
+                .Select(kind => validator.Validate(CreateEvent("not_allowed_pubkey", kind), context))
+                .ToArray();
 
             // Assert
             Assert.Equal(Messages.WhitelistRestricted, blocked);
-            Assert.Null(walletResponseAllowed);
-            Assert.Null(cashuWalletAllowed);
+            Assert.All(exemptResults, Assert.Null);
         }
 
         private Event CreateEvent(string publicKey, long kind = 1)

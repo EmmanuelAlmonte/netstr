@@ -84,15 +84,16 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
-        public void FindEventsByWalletKinds()
+        public void FindEventsByWalletAndNutzapKinds()
         {
             var db = this.context;
             var firstSeen = DateTimeOffset.UtcNow;
+            var author = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
             var walletRecord = new Event
             {
                 Id = "5111111111111111111111111111111111111111111111111111111111111111",
-                PublicKey = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                PublicKey = author,
                 CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000000),
                 Kind = (long)EventKind.CashuWalletEvent,
                 Tags = [],
@@ -103,7 +104,7 @@ namespace Netstr.Tests.Events
             var walletResponse = new Event
             {
                 Id = "5222222222222222222222222222222222222222222222222222222222222222",
-                PublicKey = walletRecord.PublicKey,
+                PublicKey = author,
                 CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000001),
                 Kind = (long)EventKind.WalletResponse,
                 Tags = [],
@@ -111,11 +112,55 @@ namespace Netstr.Tests.Events
                 Signature = "sig-wallet-response"
             };
 
+            var walletToken = new Event
+            {
+                Id = "5444444444444444444444444444444444444444444444444444444444444444",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000002),
+                Kind = (long)EventKind.CashuWalletToken,
+                Tags = [],
+                Content = "wallet token",
+                Signature = "sig-wallet-token"
+            };
+
+            var walletHistory = new Event
+            {
+                Id = "5555555555555555555555555555555555555555555555555555555555555555",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000003),
+                Kind = (long)EventKind.CashuWalletHistory,
+                Tags = [],
+                Content = "wallet history",
+                Signature = "sig-wallet-history"
+            };
+
+            var nutzapInfo = new Event
+            {
+                Id = "5666666666666666666666666666666666666666666666666666666666666666",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000004),
+                Kind = (long)EventKind.NutzapMintRecommendation,
+                Tags = [],
+                Content = "nutzap info",
+                Signature = "sig-nutzap-info"
+            };
+
+            var nutzap = new Event
+            {
+                Id = "5777777777777777777777777777777777777777777777777777777777777777",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000005),
+                Kind = (long)EventKind.Nutzap,
+                Tags = [],
+                Content = "nutzap event",
+                Signature = "sig-nutzap"
+            };
+
             var unrelated = new Event
             {
                 Id = "5333333333333333333333333333333333333333333333333333333333333333",
-                PublicKey = walletRecord.PublicKey,
-                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000002),
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000006),
                 Kind = (long)EventKind.ShortTextNote,
                 Tags = [],
                 Content = "not wallet",
@@ -125,18 +170,34 @@ namespace Netstr.Tests.Events
             db.Events.AddRange(
                 walletRecord.ToEntity(firstSeen),
                 walletResponse.ToEntity(firstSeen),
+                walletToken.ToEntity(firstSeen),
+                walletHistory.ToEntity(firstSeen),
+                nutzapInfo.ToEntity(firstSeen),
+                nutzap.ToEntity(firstSeen),
                 unrelated.ToEntity(firstSeen));
             db.SaveChanges();
 
             var filter = new SubscriptionFilter
             {
-                Kinds = [(long)EventKind.CashuWalletEvent, (long)EventKind.WalletResponse]
+                Kinds =
+                [
+                    (long)EventKind.CashuWalletEvent,
+                    (long)EventKind.WalletResponse,
+                    (long)EventKind.CashuWalletToken,
+                    (long)EventKind.CashuWalletHistory,
+                    (long)EventKind.NutzapMintRecommendation,
+                    (long)EventKind.Nutzap
+                ]
             };
 
             var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             results.Should().Contain(walletRecord.Id);
             results.Should().Contain(walletResponse.Id);
+            results.Should().Contain(walletToken.Id);
+            results.Should().Contain(walletHistory.Id);
+            results.Should().Contain(nutzapInfo.Id);
+            results.Should().Contain(nutzap.Id);
             results.Should().NotContain(unrelated.Id);
         }
 

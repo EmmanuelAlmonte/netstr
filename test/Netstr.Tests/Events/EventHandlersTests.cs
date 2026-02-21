@@ -264,6 +264,57 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
+        public async Task RegularEventHandler_CashuTokenHistoryAndNutzapKinds_AreStoredAsRegularEvents()
+        {
+            var author = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c";
+            var regularEvents = new[]
+            {
+                new Event
+                {
+                    Id = "4311111111111111111111111111111111111111111111111111111111111111",
+                    PublicKey = author,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                    Kind = (long)EventKind.CashuWalletToken,
+                    Tags = [],
+                    Content = "cashu token",
+                    Signature = "sig-7375"
+                },
+                new Event
+                {
+                    Id = "4322222222222222222222222222222222222222222222222222222222222222",
+                    PublicKey = author,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                    Kind = (long)EventKind.CashuWalletHistory,
+                    Tags = [],
+                    Content = "cashu history",
+                    Signature = "sig-7376"
+                },
+                new Event
+                {
+                    Id = "4333333333333333333333333333333333333333333333333333333333333333",
+                    PublicKey = author,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741820),
+                    Kind = (long)EventKind.Nutzap,
+                    Tags = [[EventTag.PublicKey, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]],
+                    Content = "nutzap event",
+                    Signature = "sig-9321"
+                }
+            };
+
+            foreach (var e in regularEvents)
+            {
+                await this.dispatcher.DispatchEventAsync(this.adapter, e);
+            }
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            foreach (var e in regularEvents)
+            {
+                db.Events.Count(x => x.EventId == e.Id).Should().Be(1);
+                db.Events.Single(x => x.EventId == e.Id).EventKind.Should().Be(e.Kind);
+            }
+        }
+
+        [Fact]
         public async Task ReplaceableEventHandlerTest()
         {
             var e1 = new Event
@@ -363,6 +414,59 @@ namespace Netstr.Tests.Events
             {
                 Authors = [newer.PublicKey],
                 Kinds = [(long)EventKind.CashuWalletEvent]
+            };
+
+            var resultIds = db.Events
+                .WhereAnyFilterMatchesForInitialQuery([filter], 100)
+                .Select(x => x.EventId)
+                .ToArray();
+
+            resultIds.Should().ContainSingle().Which.Should().Be(newer.Id);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind10019_NewestWinsWhenPublishedOutOfOrder()
+        {
+            var newer = new Event
+            {
+                Id = "6333333333333333333333333333333333333333333333333333333333333333",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722100002),
+                Kind = (long)EventKind.NutzapMintRecommendation,
+                Tags = [],
+                Content = "nutzap info newest",
+                Signature = "sig-newest-10019"
+            };
+
+            var older = new Event
+            {
+                Id = "6444444444444444444444444444444444444444444444444444444444444444",
+                PublicKey = newer.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000002),
+                Kind = (long)EventKind.NutzapMintRecommendation,
+                Tags = [],
+                Content = "nutzap info older",
+                Signature = "sig-older-10019"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, newer);
+            await this.dispatcher.DispatchEventAsync(this.adapter, older);
+
+            var newerOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, newer.Id, true, string.Empty });
+            var olderRejected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, older.Id, false, Messages.DuplicateReplaceableEvent });
+
+            this.ws.Verify(x => x.SendAsync(newerOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(olderRejected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == older.Id).Should().Be(0);
+            db.Events.Single(x => x.EventId == newer.Id).EventContent.Should().Be(newer.Content);
+
+            var filter = new SubscriptionFilter
+            {
+                Authors = [newer.PublicKey],
+                Kinds = [(long)EventKind.NutzapMintRecommendation]
             };
 
             var resultIds = db.Events
@@ -494,6 +598,81 @@ namespace Netstr.Tests.Events
                 .BeNull();
 
             db.Events.Count(x => x.EventId == deleteEvent.Id).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsCashuTokenDeletionWithoutKindMarker()
+        {
+            var existingTokenEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "cashu token",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = (long)EventKind.CashuWalletToken,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.Event, existingTokenEvent.Id ]],
+                Kind = (long)EventKind.Delete,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingTokenEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMissingCashuTokenKindMarker });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            db.Events.Single(x => x.EventId == existingTokenEvent.Id).DeletedAt.Should().BeNull();
+            db.Events.Count(x => x.EventId == deleteEvent.Id).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerAcceptsCashuTokenDeletionWithKindMarker()
+        {
+            var existingTokenEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "cashu token",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741820),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = (long)EventKind.CashuWalletToken,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741821),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags =
+                [
+                    [ EventTag.Event, existingTokenEvent.Id ],
+                    [ EventTag.Kind, ((long)EventKind.CashuWalletToken).ToString() ]
+                ],
+                Kind = (long)EventKind.Delete,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingTokenEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, true, "" });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            db.Events.Single(x => x.EventId == existingTokenEvent.Id).DeletedAt.Should().NotBeNull();
         }
 
         [Fact]
