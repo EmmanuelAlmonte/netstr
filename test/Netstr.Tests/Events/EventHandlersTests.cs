@@ -321,6 +321,59 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
+        public async Task ReplaceableEventHandler_Kind17375_NewestWinsWhenPublishedOutOfOrder()
+        {
+            var newer = new Event
+            {
+                Id = "6111111111111111111111111111111111111111111111111111111111111111",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722100000),
+                Kind = (long)EventKind.CashuWalletEvent,
+                Tags = [],
+                Content = "wallet newest",
+                Signature = "sig-newest"
+            };
+
+            var older = new Event
+            {
+                Id = "6222222222222222222222222222222222222222222222222222222222222222",
+                PublicKey = newer.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000000),
+                Kind = (long)EventKind.CashuWalletEvent,
+                Tags = [],
+                Content = "wallet older",
+                Signature = "sig-older"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, newer);
+            await this.dispatcher.DispatchEventAsync(this.adapter, older);
+
+            var newerOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, newer.Id, true, string.Empty });
+            var olderRejected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, older.Id, false, Messages.DuplicateReplaceableEvent });
+
+            this.ws.Verify(x => x.SendAsync(newerOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(olderRejected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == older.Id).Should().Be(0);
+            db.Events.Single(x => x.EventId == newer.Id).EventContent.Should().Be(newer.Content);
+
+            var filter = new SubscriptionFilter
+            {
+                Authors = [newer.PublicKey],
+                Kinds = [(long)EventKind.CashuWalletEvent]
+            };
+
+            var resultIds = db.Events
+                .WhereAnyFilterMatchesForInitialQuery([filter], 100)
+                .Select(x => x.EventId)
+                .ToArray();
+
+            resultIds.Should().ContainSingle().Which.Should().Be(newer.Id);
+        }
+
+        [Fact]
         public async Task AddressableEventHandlerTest()
         {
             var e1 = new Event

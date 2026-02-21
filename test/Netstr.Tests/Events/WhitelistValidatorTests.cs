@@ -136,6 +136,32 @@ namespace Netstr.Tests.Events
             Assert.Null(result);
         }
 
+        [Fact]
+        public void Validate_NonExemptKindBlocked_WhileWalletExemptKindsAllowed()
+        {
+            // Arrange
+            options = new WhitelistOptions
+            {
+                Enabled = true,
+                AllowedPublicKeys = [],
+                RestrictPublishing = true,
+                RestrictSubscribing = true,
+                ExemptKinds = [(long)EventKind.WalletResponse, (long)EventKind.CashuWalletEvent]
+            };
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
+            var context = new ClientContext("client1", "127.0.0.1");
+
+            // Act
+            var blocked = validator.Validate(CreateEvent("not_allowed_pubkey", (long)EventKind.ShortTextNote), context);
+            var walletResponseAllowed = validator.Validate(CreateEvent("not_allowed_pubkey", (long)EventKind.WalletResponse), context);
+            var cashuWalletAllowed = validator.Validate(CreateEvent("not_allowed_pubkey", (long)EventKind.CashuWalletEvent), context);
+
+            // Assert
+            Assert.Equal(Messages.WhitelistRestricted, blocked);
+            Assert.Null(walletResponseAllowed);
+            Assert.Null(cashuWalletAllowed);
+        }
+
         private Event CreateEvent(string publicKey, long kind = 1)
         {
             return new Event
