@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Netstr.Messaging.Models;
+using Netstr.Options.Limits;
 using Netstr.Tests.NIPs;
 using System.Net.WebSockets;
 using Xunit;
@@ -22,6 +23,17 @@ public class MemoryLeakTest : IClassFixture<WebApplicationFactory>
     {
         this.factory = factory;
         this.output = output;
+
+        // Keep this fixture focused on queue-memory behavior instead of event publish throttling.
+        this.factory.EventLimits = new EventLimits
+        {
+            MinPowDifficulty = 0,
+            MaxEventTags = 1000,
+            MaxCreatedAtLowerOffset = 60 * 60 * 24 * 365 * 10,
+            MaxCreatedAtUpperOffset = 60 * 60 * 24 * 365 * 10,
+            MaxPendingEvents = 128,
+            MaxEventsPerMinute = 20000
+        };
     }
 
     [Fact]
