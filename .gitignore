@@ -419,3 +419,4 @@ run-lan.sh
 scripts/netstr-nginx.conf
 scripts/netstr.service
 src/Netstr/nips-master/
+docs/nip-alignment-baseline-2026-02-15.md
