@@ -47,13 +47,26 @@ builder.Services
 var app = builder.Build();
 var options = app.Services.GetRequiredService<IOptions<ConnectionOptions>>();
 
+// Log environment and configuration
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
+logger.LogInformation("HTTPS Redirect Enabled: {Enabled}", options.Value.UseHttpsRedirection);
+logger.LogInformation("WebSocket Path: {Path}", options.Value.WebSocketsPath);
+
 // Setup pipeline + init DB
 app
     .UseCors()
     .UseWebSockets()
     .UseStaticFiles()
-    .UseRouting()
-    .UseHttpsRedirection()
+    .UseRouting();
+
+// Conditionally apply HTTPS redirection based on configuration
+if (options.Value.UseHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
+
+app
     .AcceptWebSocketsConnections()
     .EnsureDbContextMigrations<NetstrDbContext>();
 

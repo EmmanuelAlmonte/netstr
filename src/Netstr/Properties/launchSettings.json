@@ -6,7 +6,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:8081;https://localhost:8443"
+      "applicationUrl": "http://0.0.0.0:8085;https://0.0.0.0:8443"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -26,7 +26,7 @@
       "launchUrl": "https://localhost:8443",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:8081;https://localhost:8443"
+        "ASPNETCORE_URLS": "http://0.0.0.0:8085;https://0.0.0.0:8443"
       },
       "distributionName": ""
     }

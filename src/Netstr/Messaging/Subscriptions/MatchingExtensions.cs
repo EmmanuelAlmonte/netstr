@@ -33,7 +33,7 @@ namespace Netstr.Messaging.Subscriptions
 
             // Build a single query that handles OR semantics between filters
             IQueryable<EventEntity> query = entities.Where(x => false); // Start with empty query
-            
+
             foreach (var filter in filterArray)
             {
                 var filterQuery = entities
@@ -52,11 +52,16 @@ namespace Netstr.Messaging.Subscriptions
                 query = query.Union(filterQuery);
             }
 
+            // Calculate effective limit: use the client's requested limit if specified, otherwise fallback to maxLimit
+            // When multiple filters have limits, use the minimum (most restrictive)
+            var specifiedLimits = filterArray.Where(f => f.Limit.HasValue).Select(f => f.Limit!.Value);
+            var effectiveLimit = specifiedLimits.Any() ? specifiedLimits.Min() : maxLimit;
+
             return query
                 .Include(x => x.Tags)
                 .OrderByDescending(x => x.EventCreatedAt)
                 .ThenBy(x => x.EventId)
-                .Take(maxLimit)
+                .Take(effectiveLimit)
                 .AsNoTracking();
         }
 
