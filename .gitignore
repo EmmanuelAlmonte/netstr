@@ -408,3 +408,7 @@ appsettings.local.json
 appsettings.*.local.json
 .env
 *.env
+
+.claude/
+src/Netstr/.claude/
+test/Netstr.Tests/.claude/
