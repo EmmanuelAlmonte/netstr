@@ -114,23 +114,23 @@ namespace Netstr.Tests.NIPs
 #line 6
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table151 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table153 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "wss://relay1.com",
                             "read",
                             "write"});
-                table151.AddRow(new string[] {
+                table153.AddRow(new string[] {
                             "r",
                             "wss://relay2.com",
                             "read",
                             ""});
-                table151.AddRow(new string[] {
+                table153.AddRow(new string[] {
                             "r",
                             "wss://relay3.com",
                             "write",
                             ""});
 #line 11
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table151, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table153, "When ");
 #line hidden
 #line 15
         testRunner.Then("I should receive an \"OK\" message", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -166,16 +166,16 @@ namespace Netstr.Tests.NIPs
 #line 19
         testRunner.Given("I have published relay configurations", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-                TechTalk.SpecFlow.Table table152 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table154 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "wss://relay1.com",
                             "read"});
-                table152.AddRow(new string[] {
+                table154.AddRow(new string[] {
                             "r",
                             "wss://relay4.com",
                             "write"});
 #line 20
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table152, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table154, "When ");
 #line hidden
 #line 23
         testRunner.Then("I should receive an \"OK\" message", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -243,13 +243,13 @@ namespace Netstr.Tests.NIPs
 #line 6
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table153 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table155 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "invalid-url",
                             "read",
                             "write"});
 #line 32
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table153, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table155, "When ");
 #line hidden
 #line 34
         testRunner.Then("I should receive an error message containing \"Invalid relay URL format\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -279,12 +279,12 @@ namespace Netstr.Tests.NIPs
 #line 6
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table154 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table156 = new TechTalk.SpecFlow.Table(new string[] {
                             "r",
                             "wss://relay1.com",
                             "invalid"});
 #line 37
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table154, "When ");
+        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table156, "When ");
 #line hidden
 #line 39
         testRunner.Then("I should receive an error message containing \"Invalid relay permission marker\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

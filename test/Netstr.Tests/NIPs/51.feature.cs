@@ -116,14 +116,14 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table127 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table129 = new TechTalk.SpecFlow.Table(new string[] {
                             "p",
                             "07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9"});
-                table127.AddRow(new string[] {
+                table129.AddRow(new string[] {
                             "p",
                             "a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd18dcc4"});
 #line 10
-        testRunner.When("Alice publishes an event with kind 10000 and tags:", ((string)(null)), table127, "When ");
+        testRunner.When("Alice publishes an event with kind 10000 and tags:", ((string)(null)), table129, "When ");
 #line hidden
 #line 13
         testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -162,11 +162,11 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table128 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table130 = new TechTalk.SpecFlow.Table(new string[] {
                             "p",
                             "07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9"});
 #line 19
-        testRunner.When("Alice publishes an event with kind 10000 and encrypted content and tags:", ((string)(null)), table128, "When ");
+        testRunner.When("Alice publishes an event with kind 10000 and encrypted content and tags:", ((string)(null)), table130, "When ");
 #line hidden
 #line 21
         testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -208,23 +208,23 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table129 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table131 = new TechTalk.SpecFlow.Table(new string[] {
                             "d",
                             "my-bookmarks"});
-                table129.AddRow(new string[] {
+                table131.AddRow(new string[] {
                             "name",
                             "Programming Resources"});
-                table129.AddRow(new string[] {
+                table131.AddRow(new string[] {
                             "about",
                             "Collection of useful programming articles and tutorials"});
-                table129.AddRow(new string[] {
+                table131.AddRow(new string[] {
                             "e",
                             "d78ba0d5dce22bfff9db0a9e996c9ef27e2c91051de0c4e1da340e0326b4941e"});
-                table129.AddRow(new string[] {
+                table131.AddRow(new string[] {
                             "a",
                             "30023:26dc95542e18b8b7aec2f14610f55c335abebec76f3db9e58c254661d0593a0c:95ODQzw3"});
 #line 28
-        testRunner.When("Alice publishes an event with kind 30003 and tags:", ((string)(null)), table129, "When ");
+        testRunner.When("Alice publishes an event with kind 30003 and tags:", ((string)(null)), table131, "When ");
 #line hidden
 #line 34
         testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -266,20 +266,20 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table130 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table132 = new TechTalk.SpecFlow.Table(new string[] {
                             "d",
                             "custom-emojis"});
-                table130.AddRow(new string[] {
+                table132.AddRow(new string[] {
                             "name",
                             "My Custom Emojis"});
-                table130.AddRow(new string[] {
+                table132.AddRow(new string[] {
                             "emoji",
                             "happy,https://example.com/happy.png"});
-                table130.AddRow(new string[] {
+                table132.AddRow(new string[] {
                             "emoji",
                             "sad,https://example.com/sad.png"});
 #line 41
-        testRunner.When("Alice publishes an event with kind 30030 and tags:", ((string)(null)), table130, "When ");
+        testRunner.When("Alice publishes an event with kind 30030 and tags:", ((string)(null)), table132, "When ");
 #line hidden
 #line 46
         testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -318,23 +318,23 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table131 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table133 = new TechTalk.SpecFlow.Table(new string[] {
                             "d",
                             "my-relays"});
-                table131.AddRow(new string[] {
+                table133.AddRow(new string[] {
                             "name",
                             "Primary Relays"});
-                table131.AddRow(new string[] {
+                table133.AddRow(new string[] {
                             "about",
                             "My main relay connections"});
-                table131.AddRow(new string[] {
+                table133.AddRow(new string[] {
                             "relay",
                             "wss://relay1.example.com"});
-                table131.AddRow(new string[] {
+                table133.AddRow(new string[] {
                             "relay",
                             "wss://relay2.example.com"});
 #line 52
-        testRunner.When("Alice publishes an event with kind 30002 and tags:", ((string)(null)), table131, "When ");
+        testRunner.When("Alice publishes an event with kind 30002 and tags:", ((string)(null)), table133, "When ");
 #line hidden
 #line 58
         testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -373,17 +373,17 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table132 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table134 = new TechTalk.SpecFlow.Table(new string[] {
                             "d",
                             "1"});
-                table132.AddRow(new string[] {
+                table134.AddRow(new string[] {
                             "p",
                             "07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9"});
-                table132.AddRow(new string[] {
+                table134.AddRow(new string[] {
                             "p",
                             "a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd18dcc4"});
 #line 64
-        testRunner.When("Alice publishes an event with kind 30007 and tags:", ((string)(null)), table132, "When ");
+        testRunner.When("Alice publishes an event with kind 30007 and tags:", ((string)(null)), table134, "When ");
 #line hidden
 #line 68
         testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

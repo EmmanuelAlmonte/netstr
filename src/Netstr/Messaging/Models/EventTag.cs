@@ -9,6 +9,7 @@
         public const string Nonce = "nonce";
         public const string Challenge = "challenge";
         public const string Relay = "r";
+        public const string AuthRelay = "relay";  // NIP-42 AUTH events use full "relay" tag
         public const string Protected = "-";
         public const string Expiration = "expiration";
         

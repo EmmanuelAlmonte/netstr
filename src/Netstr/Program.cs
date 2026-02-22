@@ -28,7 +28,20 @@ builder.Services
     .AddHostedService<NegentropyBackgroundWatcher>()
     .AddHostedService<CleanupBackgroundService>()
     .AddScoped<IRelayInformationService, RelayInformationService>()
-    .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString))
+    .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString, options =>
+    {
+        // Enable automatic retry on transient failures (network issues, timeouts, deadlocks)
+        options.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null);
+
+        // Set command timeout to 30 seconds (default is 30, but being explicit)
+        options.CommandTimeout(30);
+
+        // Enable connection pooling optimization for Supabase
+        options.MaxBatchSize(100);
+    }))
     .AddSingleton<IConfigurationWriter, ConfigurationWriter>();
 
 var app = builder.Build();

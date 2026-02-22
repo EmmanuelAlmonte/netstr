@@ -34,8 +34,6 @@ namespace Netstr.Messaging.Events.Handlers
         protected override async Task HandleEventCoreAsync(IWebSocketAdapter sender, Event e)
         {
             using var db = this.db.CreateDbContext();
-            using var tx = await db.Database.BeginTransactionAsync();
-
             var now = DateTimeOffset.UtcNow;
 
             // delete events (= mark as deleted)
@@ -52,7 +50,7 @@ namespace Netstr.Messaging.Events.Handlers
                     AlreadyDeleted = x.DeletedAt.HasValue                // was previously deleted
                 })
                 .ToArrayAsync();
-            
+
             if (events.Any(x => x.WrongKey || x.WrongKind))
             {
                 this.logger.LogWarning("Someone's trying to delete someone else's or undeletable event.");
@@ -66,15 +64,35 @@ namespace Netstr.Messaging.Events.Handlers
                 .Select(x => x.Id)
                 .ToArray();
 
-            await db.Events
-                .Where(x => eventsToDelete.Contains(x.Id))
-                .ExecuteUpdateAsync(x => x.SetProperty(x => x.DeletedAt, now));
+            // Use execution strategy to handle transactions with retry logic
+            var strategy = db.Database.CreateExecutionStrategy();
+            var updateStart = DateTimeOffset.UtcNow;
 
-            db.Add(e.ToEntity(now));
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await db.Database.BeginTransactionAsync();
 
-            // save 
-            await db.SaveChangesAsync();
-            await tx.CommitAsync();
+                await db.Events
+                    .Where(x => eventsToDelete.Contains(x.Id))
+                    .ExecuteUpdateAsync(x => x.SetProperty(x => x.DeletedAt, now));
+
+                db.Add(e.ToEntity(now));
+
+                // save
+                await db.SaveChangesAsync();
+                await tx.CommitAsync();
+            });
+
+            var updateTime = DateTimeOffset.UtcNow - updateStart;
+
+            if (updateTime.TotalMilliseconds > 2000)
+            {
+                this.logger.LogWarning("Slow delete operation for event {EventId}: {Duration}ms, deleted {Count} events",
+                    e.Id, updateTime.TotalMilliseconds, eventsToDelete.Length);
+            }
+
+            this.logger.LogInformation("Deleted {Count} events in {Duration}ms",
+                eventsToDelete.Length, updateTime.TotalMilliseconds);
 
             // reply
             sender.SendOk(e.Id);

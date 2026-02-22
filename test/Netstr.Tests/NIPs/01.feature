@@ -178,7 +178,7 @@ Scenario: Relay can handle complex filters
 	| EOSE  | abcd |                                                                  |
 
 Scenario: Zero limit returns EOSE and future events
-	Setting filter's limit to 0 skips 
+	Setting filter's limit to 0 skips
 	When Bob publishes an event
 	| Id                                                               | Content | Kind | CreatedAt  |
 	| a6d166e834e78827af0770f31f15b13a772f281ad880f43ce12c24d4e3d0e346 | Hello 1 | 1    | 1722337838 |
@@ -192,3 +192,14 @@ Scenario: Zero limit returns EOSE and future events
 	| Type  | Id   | EventId                                                          |
 	| EOSE  | abcd |                                                                  |
 	| EVENT | abcd | 0f5ba539c8ebb386336bc259ddc5d268a4959b012f56e3a2dcc1f9ea48d3591c |
+
+Scenario: Dummy connectivity probe is ignored and returns EOSE
+	nostr-tools sends a dummy REQ with 64 'a' characters as a connectivity probe.
+	The relay should detect this, log it, send NOTICE+EOSE, and skip DB queries.
+	When Alice sends a subscription request probe
+	| Ids                                                              |
+	| aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa |
+	Then Alice receives messages
+	| Type   | Id    | EventId |
+	| NOTICE | *     | *       |
+	| EOSE   | probe |         |

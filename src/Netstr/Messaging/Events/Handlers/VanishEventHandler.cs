@@ -46,23 +46,44 @@ namespace Netstr.Messaging.Events.Handlers
             }
 
             using var db = this.db.CreateDbContext();
-            using var tx = db.Database.BeginTransaction();
 
-            // delete all user's events (or tagged GiftWraps) from before the vanish event
-            await db.Events
-                .Include(x => x.Tags)
-                .Where(x => 
-                    (x.EventPublicKey == e.PublicKey || 
-                    (x.EventKind == (long)EventKind.GiftWrap && x.Tags.Any(t => t.Name == EventTag.PublicKey && t.Value == e.PublicKey))) && 
-                    x.EventCreatedAt <= e.CreatedAt)
-                .ExecuteDeleteAsync();
+            var vanishStart = DateTimeOffset.UtcNow;
 
-            // insert vanish entity to db
-            db.Events.Add(e.ToEntity(DateTimeOffset.UtcNow));
+            // Use execution strategy to handle transactions with retry logic
+            var strategy = db.Database.CreateExecutionStrategy();
+            var deletedCount = await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await db.Database.BeginTransactionAsync();
 
-            // save
-            await db.SaveChangesAsync();
-            await tx.CommitAsync();
+                // delete all user's events (or tagged GiftWraps) from before the vanish event
+                var deleted = await db.Events
+                    .Include(x => x.Tags)
+                    .Where(x =>
+                        (x.EventPublicKey == e.PublicKey ||
+                        (x.EventKind == (long)EventKind.GiftWrap && x.Tags.Any(t => t.Name == EventTag.PublicKey && t.Value == e.PublicKey))) &&
+                        x.EventCreatedAt <= e.CreatedAt)
+                    .ExecuteDeleteAsync();
+
+                // insert vanish entity to db
+                db.Events.Add(e.ToEntity(DateTimeOffset.UtcNow));
+
+                // save
+                await db.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return deleted;
+            });
+
+            var vanishTime = DateTimeOffset.UtcNow - vanishStart;
+
+            if (vanishTime.TotalMilliseconds > 5000)
+            {
+                this.logger.LogWarning("Slow vanish operation for user {PubKey}: {Duration}ms, deleted {Count} events",
+                    e.PublicKey, vanishTime.TotalMilliseconds, deletedCount);
+            }
+
+            this.logger.LogInformation("Vanish request processed for user {PubKey}: deleted {Count} events in {Duration}ms",
+                e.PublicKey, deletedCount, vanishTime.TotalMilliseconds);
 
             // set vanished in cache
             this.userCache.Vanish(e.PublicKey, e.CreatedAt);

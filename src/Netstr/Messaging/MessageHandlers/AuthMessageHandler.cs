@@ -64,7 +64,7 @@ namespace Netstr.Messaging.MessageHandlers
             }
 
             var path = ctx.GetNormalizedUrl();
-            var relays = e.GetNormalizedRelayValues();
+            var relays = e.GetAuthRelayValues();
             
             if (!relays.Any(x => x == path))
             {

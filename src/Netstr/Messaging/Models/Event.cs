@@ -84,6 +84,11 @@ namespace Netstr.Messaging.Models
             return GetTagValues(EventTag.Relay).Select(x => x.Contains("://") ? x.Split("://")[1].TrimEnd('/') : x);
         }
 
+        public IEnumerable<string> GetAuthRelayValues()
+        {
+            return GetTagValues(EventTag.AuthRelay).Select(x => x.Contains("://") ? x.Split("://")[1].TrimEnd('/') : x);
+        }
+
         public DateTimeOffset? GetExpirationValue()
         {
             if (long.TryParse(GetTagValue(EventTag.Expiration), out var exp) && exp > 0)

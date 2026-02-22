@@ -29,6 +29,7 @@ namespace Netstr.Messaging.Events
 
         public async Task RunCleanupAsync()
         {
+            var cleanupStart = DateTimeOffset.UtcNow;
             var options = this.options.Value;
             var now = DateTimeOffset.UtcNow;
             var deletedOffset = now.AddDays(-options.DeleteDeletedEventsAfterDays);
@@ -36,30 +37,58 @@ namespace Netstr.Messaging.Events
 
             using var db = this.db.CreateDbContext();
 
-            var tx = await db.Database.BeginTransactionAsync();
-
-            // old deleted items
-            await db.Events.Where(x => x.DeletedAt.HasValue && x.DeletedAt < deletedOffset).ExecuteDeleteAsync();
-
-            // old expires items
-            await db.Events.Where(x => x.EventExpiration.HasValue && x.EventExpiration < expiredOffset).ExecuteDeleteAsync();
-
-            // kind ranges rules
-            foreach (var rule in options.DeleteEventsRules)
+            // Use execution strategy to handle transactions with retry logic
+            var strategy = db.Database.CreateExecutionStrategy();
+            var totalDeleted = await strategy.ExecuteAsync(async () =>
             {
-                var offset = now.AddDays(-rule.DeleteAfterDays);
+                await using var tx = await db.Database.BeginTransactionAsync();
+                var deleted = 0;
 
-                foreach (var range in rule.Kinds.Select(KindRange.Parse))
+                // old deleted items
+                var deletedCount = await db.Events.Where(x => x.DeletedAt.HasValue && x.DeletedAt < deletedOffset).ExecuteDeleteAsync();
+                deleted += deletedCount;
+                this.logger.LogInformation("Cleanup: removed {Count} soft-deleted events older than {Days} days", deletedCount, options.DeleteDeletedEventsAfterDays);
+
+                // old expires items
+                var expiredCount = await db.Events.Where(x => x.EventExpiration.HasValue && x.EventExpiration < expiredOffset).ExecuteDeleteAsync();
+                deleted += expiredCount;
+                this.logger.LogInformation("Cleanup: removed {Count} expired events older than {Days} days", expiredCount, options.DeleteExpiredEventsAfterDays);
+
+                // kind ranges rules
+                foreach (var rule in options.DeleteEventsRules)
                 {
-                    await db.Events.Where(x => x.EventKind >= range.MinKind && x.EventKind <= range.MaxKind && x.EventCreatedAt < offset).ExecuteDeleteAsync();
+                    var offset = now.AddDays(-rule.DeleteAfterDays);
+                    var ruleDeletedCount = 0;
+
+                    foreach (var range in rule.Kinds.Select(KindRange.Parse))
+                    {
+                        var rangeCount = await db.Events.Where(x => x.EventKind >= range.MinKind && x.EventKind <= range.MaxKind && x.EventCreatedAt < offset).ExecuteDeleteAsync();
+                        ruleDeletedCount += rangeCount;
+                    }
+
+                    deleted += ruleDeletedCount;
+                    this.logger.LogInformation("Cleanup: removed {Count} events matching kind rule (kinds: {Kinds}, {Days} days old)",
+                        ruleDeletedCount, string.Join(", ", rule.Kinds), rule.DeleteAfterDays);
                 }
+
+                await db.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return deleted;
+            });
+
+            var cleanupTime = DateTimeOffset.UtcNow - cleanupStart;
+
+            if (cleanupTime.TotalSeconds > 60)
+            {
+                this.logger.LogWarning("Cleanup took {Duration} seconds to delete {Count} events",
+                    cleanupTime.TotalSeconds, totalDeleted);
             }
-
-            var count = await db.SaveChangesAsync();
-            
-            await tx.CommitAsync();
-
-            this.logger.LogInformation($"Cleanup deleted {count} items");
+            else
+            {
+                this.logger.LogInformation("Cleanup completed in {Duration} seconds: deleted {Count} total events",
+                    cleanupTime.TotalSeconds, totalDeleted);
+            }
         }
     }
 }

@@ -34,6 +34,22 @@ namespace Netstr.Messaging.Events.Handlers
                 this.logger.LogInformation($"Event {e.ToStringUnique()} already exists, ignoring");
                 sender.SendOk(e.Id, Messages.DuplicateEvent);
             }
+            catch (DbUpdateException ex)
+            {
+                this.logger.LogError(ex, "Database update failed for event {EventId} (Kind: {Kind}, PubKey: {PubKey})",
+                    e.Id, e.Kind, e.PublicKey);
+                sender.SendNotOk(e.Id, Messages.DatabaseError);
+            }
+            catch (TimeoutException ex)
+            {
+                this.logger.LogError(ex, "Database timeout while saving event {EventId}", e.Id);
+                sender.SendNotOk(e.Id, Messages.DatabaseTimeout);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Unexpected error handling event {EventId} (Kind: {Kind})", e.Id, e.Kind);
+                sender.SendNotOk(e.Id, Messages.InternalServerError);
+            }
         }
 
         public abstract bool CanHandleEvent(Event e);
