@@ -1,10 +1,12 @@
 # [netstr - a nostr relay](https://relay.netstr.io/)
-[![release](https://img.shields.io/github/v/release/bezysoftware/netstr)](https://github.com/bezysoftware/netstr/releases)
-[![build](https://github.com/bezysoftware/netstr/workflows/build/badge.svg)](https://github.com/bezysoftware/netstr/workflows/actions)
+[![release](https://img.shields.io/github/v/release/EmmanuelAlmonte/netstr)](https://github.com/EmmanuelAlmonte/netstr/releases)
+[![build](https://github.com/EmmanuelAlmonte/netstr/actions/workflows/build-deploy.yml/badge.svg)](https://github.com/EmmanuelAlmonte/netstr/actions/workflows/build-deploy.yml)
 
 ![netstr logo](art/logo.jpg)
 
 Netstr is a modern relay for the [nostr protocol](https://github.com/nostr-protocol/nostr) written in C#. 
+
+Upstream acknowledgment: this repository is forked from [bezysoftware/netstr](https://github.com/bezysoftware/netstr), with gratitude to its original maintainers and contributors.
 
  * **Prod** instance: https://relay.netstr.io/
  * **Dev** instance: https://relay-dev.netstr.io/ (feel free to play with it / try to break it, just report if you find anything that needs fixing)
@@ -94,7 +96,7 @@ Netstr is c# app backed by a Postgres database. You have several options to get 
 
 * Install Docker: https://docs.docker.com/engine/install/
 * Install Postgres: https://www.postgresql.org/download/
-* Run `docker run -e ConnectionStrings__NetstrDatabase=YOUR_CONNECTION_STRING bezysoftware/netstr:latest`
+* Run `docker run -e ConnectionStrings__NetstrDatabase=YOUR_CONNECTION_STRING emmanuelalmonte/netstr:latest`
   * Set your connection string to point to your Postgres instance
 
 ### Docker compose
@@ -103,7 +105,7 @@ Docker compose contains a Postgres DB service so no need to install it manually.
  * NETSTR_DB_PASSWORD - password for Postgres DB
  
 Optionally you can also set following variables:
- * NETSTR_IMAGE - docker image (default `bezysoftware/netstr:latest`)
+ * NETSTR_IMAGE - docker image (default `emmanuelalmonte/netstr:latest`)
  * NETSTR_PORT - port on which the relay will be accessible (default 8080)
  * NETSTR_ENVIRONMENT - will be used to name the compose instance (default 'prod')
  * NETSTR_ENVIRONMENT_LONG - will be used inside the application to load specific configuration (default 'Production')

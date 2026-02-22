@@ -1,5 +1,5 @@
 # take latest version from ghcr and add version env variable to it
 
-FROM ghcr.io/bezysoftware/netstr:latest
+FROM ghcr.io/emmanuelalmonte/netstr:latest
 ARG APP_VERSION=v0.0.0
 ENV RelayInformation__Version=$APP_VERSION
