@@ -12,7 +12,7 @@ namespace Netstr.Messaging.Subscriptions.Validators
     {
         private readonly ILogger<WhitelistSubscriptionValidator> logger;
         private readonly IOptionsMonitor<WhitelistOptions> options;
-        private HashSet<string> allowedPublicKeys;
+        private HashSet<string> allowedPublicKeys = null!;
 
         public WhitelistSubscriptionValidator(
             ILogger<WhitelistSubscriptionValidator> logger,
@@ -58,7 +58,7 @@ namespace Netstr.Messaging.Subscriptions.Validators
                 return "auth-required: authentication required for subscription";
             }
 
-            if (!this.allowedPublicKeys.Contains(context.PublicKey))
+            if (!this.allowedPublicKeys.Contains(context.PublicKey!))
             {
                 this.logger.LogWarning($"Rejected subscription from non-whitelisted public key: {context.PublicKey}");
                 return Messages.WhitelistRestricted;

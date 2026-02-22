@@ -1,5 +1,5 @@
 {
   "ConnectionStrings": {
-    "NetstrDatabase": "Host=db.[YOUR-PROJECT-REF].supabase.co;Port=5432;Database=postgres;Username=postgres;Password=[YOUR-PASSWORD];SSL Mode=Require;Trust Server Certificate=true"
+    "NetstrDatabase": "Host=<db-host>;Port=5432;Database=<db-name>;Username=<db-user>;Password=<db-password>;SSL Mode=Require;Trust Server Certificate=true"
   }
 }

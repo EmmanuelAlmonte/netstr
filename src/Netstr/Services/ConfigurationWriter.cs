@@ -95,7 +95,7 @@ namespace Netstr.Services
         {
             return element.ValueKind switch
             {
-                JsonValueKind.String => element.GetString(),
+                JsonValueKind.String => element.GetString() ?? string.Empty,
                 JsonValueKind.Number => element.TryGetInt64(out long l) ? l : element.GetDouble(),
                 JsonValueKind.True => true,
                 JsonValueKind.False => false,

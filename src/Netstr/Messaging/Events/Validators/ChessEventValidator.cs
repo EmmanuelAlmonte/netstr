@@ -69,7 +69,6 @@ namespace Netstr.Messaging.Events.Validators
             }
 
             bool hasValidStructure = false;
-            bool inMoveSection = false;
 
             foreach (var line in lines)
             {
@@ -93,8 +92,6 @@ namespace Netstr.Messaging.Events.Validators
                 // Check for move text
                 if (!trimmedLine.StartsWith('['))
                 {
-                    inMoveSection = true;
-                    
                     // Basic validation for moves or result
                     if (ContainsValidMoveOrResult(trimmedLine))
                     {

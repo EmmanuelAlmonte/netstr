@@ -9,11 +9,13 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 ### List Types
 
 **Standard Lists (10000-10999):**
+
 - Single instance per user (replaceable events)
 - Unique by `pubkey + kind`
 - Examples: Mute lists, bookmarks, relay lists
 
 **Sets (30000-30999):**
+
 - Multiple instances per user with unique 'd' tags (addressable events)
 - Unique by `pubkey + kind + d_tag_value`
 - Examples: Follow sets, bookmark sets, curation sets
@@ -28,6 +30,7 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 ## Supported Event Kinds
 
 ### Standard Lists (10000-10999)
+
 - `10000` - Mute List
 - `10001` - Pinned Notes
 - `10002` - Relay List
@@ -44,6 +47,7 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 - `10102` - Good Wiki Relays
 
 ### Sets (30000-30999)
+
 - `30000` - Follow Sets
 - `30002` - Relay Sets
 - `30003` - Bookmark Sets
@@ -58,6 +62,7 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 ## Event Structure Examples
 
 ### Standard Mute List (Kind 10000)
+
 ```json
 {
   "id": "a92a316b75e44cfdc19986c634049158d4206fcc0b7b9c7ccbcdabe28beebcd0",
@@ -74,6 +79,7 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 ```
 
 ### Bookmark Set (Kind 30003)
+
 ```json
 {
   "id": "567b41fc9060c758c4216fe5f8d3df7c57daad7ae757fa4606f0c39d4dd220ef",
@@ -85,7 +91,10 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
     ["name", "Programming Resources"],
     ["about", "Collection of programming articles and tutorials"],
     ["e", "d78ba0d5dce22bfff9db0a9e996c9ef27e2c91051de0c4e1da340e0326b4941e"],
-    ["a", "30023:26dc95542e18b8b7aec2f14610f55c335abebec76f3db9e58c254661d0593a0c:95ODQzw3"],
+    [
+      "a",
+      "30023:26dc95542e18b8b7aec2f14610f55c335abebec76f3db9e58c254661d0593a0c:95ODQzw3"
+    ],
     ["t", "programming"],
     ["r", "https://example.com/resource"]
   ],
@@ -95,6 +104,7 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 ```
 
 ### Follow Set (Kind 30000)
+
 ```json
 {
   "kind": 30000,
@@ -119,135 +129,208 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 ### Basic List Retrieval
 
 **Get User's Mute List:**
+
 ```json
-["REQ", "mute_list", {
-  "authors": ["user_pubkey"], 
-  "kinds": [10000],
-  "limit": 1
-}]
+[
+  "REQ",
+  "mute_list",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [10000],
+    "limit": 1
+  }
+]
 ```
 
 **Get All User's Bookmark Sets:**
+
 ```json
-["REQ", "bookmark_sets", {
-  "authors": ["user_pubkey"], 
-  "kinds": [30003]
-}]
+[
+  "REQ",
+  "bookmark_sets",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [30003]
+  }
+]
 ```
 
 **Get All User's Lists:**
+
 ```json
-["REQ", "all_lists", {
-  "authors": ["user_pubkey"],
-  "kinds": [10000, 10001, 10003, 30000, 30002, 30003]
-}]
+[
+  "REQ",
+  "all_lists",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [10000, 10001, 10003, 30000, 30002, 30003]
+  }
+]
 ```
 
 ### Specific Set Queries
 
 **Get Specific Bookmark Set by ID:**
+
 ```json
-["REQ", "specific_bookmarks", {
-  "authors": ["user_pubkey"],
-  "kinds": [30003],
-  "#d": ["programming-resources"]
-}]
+[
+  "REQ",
+  "specific_bookmarks",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [30003],
+    "#d": ["programming-resources"]
+  }
+]
 ```
 
 **Get Relay Sets for UI Picker:**
+
 ```json
-["REQ", "relay_picker", {
-  "authors": ["user_pubkey"],
-  "kinds": [30002]
-}]
+[
+  "REQ",
+  "relay_picker",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [30002]
+  }
+]
 ```
 
 **Get Multiple Specific Sets:**
+
 ```json
-["REQ", "multiple_sets", {
-  "authors": ["user_pubkey"],
-  "kinds": [30003],
-  "#d": ["bookmarks-1", "bookmarks-2", "programming"]
-}]
+[
+  "REQ",
+  "multiple_sets",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [30003],
+    "#d": ["bookmarks-1", "bookmarks-2", "programming"]
+  }
+]
 ```
 
 ### Content-Based Queries
 
 **Find Lists Containing Specific User:**
+
 ```json
-["REQ", "lists_with_user", {
-  "kinds": [10000, 30000, 30007],
-  "#p": ["target_user_pubkey"]
-}]
+[
+  "REQ",
+  "lists_with_user",
+  {
+    "kinds": [10000, 30000, 30007],
+    "#p": ["target_user_pubkey"]
+  }
+]
 ```
 
 **Find Bookmark Sets Containing Specific Event:**
+
 ```json
-["REQ", "bookmarks_with_event", {
-  "kinds": [30003],
-  "#e": ["event_id"]
-}]
+[
+  "REQ",
+  "bookmarks_with_event",
+  {
+    "kinds": [30003],
+    "#e": ["event_id"]
+  }
+]
 ```
 
 **Find Sets Containing Addressable Events:**
+
 ```json
-["REQ", "sets_with_article", {
-  "kinds": [30003, 30004],
-  "#a": ["30023:author:article_id"]
-}]
+[
+  "REQ",
+  "sets_with_article",
+  {
+    "kinds": [30003, 30004],
+    "#a": ["30023:author:article_id"]
+  }
+]
 ```
 
 **Find Interest Sets by Topic:**
+
 ```json
-["REQ", "bitcoin_interests", {
-  "kinds": [30015],
-  "#t": ["bitcoin"]
-}]
+[
+  "REQ",
+  "bitcoin_interests",
+  {
+    "kinds": [30015],
+    "#t": ["bitcoin"]
+  }
+]
 ```
 
 **Find Relay Sets with Specific Relay:**
+
 ```json
-["REQ", "sets_with_relay", {
-  "kinds": [30002],
-  "#relay": ["wss://relay.damus.io"]
-}]
+[
+  "REQ",
+  "sets_with_relay",
+  {
+    "kinds": [30002],
+    "#relay": ["wss://relay.damus.io"]
+  }
+]
 ```
 
 ### Multi-User and Discovery Queries
 
 **Get All Public Mute Lists (Moderation):**
+
 ```json
-["REQ", "public_mutes", {
-  "kinds": [10000],
-  "limit": 100
-}]
+[
+  "REQ",
+  "public_mutes",
+  {
+    "kinds": [10000],
+    "limit": 100
+  }
+]
 ```
 
 **Get Community/Interest Lists:**
+
 ```json
-["REQ", "community_lists", {
-  "kinds": [10004, 10015, 30015],
-  "limit": 50
-}]
+[
+  "REQ",
+  "community_lists",
+  {
+    "kinds": [10004, 10015, 30015],
+    "limit": 50
+  }
+]
 ```
 
 **Recent List Updates:**
+
 ```json
-["REQ", "recent_lists", {
-  "authors": ["user_pubkey"],
-  "kinds": [10000, 10001, 10003, 30000, 30002, 30003],
-  "since": 1699500000
-}]
+[
+  "REQ",
+  "recent_lists",
+  {
+    "authors": ["user_pubkey"],
+    "kinds": [10000, 10001, 10003, 30000, 30002, 30003],
+    "since": 1699500000
+  }
+]
 ```
 
 ### Complex Multi-Filter Queries
 
 **Multiple OR Conditions:**
+
 ```json
-["REQ", "various_lists", 
-  {"authors": ["user1"], "kinds": [10000]},
-  {"authors": ["user2"], "kinds": [30003]},
-  {"kinds": [30002], "#d": ["primary-relays"]}
+[
+  "REQ",
+  "various_lists",
+  { "authors": ["user1"], "kinds": [10000] },
+  { "authors": ["user2"], "kinds": [30003] },
+  { "kinds": [30002], "#d": ["primary-relays"] }
 ]
 ```
 
@@ -255,19 +338,19 @@ This guide provides comprehensive implementation details for NIP-51 (Nostr Lists
 
 ```json
 {
-  "ids": ["event_id_1", "event_id_2"],           // Optional: specific event IDs
-  "authors": ["pubkey_1", "pubkey_2"],           // Optional: author pubkeys
-  "kinds": [10000, 30003],                       // Optional: event kinds
-  "since": 1699500000,                           // Optional: timestamp filter
-  "until": 1699600000,                           // Optional: timestamp filter
-  "limit": 100,                                  // Optional: result limit
-  "search": "bitcoin",                           // Optional: content search
-  "#d": ["set-id-1", "set-id-2"],               // Optional: d tag values
-  "#p": ["pubkey"],                              // Optional: p tag values
-  "#e": ["event_id"],                            // Optional: e tag values
-  "#a": ["30023:author:article"],                // Optional: a tag values
-  "#t": ["hashtag"],                             // Optional: t tag values
-  "#relay": ["wss://relay.example.com"]          // Optional: relay tag values
+  "ids": ["event_id_1", "event_id_2"], // Optional: specific event IDs
+  "authors": ["pubkey_1", "pubkey_2"], // Optional: author pubkeys
+  "kinds": [10000, 30003], // Optional: event kinds
+  "since": 1699500000, // Optional: timestamp filter
+  "until": 1699600000, // Optional: timestamp filter
+  "limit": 100, // Optional: result limit
+  "search": "bitcoin", // Optional: content search
+  "#d": ["set-id-1", "set-id-2"], // Optional: d tag values
+  "#p": ["pubkey"], // Optional: p tag values
+  "#e": ["event_id"], // Optional: e tag values
+  "#a": ["30023:author:article"], // Optional: a tag values
+  "#t": ["hashtag"], // Optional: t tag values
+  "#relay": ["wss://relay.example.com"] // Optional: relay tag values
 }
 ```
 
@@ -308,9 +391,13 @@ Private items are encrypted using NIP-04 encryption and stored in the `content` 
 // Encryption pseudocode
 const private_items = [
   ["p", "private_pubkey_1"],
-  ["a", "private_addressable_event"]
+  ["a", "private_addressable_event"],
 ];
-const encrypted_content = nip04.encrypt(JSON.stringify(private_items), user_private_key, user_public_key);
+const encrypted_content = nip04.encrypt(
+  JSON.stringify(private_items),
+  user_private_key,
+  user_public_key
+);
 event.content = encrypted_content;
 ```
 
@@ -331,9 +418,9 @@ class NostrListClient {
     const subId = `user_lists_${Date.now()}`;
     const filter = {
       authors: [userPubkey],
-      kinds: kinds
+      kinds: kinds,
     };
-    
+
     this.ws.send(JSON.stringify(["REQ", subId, filter]));
     return subId;
   }
@@ -344,9 +431,9 @@ class NostrListClient {
     const filter = {
       authors: [userPubkey],
       kinds: [kind],
-      "#d": [setId]
+      "#d": [setId],
     };
-    
+
     this.ws.send(JSON.stringify(["REQ", subId, filter]));
     return subId;
   }
@@ -356,9 +443,9 @@ class NostrListClient {
     const subId = `find_sets_${Date.now()}`;
     const filter = {
       kinds: kinds,
-      [`#${tagType}`]: [tagValue]
+      [`#${tagType}`]: [tagValue],
     };
-    
+
     this.ws.send(JSON.stringify(["REQ", subId, filter]));
     return subId;
   }
@@ -368,9 +455,9 @@ class NostrListClient {
     const subId = `lists_${kind}_${Date.now()}`;
     const filter = {
       kinds: [kind],
-      limit: limit
+      limit: limit,
     };
-    
+
     this.ws.send(JSON.stringify(["REQ", subId, filter]));
     return subId;
   }
@@ -382,9 +469,9 @@ class NostrListClient {
       tags: items,
       content: content,
       created_at: Math.floor(Date.now() / 1000),
-      pubkey: this.userPubkey
+      pubkey: this.userPubkey,
     };
-    
+
     const signedEvent = this.signEvent(event);
     this.ws.send(JSON.stringify(["EVENT", signedEvent]));
     return signedEvent;
@@ -394,23 +481,23 @@ class NostrListClient {
   publishSet(kind, setId, name, items, description = "") {
     const tags = [
       ["d", setId],
-      ["name", name]
+      ["name", name],
     ];
-    
+
     if (description) {
       tags.push(["about", description]);
     }
-    
+
     tags.push(...items);
-    
+
     const event = {
       kind: kind,
       tags: tags,
       content: "",
       created_at: Math.floor(Date.now() / 1000),
-      pubkey: this.userPubkey
+      pubkey: this.userPubkey,
     };
-    
+
     const signedEvent = this.signEvent(event);
     this.ws.send(JSON.stringify(["EVENT", signedEvent]));
     return signedEvent;
@@ -443,46 +530,61 @@ const muteSubId = client.subscribeToUserLists(userPubkey, [10000]);
 const bookmarkSetsSubId = client.subscribeToUserLists(userPubkey, [30003]);
 
 // Find sets containing a specific user
-const setsWithUserSubId = client.findSetsContaining("p", "target_pubkey", [30000, 30007]);
+const setsWithUserSubId = client.findSetsContaining(
+  "p",
+  "target_pubkey",
+  [30000, 30007]
+);
 
 // Create a new follow set
-client.publishSet(30000, "bitcoin-devs", "Bitcoin Developers", [
-  ["p", "dev1_pubkey"],
-  ["p", "dev2_pubkey"],
-  ["p", "dev3_pubkey"]
-], "Core Bitcoin protocol developers");
+client.publishSet(
+  30000,
+  "bitcoin-devs",
+  "Bitcoin Developers",
+  [
+    ["p", "dev1_pubkey"],
+    ["p", "dev2_pubkey"],
+    ["p", "dev3_pubkey"],
+  ],
+  "Core Bitcoin protocol developers"
+);
 
 // Create a mute list
 client.publishList(10000, [
   ["p", "spammer_pubkey"],
   ["t", "spam"],
-  ["word", "badword"]
+  ["word", "badword"],
 ]);
 ```
 
 ## Common Use Cases
 
 ### 1. User Profile Enhancement
+
 - Display pinned notes on profile
 - Show user's interests and communities
 - List preferred relays for communication
 
 ### 2. Content Curation
+
 - Create and share article collections
 - Organize bookmarks by topic
 - Curate video playlists
 
 ### 3. Social Graph Management
+
 - Organize follows into categories
 - Manage mute lists for content filtering
 - Create topic-specific follow lists
 
 ### 4. Relay Management
+
 - Set up relay groups for different purposes
 - Share relay recommendations
 - Manage blocked relays
 
 ### 5. Community Building
+
 - Share community lists
 - Create interest-based groups
 - Organize member lists
@@ -490,24 +592,28 @@ client.publishList(10000, [
 ## Best Practices
 
 ### 1. Event Publishing
+
 - Always include proper timestamps
 - Use descriptive names for sets
 - Include helpful descriptions in 'about' tags
 - Validate tag formats before publishing
 
 ### 2. Query Efficiency
+
 - Use specific filters to reduce bandwidth
 - Implement proper pagination with 'limit'
 - Close subscriptions when no longer needed
 - Use time-based filters for recent updates
 
 ### 3. User Experience
+
 - Cache frequently accessed lists locally
 - Implement real-time updates for list changes
 - Provide UI for easy list management
 - Show loading states during queries
 
 ### 4. Privacy Considerations
+
 - Encrypt sensitive list items in content field
 - Consider public vs private list implications
 - Respect user privacy preferences
@@ -516,6 +622,7 @@ client.publishList(10000, [
 ## Error Handling
 
 ### Common Error Scenarios
+
 - Invalid event signatures
 - Missing required tags (especially 'd' tags for sets)
 - Invalid tag formats
@@ -523,6 +630,7 @@ client.publishList(10000, [
 - Rate limiting by relays
 
 ### Implementation Considerations
+
 - Implement retry logic for failed publishes
 - Validate events before sending
 - Handle relay disconnections gracefully

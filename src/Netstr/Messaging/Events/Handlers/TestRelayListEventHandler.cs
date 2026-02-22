@@ -22,7 +22,7 @@ namespace Netstr.Messaging.Events.Handlers
 
         public bool CanHandleEvent(Event e) => e.Kind == (long)EventKind.RelayList;
 
-        public async Task HandleEventAsync(IWebSocketAdapter sender, Event e)
+        public Task HandleEventAsync(IWebSocketAdapter sender, Event e)
         {
             this._logger.LogInformation(
                 "Test Relay List Event Received:\nFull Event:\n{@Event}\nTags:\n{@Tags}\nContent:\n{Content}",
@@ -47,6 +47,8 @@ namespace Netstr.Messaging.Events.Handlers
                 this._logger.LogError(error, "Failed to process relay list event {EventId} for user {PubKey}", e.Id, e.PublicKey);
                 sender.SendNotOk(e.Id, "Failed to process relay list event");
             }
+
+            return Task.CompletedTask;
         }
     }
 }

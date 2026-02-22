@@ -32,7 +32,7 @@ namespace Netstr.Middleware
                 
                 this.logger.LogInformation("Running cleanup finished");
                 
-                await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+                    await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
             }
         }
     }

@@ -50,6 +50,12 @@ namespace Netstr.Messaging.MessageHandlers
             var entities = await GetFilteredEvents(context, filters, adapter.Context.PublicKey).ToArrayAsync();
             var events = entities.Select(CreateEvent).ToArray();
 
+            this.logger.LogInformation($"Found {entities.Length} stored events for subscription {subscriptionId}");
+            if (entities.Length > 0)
+            {
+                this.logger.LogInformation($"First event: {entities[0].EventId}, Kind: {entities[0].EventKind}");
+            }
+
             // send stored events (also sends EOSE)
             subscription.SendStoredEvents(events);
         }

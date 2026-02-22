@@ -11,7 +11,7 @@ namespace Netstr.Messaging.Events.Validators
     {
         private readonly ILogger<WhitelistValidator> logger;
         private readonly IOptionsMonitor<WhitelistOptions> options;
-        private HashSet<string> allowedPublicKeys;
+        private HashSet<string> allowedPublicKeys = null!;
 
         public WhitelistValidator(
             ILogger<WhitelistValidator> logger,
