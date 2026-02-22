@@ -412,3 +412,9 @@ appsettings.*.local.json
 .claude/
 src/Netstr/.claude/
 test/Netstr.Tests/.claude/
+# Excluded local deployment/design artifacts
+docs/Local-Messaging-System-Design.md
+docs/Architecture-Context-Engineering.md
+run-lan.sh
+scripts/netstr-nginx.conf
+scripts/netstr.service
