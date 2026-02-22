@@ -24,7 +24,12 @@ namespace Netstr.Extensions
             services.AddTransient<ICleanupService, CleanupService>();
             
             // NIP-05 verification service
-            services.AddHttpClient<INip05VerificationService, Nip05VerificationService>();
+            // Per NIP-05 spec: MUST NOT follow HTTP redirects for security
+            services.AddHttpClient<INip05VerificationService, Nip05VerificationService>()
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    AllowAutoRedirect = false
+                });
 
             // message
             services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
@@ -80,6 +85,9 @@ namespace Netstr.Extensions
 
             services.AddSingleton<IEventValidator, ZapEventValidator>();
             services.AddSingleton<IEventValidator, ChessEventValidator>();
+            services.AddSingleton<IEventValidator, FollowListValidator>();
+            services.AddSingleton<IEventValidator, RelayListEventValidator>();
+            services.AddSingleton<IEventValidator, ListEventValidator>();
 
             return services;
         }

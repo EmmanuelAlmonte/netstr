@@ -7,6 +7,8 @@ public enum EventKind
 {
     // Basic event kinds
     UserMetadata = 0,
+    ShortTextNote = 1,
+    FollowList = 3,
     Delete = 5,
     RequestToVanish = 62,
     GiftWrap = 1059,

@@ -19,7 +19,7 @@ namespace Netstr.Tests.NIPs
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public partial class NIP_65RelayListMetadataFeature : object, Xunit.IClassFixture<NIP_65RelayListMetadataFeature.FixtureData>, System.IDisposable
+    public partial class NIP_65Feature : object, Xunit.IClassFixture<NIP_65Feature.FixtureData>, System.IDisposable
     {
         
         private static TechTalk.SpecFlow.ITestRunner testRunner;
@@ -31,7 +31,7 @@ namespace Netstr.Tests.NIPs
 #line 1 "65.feature"
 #line hidden
         
-        public NIP_65RelayListMetadataFeature(NIP_65RelayListMetadataFeature.FixtureData fixtureData, Netstr_Tests_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        public NIP_65Feature(NIP_65Feature.FixtureData fixtureData, Netstr_Tests_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
         {
             this._testOutputHelper = testOutputHelper;
             this.TestInitialize();
@@ -40,8 +40,8 @@ namespace Netstr.Tests.NIPs
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-65 Relay List Metadata", "    As a NOSTR client\r\n    I want to publish and retrieve my relay preferences\r\n " +
-                    "   So that other clients know which relays I use", ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-65", "\tRelay List Metadata events (kind 10002) advertise the relays users prefer for re" +
+                    "ading and writing.\r\n\tThese are replaceable events.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -78,13 +78,28 @@ namespace Netstr.Tests.NIPs
         
         public virtual void FeatureBackground()
         {
-#line 6
-    #line hidden
-#line 7
-        testRunner.Given("I am connected to the relay", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 5
 #line hidden
-#line 8
-        testRunner.And("I am authenticated", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 6
+ testRunner.Given("a relay is running", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table253 = new TechTalk.SpecFlow.Table(new string[] {
+                        "PublicKey",
+                        "PrivateKey"});
+            table253.AddRow(new string[] {
+                        "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                        "512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02"});
+#line 7
+ testRunner.And("Alice is connected to relay", ((string)(null)), table253, "And ");
+#line hidden
+            TechTalk.SpecFlow.Table table254 = new TechTalk.SpecFlow.Table(new string[] {
+                        "PublicKey",
+                        "PrivateKey"});
+            table254.AddRow(new string[] {
+                        "5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627",
+                        "3551fc7617f76632e4542992c0bc01fecb224de639c4b6a1e0956946e8bb8a29"});
+#line 10
+ testRunner.And("Bob is connected to relay", ((string)(null)), table254, "And ");
 #line hidden
         }
         
@@ -93,16 +108,16 @@ namespace Netstr.Tests.NIPs
             this.TestTearDown();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Publishing valid relay list")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-65 Relay List Metadata")]
-        [Xunit.TraitAttribute("Description", "Publishing valid relay list")]
-        public void PublishingValidRelayList()
+        [Xunit.SkippableFactAttribute(DisplayName="Publish valid relay list with read/write markers")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Publish valid relay list with read/write markers")]
+        public void PublishValidRelayListWithReadWriteMarkers()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Publishing valid relay list", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 10
-    this.ScenarioInitialize(scenarioInfo);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Publish valid relay list with read/write markers", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 14
+this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
             {
@@ -111,47 +126,50 @@ namespace Netstr.Tests.NIPs
             else
             {
                 this.ScenarioStart();
-#line 6
-    this.FeatureBackground();
+#line 5
+this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table153 = new TechTalk.SpecFlow.Table(new string[] {
-                            "r",
-                            "wss://relay1.com",
-                            "read",
-                            "write"});
-                table153.AddRow(new string[] {
-                            "r",
-                            "wss://relay2.com",
-                            "read",
-                            ""});
-                table153.AddRow(new string[] {
-                            "r",
-                            "wss://relay3.com",
-                            "write",
-                            ""});
-#line 11
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table153, "When ");
-#line hidden
+                TechTalk.SpecFlow.Table table255 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table255.AddRow(new string[] {
+                            "1111111111111111111111111111111111111111111111111111111111111111",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"wss://relay1.example.com\",\"read\"],[\"r\",\"wss://relay2.example.com\",\"write\"]" +
+                                ",[\"r\",\"wss://relay3.example.com\"]]",
+                            "1722337838"});
 #line 15
-        testRunner.Then("I should receive an \"OK\" message", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table255, "When ");
 #line hidden
-#line 16
-        testRunner.And("the relay configurations should be stored for my public key", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableFactAttribute(DisplayName="Updating existing relay list")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-65 Relay List Metadata")]
-        [Xunit.TraitAttribute("Description", "Updating existing relay list")]
-        public void UpdatingExistingRelayList()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Updating existing relay list", null, tagsOfScenario, argumentsOfScenario, featureTags);
+                TechTalk.SpecFlow.Table table256 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table256.AddRow(new string[] {
+                            "OK",
+                            "1111111111111111111111111111111111111111111111111111111111111111",
+                            "true"});
 #line 18
-    this.ScenarioInitialize(scenarioInfo);
+ testRunner.Then("Alice receives a message", ((string)(null)), table256, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Query relay list by author")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Query relay list by author")]
+        public void QueryRelayListByAuthor()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Query relay list by author", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 22
+this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
             {
@@ -160,114 +178,63 @@ namespace Netstr.Tests.NIPs
             else
             {
                 this.ScenarioStart();
-#line 6
-    this.FeatureBackground();
+#line 5
+this.FeatureBackground();
 #line hidden
-#line 19
-        testRunner.Given("I have published relay configurations", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-                TechTalk.SpecFlow.Table table154 = new TechTalk.SpecFlow.Table(new string[] {
-                            "r",
-                            "wss://relay1.com",
-                            "read"});
-                table154.AddRow(new string[] {
-                            "r",
-                            "wss://relay4.com",
-                            "write"});
-#line 20
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table154, "When ");
-#line hidden
+                TechTalk.SpecFlow.Table table257 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table257.AddRow(new string[] {
+                            "2222222222222222222222222222222222222222222222222222222222222222",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"wss://relay1.example.com\",\"read\"],[\"r\",\"wss://relay2.example.com\",\"write\"]" +
+                                "]",
+                            "1722337838"});
 #line 23
-        testRunner.Then("I should receive an \"OK\" message", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table257, "When ");
 #line hidden
-#line 24
-        testRunner.And("my old relay configurations should be replaced", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+                TechTalk.SpecFlow.Table table258 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Authors",
+                            "Kinds"});
+                table258.AddRow(new string[] {
+                            "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                            "10002"});
+#line 26
+ testRunner.And("Bob sends a subscription request relays", ((string)(null)), table258, "And ");
 #line hidden
-#line 25
-        testRunner.And("the new relay configurations should be stored", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableFactAttribute(DisplayName="Publishing empty relay list")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-65 Relay List Metadata")]
-        [Xunit.TraitAttribute("Description", "Publishing empty relay list")]
-        public void PublishingEmptyRelayList()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Publishing empty relay list", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 27
-    this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 6
-    this.FeatureBackground();
-#line hidden
-#line 28
-        testRunner.When("I publish an event with kind 10002 and no tags", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
+                TechTalk.SpecFlow.Table table259 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "EventId"});
+                table259.AddRow(new string[] {
+                            "EVENT",
+                            "relays",
+                            "2222222222222222222222222222222222222222222222222222222222222222"});
+                table259.AddRow(new string[] {
+                            "EOSE",
+                            "relays",
+                            ""});
 #line 29
-        testRunner.Then("I should receive an error message containing \"must contain at least one relay tag" +
-                        "\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("Bob receives messages", ((string)(null)), table259, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Publishing invalid relay URL")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-65 Relay List Metadata")]
-        [Xunit.TraitAttribute("Description", "Publishing invalid relay URL")]
-        public void PublishingInvalidRelayURL()
+        [Xunit.SkippableFactAttribute(DisplayName="Update existing relay list replaces previous")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Update existing relay list replaces previous")]
+        public void UpdateExistingRelayListReplacesPrevious()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Publishing invalid relay URL", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 31
-    this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 6
-    this.FeatureBackground();
-#line hidden
-                TechTalk.SpecFlow.Table table155 = new TechTalk.SpecFlow.Table(new string[] {
-                            "r",
-                            "invalid-url",
-                            "read",
-                            "write"});
-#line 32
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table155, "When ");
-#line hidden
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Update existing relay list replaces previous", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 34
-        testRunner.Then("I should receive an error message containing \"Invalid relay URL format\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableFactAttribute(DisplayName="Publishing invalid permission marker")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-65 Relay List Metadata")]
-        [Xunit.TraitAttribute("Description", "Publishing invalid permission marker")]
-        public void PublishingInvalidPermissionMarker()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Publishing invalid permission marker", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 36
-    this.ScenarioInitialize(scenarioInfo);
+this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
             {
@@ -276,33 +243,68 @@ namespace Netstr.Tests.NIPs
             else
             {
                 this.ScenarioStart();
-#line 6
-    this.FeatureBackground();
+#line 5
+this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table156 = new TechTalk.SpecFlow.Table(new string[] {
-                            "r",
-                            "wss://relay1.com",
-                            "invalid"});
-#line 37
-        testRunner.When("I publish an event with kind 10002 and tags:", ((string)(null)), table156, "When ");
+                TechTalk.SpecFlow.Table table260 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table260.AddRow(new string[] {
+                            "3333333333333333333333333333333333333333333333333333333333333333",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"wss://relay1.example.com\"]]",
+                            "1722337838"});
+                table260.AddRow(new string[] {
+                            "4444444444444444444444444444444444444444444444444444444444444444",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"wss://relay2.example.com\"]]",
+                            "1722337848"});
+#line 35
+ testRunner.When("Alice publishes events", ((string)(null)), table260, "When ");
 #line hidden
+                TechTalk.SpecFlow.Table table261 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Authors",
+                            "Kinds"});
+                table261.AddRow(new string[] {
+                            "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                            "10002"});
 #line 39
-        testRunner.Then("I should receive an error message containing \"Invalid relay permission marker\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.And("Bob sends a subscription request relays", ((string)(null)), table261, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table262 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "EventId"});
+                table262.AddRow(new string[] {
+                            "EVENT",
+                            "relays",
+                            "4444444444444444444444444444444444444444444444444444444444444444"});
+                table262.AddRow(new string[] {
+                            "EOSE",
+                            "relays",
+                            ""});
+#line 42
+ testRunner.Then("Bob receives messages", ((string)(null)), table262, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Retrieving relay configurations")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-65 Relay List Metadata")]
-        [Xunit.TraitAttribute("Description", "Retrieving relay configurations")]
-        public void RetrievingRelayConfigurations()
+        [Xunit.SkippableFactAttribute(DisplayName="Reject relay list with no r tags")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Reject relay list with no r tags")]
+        public void RejectRelayListWithNoRTags()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Retrieving relay configurations", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 41
-    this.ScenarioInitialize(scenarioInfo);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject relay list with no r tags", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 47
+this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
             {
@@ -311,17 +313,193 @@ namespace Netstr.Tests.NIPs
             else
             {
                 this.ScenarioStart();
-#line 6
-    this.FeatureBackground();
+#line 5
+this.FeatureBackground();
 #line hidden
-#line 42
-        testRunner.Given("I have published relay configurations", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+                TechTalk.SpecFlow.Table table263 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table263.AddRow(new string[] {
+                            "5555555555555555555555555555555555555555555555555555555555555555",
+                            "*",
+                            "10002",
+                            "",
+                            "1722337838"});
+#line 48
+ testRunner.When("Alice publishes an event", ((string)(null)), table263, "When ");
 #line hidden
-#line 43
-        testRunner.When("I request relay configurations for my public key", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+                TechTalk.SpecFlow.Table table264 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table264.AddRow(new string[] {
+                            "OK",
+                            "5555555555555555555555555555555555555555555555555555555555555555",
+                            "false",
+                            "*"});
+#line 51
+ testRunner.Then("Alice receives a message", ((string)(null)), table264, "Then ");
 #line hidden
-#line 44
-        testRunner.Then("I should receive my relay configurations", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject relay list with invalid URL")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Reject relay list with invalid URL")]
+        public void RejectRelayListWithInvalidURL()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject relay list with invalid URL", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 55
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 5
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table265 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table265.AddRow(new string[] {
+                            "6666666666666666666666666666666666666666666666666666666666666666",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"not-a-valid-url\"]]",
+                            "1722337838"});
+#line 56
+ testRunner.When("Alice publishes an event", ((string)(null)), table265, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table266 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table266.AddRow(new string[] {
+                            "OK",
+                            "6666666666666666666666666666666666666666666666666666666666666666",
+                            "false",
+                            "*"});
+#line 59
+ testRunner.Then("Alice receives a message", ((string)(null)), table266, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject relay list with invalid marker")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Reject relay list with invalid marker")]
+        public void RejectRelayListWithInvalidMarker()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject relay list with invalid marker", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 63
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 5
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table267 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table267.AddRow(new string[] {
+                            "7777777777777777777777777777777777777777777777777777777777777777",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"wss://relay1.example.com\",\"invalid_marker\"]]",
+                            "1722337838"});
+#line 64
+ testRunner.When("Alice publishes an event", ((string)(null)), table267, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table268 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table268.AddRow(new string[] {
+                            "OK",
+                            "7777777777777777777777777777777777777777777777777777777777777777",
+                            "false",
+                            "*"});
+#line 67
+ testRunner.Then("Alice receives a message", ((string)(null)), table268, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Valid relay list with no markers means both read and write")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-65")]
+        [Xunit.TraitAttribute("Description", "Valid relay list with no markers means both read and write")]
+        public void ValidRelayListWithNoMarkersMeansBothReadAndWrite()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Valid relay list with no markers means both read and write", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 71
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 5
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table269 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table269.AddRow(new string[] {
+                            "8888888888888888888888888888888888888888888888888888888888888888",
+                            "*",
+                            "10002",
+                            "[[\"r\",\"wss://relay1.example.com\"]]",
+                            "1722337838"});
+#line 72
+ testRunner.When("Alice publishes an event", ((string)(null)), table269, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table270 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table270.AddRow(new string[] {
+                            "OK",
+                            "8888888888888888888888888888888888888888888888888888888888888888",
+                            "true"});
+#line 75
+ testRunner.Then("Alice receives a message", ((string)(null)), table270, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -334,12 +512,12 @@ namespace Netstr.Tests.NIPs
             
             public FixtureData()
             {
-                NIP_65RelayListMetadataFeature.FeatureSetup();
+                NIP_65Feature.FeatureSetup();
             }
             
             void System.IDisposable.Dispose()
             {
-                NIP_65RelayListMetadataFeature.FeatureTearDown();
+                NIP_65Feature.FeatureTearDown();
             }
         }
     }

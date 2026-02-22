@@ -19,7 +19,7 @@ namespace Netstr.Tests.NIPs
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public partial class NIP_57LightningZapsFeature : object, Xunit.IClassFixture<NIP_57LightningZapsFeature.FixtureData>, System.IDisposable
+    public partial class NIP_57Feature : object, Xunit.IClassFixture<NIP_57Feature.FixtureData>, System.IDisposable
     {
         
         private static TechTalk.SpecFlow.ITestRunner testRunner;
@@ -31,7 +31,7 @@ namespace Netstr.Tests.NIPs
 #line 1 "57.feature"
 #line hidden
         
-        public NIP_57LightningZapsFeature(NIP_57LightningZapsFeature.FixtureData fixtureData, Netstr_Tests_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
+        public NIP_57Feature(NIP_57Feature.FixtureData fixtureData, Netstr_Tests_XUnitAssemblyFixture assemblyFixture, Xunit.Abstractions.ITestOutputHelper testOutputHelper)
         {
             this._testOutputHelper = testOutputHelper;
             this.TestInitialize();
@@ -40,7 +40,9 @@ namespace Netstr.Tests.NIPs
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-57 Lightning Zaps", "    Tests for NIP-57 Lightning Zaps implementation", ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-57", "\tLightning Zaps enable Bitcoin payments on nostr.\r\n\tZap Request (kind 9734) is se" +
+                    "nt to initiate a zap.\r\n\tZap Receipt (kind 9735) is published after payment confi" +
+                    "rmation.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -77,16 +79,28 @@ namespace Netstr.Tests.NIPs
         
         public virtual void FeatureBackground()
         {
-#line 4
-    #line hidden
-#line 5
-        testRunner.Given("a relay at \"wss://localhost:5001\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
 #line 6
-        testRunner.And("a user Alice", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 7
-        testRunner.And("Alice is connected to the relay", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+ testRunner.Given("a relay is running", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table209 = new TechTalk.SpecFlow.Table(new string[] {
+                        "PublicKey",
+                        "PrivateKey"});
+            table209.AddRow(new string[] {
+                        "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                        "512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02"});
+#line 8
+ testRunner.And("Alice is connected to relay", ((string)(null)), table209, "And ");
+#line hidden
+            TechTalk.SpecFlow.Table table210 = new TechTalk.SpecFlow.Table(new string[] {
+                        "PublicKey",
+                        "PrivateKey"});
+            table210.AddRow(new string[] {
+                        "5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627",
+                        "3551fc7617f76632e4542992c0bc01fecb224de639c4b6a1e0956946e8bb8a29"});
+#line 11
+ testRunner.And("Bob is connected to relay", ((string)(null)), table210, "And ");
 #line hidden
         }
         
@@ -95,16 +109,16 @@ namespace Netstr.Tests.NIPs
             this.TestTearDown();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Create and retrieve a zap request")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-57 Lightning Zaps")]
-        [Xunit.TraitAttribute("Description", "Create and retrieve a zap request")]
-        public void CreateAndRetrieveAZapRequest()
+        [Xunit.SkippableFactAttribute(DisplayName="Create valid zap request with required tags")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Create valid zap request with required tags")]
+        public void CreateValidZapRequestWithRequiredTags()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create and retrieve a zap request", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 9
-    this.ScenarioInitialize(scenarioInfo);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create valid zap request with required tags", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 16
+this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
             {
@@ -113,52 +127,50 @@ namespace Netstr.Tests.NIPs
             else
             {
                 this.ScenarioStart();
-#line 4
-    this.FeatureBackground();
+#line 6
+this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table135 = new TechTalk.SpecFlow.Table(new string[] {
-                            "relays",
-                            "wss://relay1.example.com,wss://relay2.example.com"});
-                table135.AddRow(new string[] {
-                            "amount",
-                            "21000"});
-                table135.AddRow(new string[] {
-                            "lnurl",
-                            "lnurl1dp68gurn8ghj7um5v93kketj9ehx2amn9uh8wetvdskkkmn0wahz7mrww4excup0dajx2mrv92x" +
-                                "9xp"});
-                table135.AddRow(new string[] {
-                            "p",
-                            "04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"});
-#line 10
-        testRunner.When("Alice publishes an event with kind 9734 and tags:", ((string)(null)), table135, "When ");
-#line hidden
-#line 15
-        testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-#line 16
-        testRunner.When("Alice subscribes to events with kind 9734", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
+                TechTalk.SpecFlow.Table table211 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table211.AddRow(new string[] {
+                            "1111111111111111111111111111111111111111111111111111111111111111",
+                            "*",
+                            "9734",
+                            "[[\"p\",\"04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9\"],[\"relay" +
+                                "s\",\"wss://relay1.example.com\",\"wss://relay2.example.com\"]]",
+                            "1722337838"});
 #line 17
-        testRunner.Then("Alice receives 1 event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table211, "When ");
 #line hidden
-#line 18
-        testRunner.And("the event has tag \"p\" with value \"04c915daefee38317fa734444acee390a8269fe5810b224" +
-                        "1e5e6dd343dfbecc9\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+                TechTalk.SpecFlow.Table table212 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table212.AddRow(new string[] {
+                            "OK",
+                            "1111111111111111111111111111111111111111111111111111111111111111",
+                            "true"});
+#line 20
+ testRunner.Then("Alice receives a message", ((string)(null)), table212, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Create and retrieve a zap receipt")]
-        [Xunit.TraitAttribute("FeatureTitle", "NIP-57 Lightning Zaps")]
-        [Xunit.TraitAttribute("Description", "Create and retrieve a zap receipt")]
-        public void CreateAndRetrieveAZapReceipt()
+        [Xunit.SkippableFactAttribute(DisplayName="Create zap request with amount and lnurl")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Create zap request with amount and lnurl")]
+        public void CreateZapRequestWithAmountAndLnurl()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create and retrieve a zap receipt", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 20
-    this.ScenarioInitialize(scenarioInfo);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create zap request with amount and lnurl", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 24
+this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
             {
@@ -167,35 +179,590 @@ namespace Netstr.Tests.NIPs
             else
             {
                 this.ScenarioStart();
-#line 4
-    this.FeatureBackground();
+#line 6
+this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table136 = new TechTalk.SpecFlow.Table(new string[] {
-                            "p",
-                            "32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245"});
-                table136.AddRow(new string[] {
-                            "bolt11",
-                            @"lnbc10u1p3unwfusp5t9r3yymhpfqculx78u027lxspgxcr2n2987mx2j55nnfs95nxnzqpp5jmrh92pfld78spqs78v9euf2385t83uvpwk9ldrlvf6ch7tpascqhp5zvkrmemgth3tufcvflmzjzfvjt023nazlhljz2n9hattj4f8jq8qxqyjw5qcqpjrzjqtc4fc44feggv7065fqe5m4ytjarg3repr5j9el35xhmtfexc42yczarjuqqfzqqqqqqqqlgqqqqqqgq9q9qxpqysgq079nkq507a5tw7xgttmj4u990j7wfggtrasah5gd4ywfr2pjcn29383tphp4t48gquelz9z78p4cq7ml3nrrphw5w6eckhjwmhezhnqpy6gyf0"});
-                table136.AddRow(new string[] {
-                            "description",
-                            @"{""pubkey"":""32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245"",""content"":"""",""id"":""d9cc14d50fcb8c27539aacf776882942c1a11ea4472f8cdec1dea82fab66279d"",""created_at"":1674164539,""sig"":""77127f636577e9029276be060332ea565deaf89ff215a494ccff16ae3f757065e2bc59b2e8c113dd407917a010b3abd36c8d7ad84c0e3ab7dab3a0b0caa9835d"",""kind"":9734,""tags"":[[""e"",""3624762a1274dd9636e0c552b53086d70bc88c165bc4dc0f9e836a1eaf86c3b8""],[""p"",""32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245""],[""relays"",""wss://relay.damus.io"",""wss://nostr-relay.wlvs.space"",""wss://nostr.fmt.wiz.biz"",""wss://relay.nostr.bg"",""wss://nostr.oxtr.dev"",""wss://nostr.v0l.io"",""wss://brb.io"",""wss://nostr.bitcoiner.social"",""ws://monad.jb55.com:8080"",""wss://relay.snort.social""]]}"});
-                table136.AddRow(new string[] {
-                            "preimage",
-                            "5d006d2cf1e73c7148e7519a4c68adc81642ce0e25a432b2434c99f97344c15f"});
-#line 21
-        testRunner.When("Alice publishes an event with kind 9735 and tags:", ((string)(null)), table136, "When ");
+                TechTalk.SpecFlow.Table table213 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table213.AddRow(new string[] {
+                            "2222222222222222222222222222222222222222222222222222222222222222",
+                            "*",
+                            "9734",
+                            "[[\"p\",\"04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9\"],[\"relay" +
+                                "s\",\"wss://relay1.example.com\"],[\"amount\",\"21000\"],[\"lnurl\",\"lnurl1dp68gurn8ghj7u" +
+                                "m5v93kketj9ehx2amn9uh8wetvdskkkmn0wahz7mrww4excup0dajx2mrv92x9xp\"]]",
+                            "1722337838"});
+#line 25
+ testRunner.When("Alice publishes an event", ((string)(null)), table213, "When ");
 #line hidden
-#line 26
-        testRunner.Then("the relay accepts the event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-#line 27
-        testRunner.When("Alice subscribes to events with kind 9735", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
+                TechTalk.SpecFlow.Table table214 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table214.AddRow(new string[] {
+                            "OK",
+                            "2222222222222222222222222222222222222222222222222222222222222222",
+                            "true"});
 #line 28
-        testRunner.Then("Alice receives 1 event", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table214, "Then ");
 #line hidden
-#line 29
-        testRunner.And(@"the event has tag ""bolt11"" with value starting with ""lnbc10u1p3unwfusp5t9r3yymhpfqculx78u027lxspgxcr2n2987mx2j55nnfs95nxnzqpp5jmrh92pfld78spqs78v9euf2385t83uvpwk9ldrlvf6ch7tpascqhp5zvkrmemgth3tufcvflmzjzfvjt023nazlhljz2n9hattj4f8jq8qxqyjw5qcqpjrzjqtc4fc44feggv7065fqe5m4ytjarg3repr5j9el35xhmtfexc42yczarjuqqfzqqqqqqqqlgqqqqqqgq9q9qxpqysgq079nkq507a5tw7xgttmj4u990j7wfggtrasah5gd4ywfr2pjcn29383tphp4t48gquelz9z78p4cq7ml3nrrphw5w6eckhjwmhezhnqpy6gyf0""", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Create zap request with e tag for specific event")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Create zap request with e tag for specific event")]
+        public void CreateZapRequestWithETagForSpecificEvent()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create zap request with e tag for specific event", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 32
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table215 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table215.AddRow(new string[] {
+                            "3333333333333333333333333333333333333333333333333333333333333333",
+                            "*",
+                            "9734",
+                            "[[\"p\",\"04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9\"],[\"relay" +
+                                "s\",\"wss://relay1.example.com\"],[\"e\",\"3624762a1274dd9636e0c552b53086d70bc88c165bc" +
+                                "4dc0f9e836a1eaf86c3b8\"]]",
+                            "1722337838"});
+#line 33
+ testRunner.When("Alice publishes an event", ((string)(null)), table215, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table216 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table216.AddRow(new string[] {
+                            "OK",
+                            "3333333333333333333333333333333333333333333333333333333333333333",
+                            "true"});
+#line 36
+ testRunner.Then("Alice receives a message", ((string)(null)), table216, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject zap request without p tag")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Reject zap request without p tag")]
+        public void RejectZapRequestWithoutPTag()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject zap request without p tag", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 40
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table217 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table217.AddRow(new string[] {
+                            "4444444444444444444444444444444444444444444444444444444444444444",
+                            "*",
+                            "9734",
+                            "[[\"relays\",\"wss://relay1.example.com\"]]",
+                            "1722337838"});
+#line 41
+ testRunner.When("Alice publishes an event", ((string)(null)), table217, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table218 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table218.AddRow(new string[] {
+                            "OK",
+                            "4444444444444444444444444444444444444444444444444444444444444444",
+                            "false",
+                            "*"});
+#line 44
+ testRunner.Then("Alice receives a message", ((string)(null)), table218, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject zap request without relays tag")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Reject zap request without relays tag")]
+        public void RejectZapRequestWithoutRelaysTag()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject zap request without relays tag", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 48
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table219 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table219.AddRow(new string[] {
+                            "5555555555555555555555555555555555555555555555555555555555555555",
+                            "*",
+                            "9734",
+                            "[[\"p\",\"04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9\"]]",
+                            "1722337838"});
+#line 49
+ testRunner.When("Alice publishes an event", ((string)(null)), table219, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table220 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table220.AddRow(new string[] {
+                            "OK",
+                            "5555555555555555555555555555555555555555555555555555555555555555",
+                            "false",
+                            "*"});
+#line 52
+ testRunner.Then("Alice receives a message", ((string)(null)), table220, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Create valid zap receipt with required tags")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Create valid zap receipt with required tags")]
+        public void CreateValidZapReceiptWithRequiredTags()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create valid zap receipt with required tags", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 57
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table221 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table221.AddRow(new string[] {
+                            "6666666666666666666666666666666666666666666666666666666666666666",
+                            "*",
+                            "9735",
+                            @"[[""p"",""32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245""],[""bolt11"",""lnbc10u1p3unwfusp5t9r3yymhpfqculx78u027lxspgxcr2n2987mx2j55nnfs95nxnzqpp5jmrh92pfld78spqs78v9euf2385t83uvpwk9ldrlvf6ch7tpascqhp5zvkrmemgth3tufcvflmzjzfvjt023nazlhljz2n9hattj4f8jq8qxqyjw5qcqpjrzjq""],[""description"",""{\""pubkey\"":\""test\"",\""kind\"":9734}""]]",
+                            "1722337838"});
+#line 58
+ testRunner.When("Alice publishes an event", ((string)(null)), table221, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table222 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table222.AddRow(new string[] {
+                            "OK",
+                            "6666666666666666666666666666666666666666666666666666666666666666",
+                            "true"});
+#line 61
+ testRunner.Then("Alice receives a message", ((string)(null)), table222, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Create zap receipt with preimage")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Create zap receipt with preimage")]
+        public void CreateZapReceiptWithPreimage()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create zap receipt with preimage", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 65
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table223 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table223.AddRow(new string[] {
+                            "7777777777777777777777777777777777777777777777777777777777777777",
+                            "*",
+                            "9735",
+                            "[[\"p\",\"32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245\"],[\"bolt1" +
+                                "1\",\"lnbc10u1\"],[\"description\",\"{\\\"pubkey\\\":\\\"test\\\",\\\"kind\\\":9734}\"],[\"preimage\"" +
+                                ",\"5d006d2cf1e73c7148e7519a4c68adc81642ce0e25a432b2434c99f97344c15f\"]]",
+                            "1722337838"});
+#line 66
+ testRunner.When("Alice publishes an event", ((string)(null)), table223, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table224 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success"});
+                table224.AddRow(new string[] {
+                            "OK",
+                            "7777777777777777777777777777777777777777777777777777777777777777",
+                            "true"});
+#line 69
+ testRunner.Then("Alice receives a message", ((string)(null)), table224, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject zap receipt without p tag")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Reject zap receipt without p tag")]
+        public void RejectZapReceiptWithoutPTag()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject zap receipt without p tag", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 73
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table225 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table225.AddRow(new string[] {
+                            "8888888888888888888888888888888888888888888888888888888888888888",
+                            "*",
+                            "9735",
+                            "[[\"bolt11\",\"lnbc10u1\"],[\"description\",\"{\\\"pubkey\\\":\\\"test\\\",\\\"kind\\\":9734}\"]]",
+                            "1722337838"});
+#line 74
+ testRunner.When("Alice publishes an event", ((string)(null)), table225, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table226 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table226.AddRow(new string[] {
+                            "OK",
+                            "8888888888888888888888888888888888888888888888888888888888888888",
+                            "false",
+                            "*"});
+#line 77
+ testRunner.Then("Alice receives a message", ((string)(null)), table226, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject zap receipt without bolt11 tag")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Reject zap receipt without bolt11 tag")]
+        public void RejectZapReceiptWithoutBolt11Tag()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject zap receipt without bolt11 tag", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 81
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table227 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table227.AddRow(new string[] {
+                            "9999999999999999999999999999999999999999999999999999999999999999",
+                            "*",
+                            "9735",
+                            "[[\"p\",\"32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245\"],[\"descr" +
+                                "iption\",\"{\\\"pubkey\\\":\\\"test\\\",\\\"kind\\\":9734}\"]]",
+                            "1722337838"});
+#line 82
+ testRunner.When("Alice publishes an event", ((string)(null)), table227, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table228 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table228.AddRow(new string[] {
+                            "OK",
+                            "9999999999999999999999999999999999999999999999999999999999999999",
+                            "false",
+                            "*"});
+#line 85
+ testRunner.Then("Alice receives a message", ((string)(null)), table228, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Reject zap receipt without description tag")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Reject zap receipt without description tag")]
+        public void RejectZapReceiptWithoutDescriptionTag()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Reject zap receipt without description tag", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 89
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table229 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table229.AddRow(new string[] {
+                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                            "*",
+                            "9735",
+                            "[[\"p\",\"32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245\"],[\"bolt1" +
+                                "1\",\"lnbc10u1\"]]",
+                            "1722337838"});
+#line 90
+ testRunner.When("Alice publishes an event", ((string)(null)), table229, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table230 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "Success",
+                            "Message"});
+                table230.AddRow(new string[] {
+                            "OK",
+                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                            "false",
+                            "*"});
+#line 93
+ testRunner.Then("Alice receives a message", ((string)(null)), table230, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Query zap requests by kind")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Query zap requests by kind")]
+        public void QueryZapRequestsByKind()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Query zap requests by kind", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 98
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table231 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table231.AddRow(new string[] {
+                            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                            "*",
+                            "9734",
+                            "[[\"p\",\"04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9\"],[\"relay" +
+                                "s\",\"wss://relay1.example.com\"]]",
+                            "1722337838"});
+#line 99
+ testRunner.When("Alice publishes an event", ((string)(null)), table231, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table232 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Authors",
+                            "Kinds"});
+                table232.AddRow(new string[] {
+                            "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                            "9734"});
+#line 102
+ testRunner.And("Bob sends a subscription request zap_sub", ((string)(null)), table232, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table233 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "EventId"});
+                table233.AddRow(new string[] {
+                            "EVENT",
+                            "zap_sub",
+                            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"});
+                table233.AddRow(new string[] {
+                            "EOSE",
+                            "zap_sub",
+                            ""});
+#line 105
+ testRunner.Then("Bob receives messages", ((string)(null)), table233, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Query zap receipts by kind")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-57")]
+        [Xunit.TraitAttribute("Description", "Query zap receipts by kind")]
+        public void QueryZapReceiptsByKind()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Query zap receipts by kind", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 110
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 6
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table234 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Id",
+                            "Content",
+                            "Kind",
+                            "Tags",
+                            "CreatedAt"});
+                table234.AddRow(new string[] {
+                            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                            "*",
+                            "9735",
+                            "[[\"p\",\"32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245\"],[\"bolt1" +
+                                "1\",\"lnbc10u1\"],[\"description\",\"{\\\"pubkey\\\":\\\"test\\\",\\\"kind\\\":9734}\"]]",
+                            "1722337838"});
+#line 111
+ testRunner.When("Alice publishes an event", ((string)(null)), table234, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table235 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Authors",
+                            "Kinds"});
+                table235.AddRow(new string[] {
+                            "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
+                            "9735"});
+#line 114
+ testRunner.And("Bob sends a subscription request zap_sub", ((string)(null)), table235, "And ");
+#line hidden
+                TechTalk.SpecFlow.Table table236 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Type",
+                            "Id",
+                            "EventId"});
+                table236.AddRow(new string[] {
+                            "EVENT",
+                            "zap_sub",
+                            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"});
+                table236.AddRow(new string[] {
+                            "EOSE",
+                            "zap_sub",
+                            ""});
+#line 117
+ testRunner.Then("Bob receives messages", ((string)(null)), table236, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -208,12 +775,12 @@ namespace Netstr.Tests.NIPs
             
             public FixtureData()
             {
-                NIP_57LightningZapsFeature.FeatureSetup();
+                NIP_57Feature.FeatureSetup();
             }
             
             void System.IDisposable.Dispose()
             {
-                NIP_57LightningZapsFeature.FeatureTearDown();
+                NIP_57Feature.FeatureTearDown();
             }
         }
     }

@@ -83,23 +83,23 @@ namespace Netstr.Tests.NIPs
 #line 5
  testRunner.Given("a relay is running", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table74 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table120 = new TechTalk.SpecFlow.Table(new string[] {
                         "PublicKey",
                         "PrivateKey"});
-            table74.AddRow(new string[] {
+            table120.AddRow(new string[] {
                         "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
                         "512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02"});
 #line 6
- testRunner.And("Alice is connected to relay", ((string)(null)), table74, "And ");
+ testRunner.And("Alice is connected to relay", ((string)(null)), table120, "And ");
 #line hidden
-            TechTalk.SpecFlow.Table table75 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table121 = new TechTalk.SpecFlow.Table(new string[] {
                         "PublicKey",
                         "PrivateKey"});
-            table75.AddRow(new string[] {
+            table121.AddRow(new string[] {
                         "5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627",
                         "3551fc7617f76632e4542992c0bc01fecb224de639c4b6a1e0956946e8bb8a29"});
 #line 9
- testRunner.And("Bob is connected to relay", ((string)(null)), table75, "And ");
+ testRunner.And("Bob is connected to relay", ((string)(null)), table121, "And ");
 #line hidden
         }
         
@@ -130,77 +130,77 @@ this.ScenarioInitialize(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table76 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table122 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table76.AddRow(new string[] {
+                table122.AddRow(new string[] {
                             "828a22e778269e7ba35ae7fa8b23d9506561700f176677f7a8dc7858282f4be3",
                             "Cute cat",
                             "1",
                             "[[\"t\", \"meme\"], [\"t\", \"cat\"], [\"t\", \"black\"]]",
                             "1722337838"});
-                table76.AddRow(new string[] {
+                table122.AddRow(new string[] {
                             "d711c1bdaf9fc9aa9a1b91580d98991531e95d22870817ba122d248b4151fde8",
                             "Cute dog",
                             "1",
                             "[[\"t\", \"meme\"], [\"t\", \"dog\"], [\"t\", \"black\"]]",
                             "1722337838"});
 #line 15
- testRunner.When("Bob publishes events", ((string)(null)), table76, "When ");
+ testRunner.When("Bob publishes events", ((string)(null)), table122, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table77 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table123 = new TechTalk.SpecFlow.Table(new string[] {
                             "Kinds",
                             "&t",
                             "#t"});
-                table77.AddRow(new string[] {
+                table123.AddRow(new string[] {
                             "1",
                             "meme,cat",
                             "black,white"});
 #line 19
- testRunner.And("Alice sends a subscription request moarcats", ((string)(null)), table77, "And ");
+ testRunner.And("Alice sends a subscription request moarcats", ((string)(null)), table123, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table78 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table124 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table78.AddRow(new string[] {
+                table124.AddRow(new string[] {
                             "dad216b3cebb2754fcef13dfd6299879cd2b4cb7988e38e36bc01874c90fab47",
                             "Cute cat",
                             "1",
                             "[[\"t\", \"meme\"], [\"t\", \"cat\"], [\"t\", \"white\"]]",
                             "1722337840"});
-                table78.AddRow(new string[] {
+                table124.AddRow(new string[] {
                             "a88cc99d717189d32aa5361386a0654a7b5a0c99f52e1377821bcf5302f64c76",
                             "Cute dog",
                             "1",
                             "[[\"t\", \"meme\"], [\"t\", \"dog\"], [\"t\", \"white\"]]",
                             "1722337840"});
 #line 22
- testRunner.And("Bob publishes an event", ((string)(null)), table78, "And ");
+ testRunner.And("Bob publishes an event", ((string)(null)), table124, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table79 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table125 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "EventId"});
-                table79.AddRow(new string[] {
+                table125.AddRow(new string[] {
                             "EVENT",
                             "moarcats",
                             "828a22e778269e7ba35ae7fa8b23d9506561700f176677f7a8dc7858282f4be3"});
-                table79.AddRow(new string[] {
+                table125.AddRow(new string[] {
                             "EOSE",
                             "moarcats",
                             ""});
-                table79.AddRow(new string[] {
+                table125.AddRow(new string[] {
                             "EVENT",
                             "moarcats",
                             "dad216b3cebb2754fcef13dfd6299879cd2b4cb7988e38e36bc01874c90fab47"});
 #line 26
- testRunner.Then("Alice receives messages", ((string)(null)), table79, "Then ");
+ testRunner.Then("Alice receives messages", ((string)(null)), table125, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
