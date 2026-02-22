@@ -6,7 +6,7 @@ Background:
 	Given a relay is running
 	And Alice is connected to relay
 	| PublicKey                                                        | PrivateKey                                                      |
-	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | nsec12y4pgafw6kpcqjtfyrdyxtcupnddj5kdft768kdl55wzq50ervpqauqnw4 |
+	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02 |
 	
 Scenario: Relay sends an information document
 	GET HTTP request to the websockets endpoint with a application/nostr+json Accept header should
