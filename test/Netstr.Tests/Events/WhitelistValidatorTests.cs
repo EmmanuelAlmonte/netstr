@@ -110,13 +110,39 @@ namespace Netstr.Tests.Events
             Assert.Null(result);
         }
 
-        private Event CreateEvent(string publicKey)
+        [Theory]
+        [InlineData((long)EventKind.WalletResponse)]
+        [InlineData((long)EventKind.CashuWalletEvent)]
+        public void Validate_ExemptWalletKinds_ReturnNull(long walletKind)
+        {
+            // Arrange
+            options = new WhitelistOptions
+            {
+                Enabled = true,
+                AllowedPublicKeys = [],
+                RestrictPublishing = true,
+                RestrictSubscribing = true,
+                ExemptKinds = [(long)EventKind.WalletResponse, (long)EventKind.CashuWalletEvent]
+            };
+            optionsMock.Setup(x => x.CurrentValue).Returns(options);
+
+            var e = CreateEvent("not_allowed_pubkey", walletKind);
+            var context = new ClientContext("client1", "127.0.0.1");
+
+            // Act
+            var result = validator.Validate(e, context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private Event CreateEvent(string publicKey, long kind = 1)
         {
             return new Event
             {
                 Id = "event_id",
                 PublicKey = publicKey,
-                Kind = 1,
+                Kind = kind,
                 Tags = Array.Empty<string[]>(),
                 Content = "content",
                 Signature = "signature",

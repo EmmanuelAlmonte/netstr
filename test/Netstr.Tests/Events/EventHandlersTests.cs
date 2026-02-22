@@ -224,6 +224,46 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
+        public async Task RegularEventHandler_WalletResponseKind375_DoesNotReplaceEvents()
+        {
+            var e1 = new Event
+            {
+                Id = "4111111111111111111111111111111111111111111111111111111111111111",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                Kind = (long)EventKind.WalletResponse,
+                Tags = [],
+                Content = "wallet response 1",
+                Signature = "sig-1"
+            };
+
+            var e2 = new Event
+            {
+                Id = "4222222222222222222222222222222222222222222222222222222222222222",
+                PublicKey = e1.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741820),
+                Kind = (long)EventKind.WalletResponse,
+                Tags = [],
+                Content = "wallet response 2",
+                Signature = "sig-2"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, e1);
+            await this.dispatcher.DispatchEventAsync(this.adapter, e2);
+
+            var expected1 = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, e1.Id, true, "" });
+            var expected2 = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, e2.Id, true, "" });
+            this.ws.Verify(x => x.SendAsync(expected1, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(expected2, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == e1.Id).Should().Be(1);
+            db.Events.Count(x => x.EventId == e2.Id).Should().Be(1);
+            db.Events.Count(x => x.EventPublicKey == e1.PublicKey && x.EventKind == (long)EventKind.WalletResponse).Should().Be(2);
+        }
+
+        [Fact]
         public async Task ReplaceableEventHandlerTest()
         {
             var e1 = new Event
@@ -347,6 +387,12 @@ namespace Netstr.Tests.Events
         public async Task ReplaceableEventHandler_Kind10002_SameTimestampKeepsLexicallyLowestId()
         {
             await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.RelayList, []);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind17375_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.CashuWalletEvent, []);
         }
 
         [Fact]

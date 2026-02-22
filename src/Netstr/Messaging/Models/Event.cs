@@ -32,9 +32,9 @@ namespace Netstr.Messaging.Models
         [JsonConverter(typeof(UnixTimestampJsonConverter))]
         public required DateTimeOffset CreatedAt { get; init; }
 
-        public bool IsRegular() => Kind is > 0 and < 10000 and not 3;
+        public bool IsRegular() => Kind == (long)EventKind.WalletResponse || Kind is > 0 and < 10000 and not 3;
 
-        public bool IsReplaceable() => Kind is >= 10000 and < 20000 or 0 or 3;
+        public bool IsReplaceable() => Kind == (long)EventKind.CashuWalletEvent || Kind is >= 10000 and < 20000 or 0 or 3;
 
         public bool IsEphemeral() => Kind is >= 20000 and < 30000;
 

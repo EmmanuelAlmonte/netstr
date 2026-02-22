@@ -84,6 +84,63 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
+        public void FindEventsByWalletKinds()
+        {
+            var db = this.context;
+            var firstSeen = DateTimeOffset.UtcNow;
+
+            var walletRecord = new Event
+            {
+                Id = "5111111111111111111111111111111111111111111111111111111111111111",
+                PublicKey = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000000),
+                Kind = (long)EventKind.CashuWalletEvent,
+                Tags = [],
+                Content = "wallet record",
+                Signature = "sig-wallet-record"
+            };
+
+            var walletResponse = new Event
+            {
+                Id = "5222222222222222222222222222222222222222222222222222222222222222",
+                PublicKey = walletRecord.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000001),
+                Kind = (long)EventKind.WalletResponse,
+                Tags = [],
+                Content = "wallet response",
+                Signature = "sig-wallet-response"
+            };
+
+            var unrelated = new Event
+            {
+                Id = "5333333333333333333333333333333333333333333333333333333333333333",
+                PublicKey = walletRecord.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000002),
+                Kind = (long)EventKind.ShortTextNote,
+                Tags = [],
+                Content = "not wallet",
+                Signature = "sig-not-wallet"
+            };
+
+            db.Events.AddRange(
+                walletRecord.ToEntity(firstSeen),
+                walletResponse.ToEntity(firstSeen),
+                unrelated.ToEntity(firstSeen));
+            db.SaveChanges();
+
+            var filter = new SubscriptionFilter
+            {
+                Kinds = [(long)EventKind.CashuWalletEvent, (long)EventKind.WalletResponse]
+            };
+
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
+
+            results.Should().Contain(walletRecord.Id);
+            results.Should().Contain(walletResponse.Id);
+            results.Should().NotContain(unrelated.Id);
+        }
+
+        [Fact]
         public void FindEventsBySinceAndUntil()
         {
             var db = this.context;

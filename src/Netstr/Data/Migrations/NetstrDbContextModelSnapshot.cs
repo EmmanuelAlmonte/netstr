@@ -50,6 +50,9 @@ namespace Netstr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("EventJson")
+                        .HasColumnType("text");
+
                     b.Property<long>("EventKind")
                         .HasColumnType("bigint");
 

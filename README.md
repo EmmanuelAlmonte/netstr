@@ -24,7 +24,7 @@ NIPs with a relay-specific implementation are listed here.
 - [x] NIP-40: [Expiration Timestamp](https://github.com/nostr-protocol/nips/blob/master/40.md)
 - [x] NIP-42: [Authentication of clients to relays](https://github.com/nostr-protocol/nips/blob/master/42.md)
 - [x] NIP-45: [Counting results](https://github.com/nostr-protocol/nips/blob/master/45.md)
-- [ ] NIP-50: [Search Capability](https://github.com/nostr-protocol/nips/blob/master/50.md)
+- [x] NIP-50: [Search Capability](https://github.com/nostr-protocol/nips/blob/master/50.md)
 - [x] NIP-51: [Lists](https://github.com/nostr-protocol/nips/blob/master/51.md)
 - [x] NIP-57: [Lightning Zaps](https://github.com/nostr-protocol/nips/blob/master/57.md)
 - [x] NIP-62: [Request to Vanish](https://github.com/vitorpamplona/nips/blob/right-to-vanish/62.md)

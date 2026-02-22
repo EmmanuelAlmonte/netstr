@@ -12,7 +12,9 @@ public enum EventKind
     EncryptedDirectMessage = 4,
     Delete = 5,
     RequestToVanish = 62,
+    WalletResponse = 375,
     GiftWrap = 1059,
+    CashuWalletEvent = 17375,
     Auth = 22242,
     
     // NIP-57 Lightning Zaps
