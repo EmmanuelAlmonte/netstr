@@ -98,6 +98,7 @@ Netstr is c# app backed by a Postgres database. You have several options to get 
 * Install Postgres: https://www.postgresql.org/download/
 * Run `docker run -e ConnectionStrings__NetstrDatabase=YOUR_CONNECTION_STRING bezysoftware/netstr:latest`
   * Set your connection string to point to your Postgres instance
+* Note: Docker examples default to the upstream image. You can override with `NETSTR_IMAGE` (for example, a locally built image) when using Compose.
 
 ### Docker compose
 
@@ -114,5 +115,5 @@ Optionally you can also set following variables:
 
 The `scripts` folder contains scripts to setup a VM in Azure with everything you'll need to run a Netstr instance:
  * Separate VM with an attached data disk
- * Docker with Compose to run the `compose.yml`
+ * Docker with Compose to run the `compose.yaml`
  * Nginx with certbot which generates an SSL certificate for your domain
