@@ -32,6 +32,7 @@
         public const string UnsupportedFilter = "unsupported: filter contains unknown elements";
         public const string RateLimited = "rate-limited: slow down there chief";
         public const string WhitelistRestricted = "restricted: your public key is not in the whitelist";
+        public const string IgnoredDummyProbe = "ignored: dummy subscription filter (connectivity probe)";
 
         public const string CannotParseMessage = "unable to parse the message";
         public const string CannotProcessMessageType = "unknown message type";
