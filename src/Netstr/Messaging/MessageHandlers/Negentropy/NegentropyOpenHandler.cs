@@ -31,6 +31,40 @@ namespace Netstr.Messaging.MessageHandlers.Negentropy
 
         protected override bool SingleFilter => true;
 
+        protected override (SubscriptionFilter[] Filters, int ConsumedFilterParameters) ParseFilters(
+            string subscriptionId,
+            JsonDocument[] parameters)
+        {
+            var filtersParameter = parameters[2].RootElement;
+
+            if (filtersParameter.ValueKind != JsonValueKind.Array)
+            {
+                return base.ParseFilters(subscriptionId, parameters);
+            }
+
+            var filters = new List<SubscriptionFilter>();
+
+            foreach (var filterElement in filtersParameter.EnumerateArray())
+            {
+                if (filterElement.ValueKind != JsonValueKind.Object)
+                {
+                    RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+                }
+
+                using var filterDoc = JsonDocument.Parse(filterElement.GetRawText());
+                filters.Add(GetSubscriptionFilter(subscriptionId, filterDoc));
+            }
+
+            if (filters.Count == 0)
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
+
+            // For NEG-OPEN we consume exactly one parameter for filters (object or array),
+            // and whatever follows belongs to the negentropy query payload.
+            return (filters.ToArray(), 1);
+        }
+
         protected override async Task HandleMessageCoreAsync(
             IWebSocketAdapter adapter, 
             string subscriptionId, 

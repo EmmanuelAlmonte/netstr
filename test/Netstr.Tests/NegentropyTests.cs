@@ -63,6 +63,57 @@ namespace Netstr.Tests
         }
 
         [Fact]
+        public async Task MultipleFilterArrayOpenTest()
+        {
+            using WebSocket ws = await this.factory.ConnectWebSocketAsync();
+
+            var neg = new NegentropyBuilder(new NegentropyOptions()).Build();
+            var msg = neg.Initiate();
+
+            await ws.SendAsync([
+                "NEG-OPEN",
+                "abcd",
+                new object[]
+                {
+                    new Messaging.Models.SubscriptionFilterRequest { Kinds = [0] },
+                    new Messaging.Models.SubscriptionFilterRequest { Kinds = [1] }
+                },
+                msg
+            ]);
+
+            var received = await ws.ReceiveOnceAsync();
+
+            received[0].GetString().Should().Be("NEG-MSG");
+            received[1].GetString().Should().Be("abcd");
+        }
+
+        [Fact]
+        public async Task InvalidFilterArrayShapeTest()
+        {
+            using WebSocket ws = await this.factory.ConnectWebSocketAsync();
+
+            var neg = new NegentropyBuilder(new NegentropyOptions()).Build();
+            var msg = neg.Initiate();
+
+            await ws.SendAsync([
+                "NEG-OPEN",
+                "abcd",
+                new object[]
+                {
+                    new Messaging.Models.SubscriptionFilterRequest { Kinds = [0] },
+                    "not-a-filter"
+                },
+                msg
+            ]);
+
+            var received = await ws.ReceiveOnceAsync();
+
+            received[0].GetString().Should().Be("NEG-ERR");
+            received[1].GetString().Should().Be("abcd");
+            received[2].GetString().Should().Be(Messages.InvalidCannotProcessFilters);
+        }
+
+        [Fact]
         public async Task SubscriptionIdTooLongTest()
         {
             using WebSocket ws = await this.factory.ConnectWebSocketAsync();

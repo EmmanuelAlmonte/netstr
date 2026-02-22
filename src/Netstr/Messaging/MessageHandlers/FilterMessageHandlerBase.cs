@@ -84,12 +84,8 @@ namespace Netstr.Messaging.MessageHandlers
                 RaiseSubscriptionException(id, Messages.AuthRequired);
             }
 
-            // limit number of filters, pass whatever follows the filter list to Core method (JsonDocument)
-            var filters = parameters
-                .Skip(2)
-                .Take(SingleFilter ? 1 : int.MaxValue)
-                .Select(x => GetSubscriptionFilter(id, x))
-                .ToArray();
+            // parse filters, then pass remaining parameters to the concrete handler
+            var (filters, consumedFilterParameters) = ParseFilters(id, parameters);
 
             var validationError = this.validators.CanSubscribe(id, adapter.Context, filters, this);
             if (validationError != null)
@@ -99,7 +95,20 @@ namespace Netstr.Messaging.MessageHandlers
 
             this.logger.LogInformation($"Subscription request {id} passed validations, processing further ({adapter.Context})");
 
-            await HandleMessageCoreAsync(adapter, id, filters, parameters.Skip(filters.Length + 2).ToArray());
+            await HandleMessageCoreAsync(adapter, id, filters, parameters.Skip(consumedFilterParameters + 2).ToArray());
+        }
+
+        protected virtual (SubscriptionFilter[] Filters, int ConsumedFilterParameters) ParseFilters(
+            string subscriptionId,
+            JsonDocument[] parameters)
+        {
+            var filters = parameters
+                .Skip(2)
+                .Take(SingleFilter ? 1 : int.MaxValue)
+                .Select(x => GetSubscriptionFilter(subscriptionId, x))
+                .ToArray();
+
+            return (filters, filters.Length);
         }
 
         protected abstract Task HandleMessageCoreAsync(
@@ -169,7 +178,7 @@ namespace Netstr.Messaging.MessageHandlers
             throw new SubscriptionProcessingException(subscriptionId, message, logMessage);
         }
 
-        private SubscriptionFilter GetSubscriptionFilter(string subscriptionId, JsonDocument json)
+        protected SubscriptionFilter GetSubscriptionFilter(string subscriptionId, JsonDocument json)
         {
             var r = DeserializeFilter(subscriptionId, json);
 
