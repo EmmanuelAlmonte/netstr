@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Local relay development overrides
+src/Netstr/appsettings.Development.json
