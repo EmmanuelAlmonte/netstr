@@ -8,7 +8,7 @@
         public const string Deduplication = "d";
         public const string Nonce = "nonce";
         public const string Challenge = "challenge";
-        public const string Relay = "relay";
+        public const string Relay = "r";
         public const string Protected = "-";
         public const string Expiration = "expiration";
     }

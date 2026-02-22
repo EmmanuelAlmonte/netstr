@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Netstr.Data
@@ -18,6 +18,8 @@ namespace Netstr.Data
         public DbSet<EventEntity> Events { get; set; }
         
         public DbSet<TagEntity> Tags { get; set; }
+
+        public DbSet<RelayConfigEntity> RelayConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -51,6 +53,13 @@ namespace Netstr.Data
             {
                 e.HasKey(x => x.Id);
                 e.HasIndex(x => new { x.Name, x.Value, x.EventId }, TagValueIndexName).IsUnique();
+            });
+
+            builder.Entity<RelayConfigEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => new { x.PubKey, x.RelayUrl }).IsUnique();
+                e.Property(x => x.LastUpdated).HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
 

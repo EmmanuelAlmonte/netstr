@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿using Microsoft.EntityFrameworkCore;
 using Netstr.Data;
 using Netstr.Messaging;
 using Netstr.Messaging.Models;
@@ -34,7 +34,7 @@ namespace Netstr.Middleware
             var events = await db.Events
                 .AsNoTracking()
                 .GroupBy(x => new { x.EventKind, x.EventPublicKey })
-                .Where(x => x.Key.EventKind == EventKind.RequestToVanish)
+                .Where(x => x.Key.EventKind == (long)EventKind.RequestToVanish)
                 .Select(x => new { x.Key.EventPublicKey, VanishedAt = x.Max(x => x.EventCreatedAt) })
                 .ToArrayAsync(cancellationToken);
 

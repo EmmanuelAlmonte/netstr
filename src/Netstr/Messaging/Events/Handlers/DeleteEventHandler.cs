@@ -13,7 +13,7 @@ namespace Netstr.Messaging.Events.Handlers
     /// </summary>
     public class DeleteEventHandler : EventHandlerBase
     {
-        private static readonly long[] CannotDeleteKinds = [ EventKind.Delete, EventKind.RequestToVanish ];
+        private static readonly long[] CannotDeleteKinds = [ (long)EventKind.Delete, (long)EventKind.RequestToVanish ];
 
         private record ReplaceableEventRef(int Kind, string PublicKey, string? Deduplication) { }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Netstr.Data;
 using Netstr.Extensions;
@@ -53,7 +53,7 @@ namespace Netstr.Messaging.Events.Handlers
                 .Include(x => x.Tags)
                 .Where(x => 
                     (x.EventPublicKey == e.PublicKey || 
-                    (x.EventKind == EventKind.GiftWrap && x.Tags.Any(t => t.Name == EventTag.PublicKey && t.Value == e.PublicKey))) && 
+                    (x.EventKind == (long)EventKind.GiftWrap && x.Tags.Any(t => t.Name == EventTag.PublicKey && t.Value == e.PublicKey))) && 
                     x.EventCreatedAt <= e.CreatedAt)
                 .ExecuteDeleteAsync();
 

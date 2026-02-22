@@ -30,6 +30,8 @@ namespace Netstr.Messaging
                 this.logger.LogDebug($"Received message {message}");
 
                 await handler.HandleMessageAsync(sender, parts);
+                this.logger.LogDebug($"After handling Message Asyncronously {message}");
+
             }
             catch (MessageProcessingException ex)
             {

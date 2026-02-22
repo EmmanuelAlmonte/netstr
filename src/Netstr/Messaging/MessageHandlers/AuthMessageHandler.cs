@@ -52,7 +52,7 @@ namespace Netstr.Messaging.MessageHandlers
                 throw new EventProcessingException(e, validation);
             }
 
-            if (e.Kind != EventKind.Auth)
+            if (e.Kind != (long)EventKind.Auth )
             {
                 throw new EventProcessingException(e, Messages.AuthRequiredWrongKind);
             }

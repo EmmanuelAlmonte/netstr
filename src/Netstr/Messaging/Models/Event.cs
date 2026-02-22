@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using Netstr.Json;
 using System.Linq;
 using System.Numerics;
@@ -41,9 +41,9 @@ namespace Netstr.Messaging.Models
         
         public bool IsUnknown() => Kind is >= 40000;
 
-        public bool IsDelete() => Kind == EventKind.Delete;
+        public bool IsDelete() => Kind == (long)EventKind.Delete;
 
-        public bool IsRequestToVanish() => Kind == EventKind.RequestToVanish;
+        public bool IsRequestToVanish() => Kind == (long)EventKind.RequestToVanish;
 
         public bool IsProtected() => Tags.Any(x => x.Length >= 1 && x[0] == EventTag.Protected);
 
