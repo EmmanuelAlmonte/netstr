@@ -2,7 +2,7 @@ name: netstr-relay-${NETSTR_ENVIRONMENT:-prod}
 
 services:
   app:
-    image: "${NETSTR_IMAGE:-emmanuelalmonte/netstr:latest}"
+    image: "${NETSTR_IMAGE:-bezysoftware/netstr:latest}"
     restart: always
     ports:
       - "${NETSTR_PORT:-8080}:8080"

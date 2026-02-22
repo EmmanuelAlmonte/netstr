@@ -96,7 +96,7 @@ Netstr is c# app backed by a Postgres database. You have several options to get 
 
 * Install Docker: https://docs.docker.com/engine/install/
 * Install Postgres: https://www.postgresql.org/download/
-* Run `docker run -e ConnectionStrings__NetstrDatabase=YOUR_CONNECTION_STRING emmanuelalmonte/netstr:latest`
+* Run `docker run -e ConnectionStrings__NetstrDatabase=YOUR_CONNECTION_STRING bezysoftware/netstr:latest`
   * Set your connection string to point to your Postgres instance
 
 ### Docker compose
@@ -105,7 +105,7 @@ Docker compose contains a Postgres DB service so no need to install it manually.
  * NETSTR_DB_PASSWORD - password for Postgres DB
  
 Optionally you can also set following variables:
- * NETSTR_IMAGE - docker image (default `emmanuelalmonte/netstr:latest`)
+ * NETSTR_IMAGE - docker image (default `bezysoftware/netstr:latest`)
  * NETSTR_PORT - port on which the relay will be accessible (default 8080)
  * NETSTR_ENVIRONMENT - will be used to name the compose instance (default 'prod')
  * NETSTR_ENVIRONMENT_LONG - will be used inside the application to load specific configuration (default 'Production')
