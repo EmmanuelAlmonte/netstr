@@ -31,5 +31,10 @@ namespace Netstr.Options
         /// List of event kinds that are exempt from whitelist restrictions.
         /// </summary>
         public long[] ExemptKinds { get; init; } = [];
+
+        /// <summary>
+        /// List of public keys that are exempt from EVENT rate limiting.
+        /// </summary>
+        public string[] RateLimitExemptPublicKeys { get; init; } = [];
     }
 }

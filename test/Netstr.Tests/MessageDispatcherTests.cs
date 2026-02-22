@@ -22,7 +22,7 @@ namespace Netstr.Tests
             
             this.handlers =
             [
-                new EventMessageHandler(Mock.Of<ILogger<EventMessageHandler>>(), eventDispatcher.Object, [], Mock.Of<IOptions<AuthOptions>>(), Mock.Of<IOptions<LimitsOptions>>()),
+                new EventMessageHandler(Mock.Of<ILogger<EventMessageHandler>>(), eventDispatcher.Object, [], Mock.Of<IOptions<AuthOptions>>(), Mock.Of<IOptionsMonitor<WhitelistOptions>>(), Mock.Of<IOptions<LimitsOptions>>()),
                 new SubscribeMessageHandler(Mock.Of<IDbContextFactory<NetstrDbContext>>(), [], Mock.Of<IOptions<LimitsOptions>>(), Mock.Of<IOptions<AuthOptions>>(), Mock.Of<IOptions<FiltersOptions>>(), Mock.Of<ILogger<SubscribeMessageHandler>>()),
                 new UnsubscribeMessageHandler(Mock.Of<ILogger<UnsubscribeMessageHandler>>()),
             ];
