@@ -6,6 +6,8 @@
 
 Netstr is a modern relay for the [nostr protocol](https://github.com/nostr-protocol/nostr) written in C#. 
 
+Upstream acknowledgment: this repository is forked from [bezysoftware/netstr](https://github.com/bezysoftware/netstr). The `main` branch in this fork is intended to stay aligned with upstream `main` while carrying fork-specific improvements.
+
  * **Prod** instance: https://relay.netstr.io/
  * **Dev** instance: https://relay-dev.netstr.io/ (feel free to play with it / try to break it, just report if you find anything that needs fixing)
 
