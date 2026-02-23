@@ -29,10 +29,14 @@ NIPs with a relay-specific implementation are listed here.
 - [x] NIP-50: [Search Capability](https://github.com/nostr-protocol/nips/blob/master/50.md)
 - [x] NIP-51: [Lists](https://github.com/nostr-protocol/nips/blob/master/51.md)
 - [x] NIP-57: [Lightning Zaps](https://github.com/nostr-protocol/nips/blob/master/57.md)
+- [x] NIP-59: [Gift Wrap](https://github.com/nostr-protocol/nips/blob/master/59.md)
+- [x] NIP-60: [Cashu Wallet and Token](https://github.com/nostr-protocol/nips/blob/master/60.md)
 - [x] NIP-62: [Request to Vanish](https://github.com/vitorpamplona/nips/blob/right-to-vanish/62.md)
+- [x] NIP-64: [Chess (Portable Game Notation)](https://github.com/nostr-protocol/nips/blob/master/64.md)
 - [x] NIP-65: [Relay List Metadata](https://github.com/nostr-protocol/nips/blob/master/65.md)
 - [x] NIP-70: [Protected events](https://github.com/nostr-protocol/nips/blob/master/70.md)
 - [x] NIP-77: [Negentropy syncing](https://github.com/nostr-protocol/nips/pull/1494)
+- [x] NIP-78: [Application-specific Data](https://github.com/nostr-protocol/nips/blob/master/78.md)
 - [x] NIP-119: [AND operator for filters](https://github.com/nostr-protocol/nips/pull/1365)
 
 ## Additional Features
@@ -41,7 +45,7 @@ NIPs with a relay-specific implementation are listed here.
 
 ## Tests
 
-Each supported NIP has a set of tests written in [Specflow / Gherkin language](https://docs.specflow.org/projects/specflow/en/latest/Gherkin/Gherkin-Reference.html). 
+Supported NIPs are covered by automated tests using [Specflow / Gherkin language](https://docs.specflow.org/projects/specflow/en/latest/Gherkin/Gherkin-Reference.html) and xUnit integration/unit tests.
 The scenarios are described in plain English which lets anyone read them and even contribute with new ones without any programming skills. See sample (simplified):
 
 ```gherkin
