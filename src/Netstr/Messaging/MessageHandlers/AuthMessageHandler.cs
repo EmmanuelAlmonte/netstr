@@ -63,10 +63,20 @@ namespace Netstr.Messaging.MessageHandlers
                 throw new EventProcessingException(e, Messages.AuthRequiredWrongTags);
             }
 
-            var path = ctx.GetNormalizedUrl();
-            var relays = e.GetAuthRelayValues();
-            
-            if (!relays.Any(x => x == path))
+            var expectedRelays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                HttpExtensions.NormalizeRelayUrl(ctx.Host.ToString(), removePort: false),
+                HttpExtensions.NormalizeRelayUrl(ctx.Host.ToString(), removePort: true),
+            };
+
+            var normalizedEventRelays = e.GetTagValues(EventTag.AuthRelay)
+                .SelectMany(relay => new[]
+                {
+                    HttpExtensions.NormalizeRelayUrl(relay, removePort: false),
+                    HttpExtensions.NormalizeRelayUrl(relay, removePort: true),
+                });
+
+            if (!normalizedEventRelays.Any(expectedRelays.Contains))
             {
                 throw new EventProcessingException(e, Messages.AuthRequiredWrongTags);
             }

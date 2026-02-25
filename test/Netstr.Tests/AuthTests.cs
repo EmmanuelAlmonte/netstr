@@ -69,6 +69,35 @@ namespace Netstr.Tests
         }
 
         [Fact]
+        public async Task PublishAuthMode_AllowsRelayTagWithPortAndTrailingSlash()
+        {
+            using WebSocket ws = await this.factory.ConnectWebSocketAsync(AuthMode.Publishing);
+
+            var auth = await ws.ReceiveOnceAsync();
+
+            var e = new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.UtcNow,
+                PublicKey = Alice.PublicKey,
+                Tags = [
+                    ["relay", "ws://localhost:8443/"],
+                    ["challenge", auth[1].ToString()]
+                ],
+                Kind = (long)EventKind.Auth
+            };
+
+            e = Helpers.FinalizeEvent(e, Alice.PrivateKey);
+
+            await ws.SendAuthAsync(e);
+            var ok = await ws.ReceiveOnceAsync();
+
+            ok[2].GetBoolean().Should().BeTrue();
+        }
+
+        [Fact]
         public async Task DisabledAuthModeDoesntSendAuth()
         {
             using WebSocket ws = await this.factory.ConnectWebSocketAsync(AuthMode.Disabled);
