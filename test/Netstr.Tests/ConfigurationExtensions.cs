@@ -16,6 +16,26 @@
                     var type = property.PropertyType;
                     var val = property.GetValue(settings);
                     object? defaultValue = type.IsValueType ? Activator.CreateInstance(type) : null;
+
+                    // Tests need to explicitly override booleans (including false) from appsettings.
+                    if (type == typeof(bool))
+                    {
+                        yield return new KeyValuePair<string, string>($"{settingsRoot}:{property.Name}", val?.ToString());
+                        continue;
+                    }
+
+                    // Flatten arrays/lists into the binder-friendly "Key:0", "Key:1" form.
+                    if (val is System.Collections.IEnumerable enumerable && val is not string)
+                    {
+                        var i = 0;
+                        foreach (var item in enumerable)
+                        {
+                            yield return new KeyValuePair<string, string>($"{settingsRoot}:{property.Name}:{i}", item?.ToString());
+                            i++;
+                        }
+
+                        continue;
+                    }
                     
                     if (!object.Equals(val, defaultValue))
                     {

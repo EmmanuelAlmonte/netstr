@@ -15,6 +15,8 @@
         public required string EventContent { get; set; }
         
         public required string EventSignature { get; set; }
+
+        public string? EventJson { get; set; }
         
         public string? EventDeduplication { get; set; }
 

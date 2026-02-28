@@ -233,11 +233,11 @@ namespace Netstr.Tests.NIPs
 #line 4
     this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table252 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table269 = new TechTalk.SpecFlow.Table(new string[] {
                             "alt",
                             "Fischer vs. Spassky in Belgrade on 1992-11-04"});
 #line 40
-        testRunner.When("Alice publishes an event with kind 64 and tags:", ((string)(null)), table252, "When ");
+        testRunner.When("Alice publishes an event with kind 64 and tags:", ((string)(null)), table269, "When ");
 #line hidden
 #line 42
         testRunner.And("content \"1. e4 e5 2. Nf3 Nc6 3. Bb5 1/2-1/2\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");

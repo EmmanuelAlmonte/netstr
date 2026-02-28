@@ -10,26 +10,16 @@ namespace Netstr.Messaging.Events.Validators
     /// </summary>
     public class ZapEventValidator : IEventValidator
     {
-        private const string InvalidZapRequestTags = "invalid: zap request missing required tags";
         private const string InvalidZapReceiptTags = "invalid: zap receipt missing required tags";
 
         public string? Validate(Event e, ClientContext context)
         {
             return (EventKind)e.Kind switch
             {
-                EventKind.ZapRequest => ValidateZapRequest(e),
+                EventKind.ZapRequest => Messages.InvalidZapRequestRelayPublish,
                 EventKind.ZapReceipt => ValidateZapReceipt(e),
                 _ => null // Not a zap event
             };
-        }
-
-        private static string? ValidateZapRequest(Event e)
-        {
-            // Validate required tags: p (recipient), relays
-            bool hasRecipient = e.Tags.Any(t => t.Length > 0 && t[0] == EventTag.PublicKey);
-            bool hasRelays = e.Tags.Any(t => t.Length > 0 && t[0] == EventTag.Relays);
-            
-            return (hasRecipient && hasRelays) ? null : InvalidZapRequestTags;
         }
 
         private static string? ValidateZapReceipt(Event e)

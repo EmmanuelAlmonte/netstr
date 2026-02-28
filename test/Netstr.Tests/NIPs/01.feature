@@ -1,4 +1,4 @@
-﻿Feature: NIP-01
+Feature: NIP-01
 	Defines the basic protocol that should be implemented by everybody. 
 
 Background: 
@@ -21,13 +21,13 @@ Scenario: Invalid messages are discarded, valid ones accepted
 	| 1     |
 	And Bob publishes events
 	| Id                                                               | Content                       | Kind | CreatedAt  | Signature | Tags |
-	| ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | Hello 1                       | 1    | 1722337838 |           |      |
+	| ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | Hello 1                       | 1    | 1722337838 | Invalid   |      |
 	| a6d166e834e78827af0770f31f15b13a772f281ad880f43ce12c24d4e3d0e346 | Hello 1                       | 1    | 1722337838 | Invalid   |      |
 	| bb5d2fe5b2c16c676d87ef446fa38581b9fa45e2e50ba89568664abf4e1d1396 | Hi ' \" \b \t \r \n 🎉 #nostr | 1    | 1722337838 |           |      |
 	| 50ed63c449df67d89e9964a27a26abbf214ca155b03915067a5a0f75618802bb | Hello                         | 1    | 1722337838 |           | [[]] |
 	Then Bob receives messages
  	| Type | Id                                                               | Success |
- 	| OK   | ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | false   |
+ 	| OK   | *                                                               | false   |
  	| OK   | a6d166e834e78827af0770f31f15b13a772f281ad880f43ce12c24d4e3d0e346 | false   |
  	| OK   | bb5d2fe5b2c16c676d87ef446fa38581b9fa45e2e50ba89568664abf4e1d1396 | true    |
  	| OK   | 50ed63c449df67d89e9964a27a26abbf214ca155b03915067a5a0f75618802bb | false   |
@@ -175,6 +175,7 @@ Scenario: Relay can handle complex filters
 	| EVENT | abcd | dca906744526bef1de5fa0e9f58d0d09a0a79ccf281c3c91c0e36007ee724ba3 |
 	| EVENT | abcd | a6d166e834e78827af0770f31f15b13a772f281ad880f43ce12c24d4e3d0e346 |
 	| EVENT | abcd | 5138028d66a909d302d8283319eb2c0830b42694f6137f71c47c64b4bdab3ad1 |
+	| EVENT | abcd | 9c8b0879f3a4d3add6e3577cec650704f293495da43bdc2538587769170cad40 |
 	| EOSE  | abcd |                                                                  |
 
 Scenario: Zero limit returns EOSE and future events
@@ -203,3 +204,6 @@ Scenario: Dummy connectivity probe is ignored and returns EOSE
 	| Type   | Id    | EventId |
 	| NOTICE | *     | *       |
 	| EOSE   | probe |         |
+
+
+

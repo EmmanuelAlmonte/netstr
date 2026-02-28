@@ -28,6 +28,12 @@ namespace Netstr.Messaging.Events.Handlers
 
         protected override async Task HandleEventCoreAsync(IWebSocketAdapter sender, Event e)
         {
+            if (e.Kind == (long)EventKind.ZapRequest)
+            {
+                sender.SendNotOk(e.Id, Messages.InvalidZapRequestRelayPublish);
+                return;
+            }
+
             using var db = this.db.CreateDbContext();
 
             if (await db.Events.IsDeleted(e.Id))
@@ -38,19 +44,6 @@ namespace Netstr.Messaging.Events.Handlers
             }
 
             var newEntity = e.ToEntity(DateTimeOffset.UtcNow);
-            
-            // Check for duplicates
-            var existing = await db.Events
-                .AsNoTracking()
-                .Where(x => x.EventId == e.Id)
-                .FirstOrDefaultAsync();
-
-            if (existing != null)
-            {
-                this.logger.LogInformation($"Event {e.Id} already exists");
-                sender.SendOk(e.Id); // Still return OK for duplicates
-                return;
-            }
 
             db.Add(newEntity);
             await db.SaveChangesAsync();

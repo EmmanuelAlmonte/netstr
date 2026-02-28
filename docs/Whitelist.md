@@ -35,7 +35,7 @@ The whitelist is configured in the `appsettings.json` and `appsettings.Developme
 - `RestrictPublishing`: When set to `true`, only whitelisted public keys can publish events to the relay.
 - `RestrictSubscribing`: When set to `true`, only whitelisted public keys can subscribe to events from the relay.
 - `OwnerPublicKey`: The public key of the relay owner. This key cannot be removed from the whitelist, ensuring the owner always has access to the relay.
-- `ExemptKinds`: An array of event kinds that are exempt from whitelist restrictions. Events of these kinds can be published by any public key, even if the whitelist is enabled and the public key is not in the whitelist.
+- `ExemptKinds`: An array of event kinds that are exempt from whitelist restrictions. Events of these kinds can be published by any public key, even if the whitelist is enabled and the public key is not in the whitelist. If you run wallet workflows, include kinds `17375` (NIP-60 cashu wallet event) and your wallet response kind (for example `375` if used by your clients).
 
 ## How It Works
 
@@ -131,11 +131,11 @@ The whitelist feature works alongside the existing authentication modes:
   ],
   "RestrictPublishing": true,
   "RestrictSubscribing": false,
-  "ExemptKinds": [9735, 1059]
+  "ExemptKinds": [375, 9735, 1059, 17375]
 }
 ```
 
-In this configuration, only whitelisted public keys can publish most event kinds, but any public key can publish events of kind 9735 (zaps) and 1059 (without being restricted by the whitelist).
+In this configuration, only whitelisted public keys can publish most event kinds, but any public key can publish events of kind 375, 9735, 1059, and 17375 without being restricted by the whitelist.
 
 ## API Endpoints
 

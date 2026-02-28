@@ -17,6 +17,7 @@ namespace Netstr.Messaging.MessageHandlers
         private readonly IEventDispatcher eventDispatcher;
         private readonly IEnumerable<IEventValidator> validators;
         private readonly IOptions<AuthOptions> auth;
+        private readonly IOptionsMonitor<WhitelistOptions> whitelist;
         private readonly PartitionedRateLimiter<string> rateLimiter;
 
         public EventMessageHandler(
@@ -24,6 +25,7 @@ namespace Netstr.Messaging.MessageHandlers
             IEventDispatcher eventDispatcher,
             IEnumerable<IEventValidator> validators,
             IOptions<AuthOptions> auth,
+            IOptionsMonitor<WhitelistOptions> whitelist,
             IOptions<LimitsOptions> limits
             )
         {
@@ -31,6 +33,7 @@ namespace Netstr.Messaging.MessageHandlers
             this.eventDispatcher = eventDispatcher;
             this.validators = validators;
             this.auth = auth;
+            this.whitelist = whitelist;
             this.rateLimiter = PartitionedRateLimiter.Create<string, string>(
                 x => RateLimitPartition.GetSlidingWindowLimiter(x, _ => new SlidingWindowRateLimiterOptions 
                 {
@@ -65,13 +68,16 @@ namespace Netstr.Messaging.MessageHandlers
                 );
             }
 
-            using var lease = this.rateLimiter.AttemptAcquire(sender.Context.IpAddress);
-
-            if (!lease.IsAcquired)
+            if (!this.IsEventRateLimitExempt(e))
             {
-                this.logger.LogInformation($"User {sender.Context.IpAddress} is rate limited");
-                sender.SendNotOk(e.Id, Messages.RateLimited);
-                return;
+                using var lease = this.rateLimiter.AttemptAcquire(sender.Context.IpAddress);
+
+                if (!lease.IsAcquired)
+                {
+                    this.logger.LogInformation($"User {sender.Context.IpAddress} is rate limited");
+                    sender.SendNotOk(e.Id, Messages.RateLimited);
+                    return;
+                }
             }
 
             var auth = this.auth.Value.Mode;
@@ -92,6 +98,20 @@ namespace Netstr.Messaging.MessageHandlers
 
             this.logger.LogInformation($"Event {e.Id} passed validations, sending to event dispatcher");
             await this.eventDispatcher.DispatchEventAsync(sender, e);
+        }
+
+        private bool IsEventRateLimitExempt(Event e)
+        {
+            var exemptKeys = this.whitelist.CurrentValue.RateLimitExemptPublicKeys;
+
+            if (exemptKeys.Length == 0)
+            {
+                return false;
+            }
+
+            return Array.Exists(
+                exemptKeys,
+                x => string.Equals(x, e.PublicKey, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

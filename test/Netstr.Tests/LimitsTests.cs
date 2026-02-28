@@ -33,6 +33,7 @@ namespace Netstr.Tests
         }
 
         [Theory]
+        [InlineData("", "CLOSED")]
         [InlineData("Hello", "EOSE")]
         [InlineData("Too long", "CLOSED")]
         public async Task SubscriptionIdTests(string id, string expected)

@@ -16,64 +16,233 @@ namespace Netstr.Messaging.Subscriptions
         }
 
         /// <summary>
-        /// Filters database events based on supplied filters.
+        /// Builds a single query that handles OR semantics between filters by applying all predicates,
+        /// but does not apply Include/OrderBy/Take. Intended for COUNT and other "no truncation" scenarios.
         /// </summary>
-        public static IQueryable<EventEntity> WhereAnyFilterMatches(
-            this DbSet<EventEntity> entities,
+        public static IQueryable<EventEntity> WhereAnyFilterMatchesBase(
+            this IQueryable<EventEntity> entities,
             IEnumerable<SubscriptionFilter> filters,
             IEnumerable<long> protectedKinds,
-            string? authenticatedPublicKey,
-            int maxLimit)
+            IReadOnlyCollection<string> authenticatedPublicKeys,
+            bool useFullTextSearch = false)
         {
             var filterArray = filters.ToArray();
             if (!filterArray.Any())
             {
-                return entities.Where(x => false).AsNoTracking(); // Return empty result
+                return entities.Where(x => false); // Return empty result
             }
 
-            // Build a single query that handles OR semantics between filters
             IQueryable<EventEntity> query = entities.Where(x => false); // Start with empty query
 
             foreach (var filter in filterArray)
             {
-                var filterQuery = entities
-                    .Where(x =>
-                        (filter.Authors.Contains(x.EventPublicKey) || !filter.Authors.Any()) &&
-                        (filter.Ids.Contains(x.EventId) || !filter.Ids.Any()) &&
-                        (filter.Kinds.Contains(x.EventKind) || !filter.Kinds.Any()) &&
-                        (filter.Since <= x.EventCreatedAt || !filter.Since.HasValue) &&
-                        (filter.Until >= x.EventCreatedAt || !filter.Until.HasValue))
-                    .WhereMatchesSearch(filter.Search)
-                    .WhereOrTags(filter.OrTags)
-                    .WhereAndTags(filter.AndTags)
-                    .Where(x => !protectedKinds.Contains(x.EventKind) || x.EventPublicKey == authenticatedPublicKey || x.Tags.Any(tag => tag.Name == EventTag.PublicKey && tag.Value == authenticatedPublicKey));
-
-                // Union with previous results to implement OR semantics
+                var filterQuery = ApplyFilterPredicates(
+                    entities,
+                    filter,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    useFullTextSearch);
                 query = query.Union(filterQuery);
             }
 
-            // Calculate effective limit: use the client's requested limit if specified, otherwise fallback to maxLimit
-            // When multiple filters have limits, use the minimum (most restrictive)
-            var specifiedLimits = filterArray.Where(f => f.Limit.HasValue).Select(f => f.Limit!.Value);
-            var effectiveLimit = specifiedLimits.Any() ? specifiedLimits.Min() : maxLimit;
+            return query;
+        }
 
-            return query
+        /// <summary>
+        /// Filters database events based on supplied filters for an initial REQ stored-events query.
+        /// Applies ordering and limits (per-filter, clamped by <paramref name="maxLimit"/>) and then unions/dedupes.
+        /// </summary>
+        public static IQueryable<EventEntity> WhereAnyFilterMatchesForInitialQuery(
+            this IQueryable<EventEntity> entities,
+            IEnumerable<SubscriptionFilter> filters,
+            IEnumerable<long> protectedKinds,
+            IReadOnlyCollection<string> authenticatedPublicKeys,
+            int maxLimit,
+            bool useFullTextSearch = false)
+        {
+            var filterArray = filters.ToArray();
+            if (!filterArray.Any())
+            {
+                return entities.Where(x => false).AsNoTracking();
+            }
+
+            var max = maxLimit > 0 ? maxLimit : int.MaxValue;
+            var canRankSingleSearchFilter =
+                useFullTextSearch &&
+                filterArray.Length == 1 &&
+                SearchQueryParser.Parse(filterArray[0].Search).HasBasicTerms;
+            var hasMultiFilterSearchQuery =
+                filterArray.Length > 1 && filterArray.Any(x => SearchQueryParser.Parse(x.Search).HasBasicTerms);
+
+            if (!hasMultiFilterSearchQuery)
+            {
+                IQueryable<EventEntity> query = entities.Where(x => false);
+
+                foreach (var filter in filterArray)
+                {
+                    var perFilterLimit = filter.Limit.HasValue ? Math.Min(filter.Limit.Value, max) : max;
+
+                    var filterQuery = ApplyFilterPredicates(
+                        entities,
+                        filter,
+                        protectedKinds,
+                        authenticatedPublicKeys,
+                        useFullTextSearch)
+                        .OrderBySearchQuality(filter.Search, useFullTextSearch)
+                        .Take(perFilterLimit);
+
+                    query = query.Union(filterQuery);
+                }
+
+                IQueryable<EventEntity> orderedResult = query.Include(x => x.Tags);
+
+                // NIP-50 quality ordering is only applied when there's exactly 1 search filter (simple, consistent semantics).
+                // Multi-filter ranking requires per-filter ranking aggregation; keep standard ordering for now.
+                orderedResult = canRankSingleSearchFilter
+                    ? orderedResult.OrderBySearchQuality(filterArray[0].Search, useFullTextSearch)
+                    : orderedResult.OrderByDescending(x => x.EventCreatedAt).ThenBy(x => x.EventId);
+
+                return orderedResult.AsNoTracking();
+            }
+
+            if (useFullTextSearch)
+            {
+                var rankedFilterQueriesWithScore = filterArray
+                    .Select(filter => ApplyFilterPredicatesWithSearchRank(
+                        entities,
+                        filter,
+                        protectedKinds,
+                        authenticatedPublicKeys,
+                        true,
+                        int.MaxValue))
+                    .ToList();
+
+                if (rankedFilterQueriesWithScore.Count == 0)
+                {
+                    return entities.Where(x => false).AsNoTracking();
+                }
+
+                var rankedFilterQueryWithScore = rankedFilterQueriesWithScore.Skip(1)
+                    .Aggregate(
+                        rankedFilterQueriesWithScore.First(),
+                        (current, next) => current.Concat(next));
+
+                var rankedEvents = rankedFilterQueryWithScore
+                    .GroupBy(x => x.EventId)
+                    .Select(group => new
+                    {
+                        EventId = group.Key,
+                        SearchRank = group.Max(x => x.SearchRank)
+                    })
+                    .OrderByDescending(x => x.SearchRank)
+                    .ThenBy(x => x.EventId)
+                    .Take(max);
+
+                var rankedResults = entities
+                    .Join(
+                        rankedEvents,
+                        entity => entity.EventId,
+                        ranked => ranked.EventId,
+                        (entity, ranked) => new
+                        {
+                            entity,
+                            ranked.SearchRank
+                        })
+                    .OrderByDescending(x => x.SearchRank)
+                    .ThenBy(x => x.entity.EventId)
+                    .Select(x => x.entity)
+                    .Include(x => x.Tags)
+                    .AsNoTracking();
+
+                return rankedResults;
+            }
+
+            var rankedFilterQueries = filterArray
+                .Select(filter =>
+                {
+                    var parsedSearch = SearchQueryParser.Parse(filter.Search);
+                    var limit = parsedSearch.HasBasicTerms
+                        ? max
+                        : filter.Limit.HasValue ? Math.Min(filter.Limit.Value, max) : max;
+
+                    return ApplyFilterPredicates(
+                        entities,
+                        filter,
+                        protectedKinds,
+                        authenticatedPublicKeys,
+                        false)
+                        .Select(x => x.EventId)
+                        .OrderBy(x => x)
+                        .Take(limit);
+                })
+                .ToList();
+
+            if (rankedFilterQueries.Count == 0)
+            {
+                return entities.Where(x => false).AsNoTracking();
+            }
+
+            var rankedFilterQuery = rankedFilterQueries.Skip(1)
+                .Aggregate(
+                    rankedFilterQueries.First(),
+                    (current, next) => current.Concat(next));
+
+            var rankedEventIds = rankedFilterQuery
+                .GroupBy(x => x)
+                .Select(group => new
+                {
+                    EventId = group.Key
+                })
+                .OrderBy(x => x.EventId)
+                .Take(max)
+                .Select(x => x.EventId);
+
+            return entities
+                .Where(x => rankedEventIds.Contains(x.EventId))
                 .Include(x => x.Tags)
-                .OrderByDescending(x => x.EventCreatedAt)
-                .ThenBy(x => x.EventId)
-                .Take(effectiveLimit)
+                .OrderBy(x => x.EventId)
                 .AsNoTracking();
         }
 
         /// <summary>
-        /// Filters database events based on supplied filters with no auth.
+        /// Filters database events based on supplied filters with no auth for an initial REQ stored-events query.
         /// </summary>
-        public static IQueryable<EventEntity> WhereAnyFilterMatches(
-            this DbSet<EventEntity> entities,
+        public static IQueryable<EventEntity> WhereAnyFilterMatchesForInitialQuery(
+            this IQueryable<EventEntity> entities,
             IEnumerable<SubscriptionFilter> filters,
             int maxLimit)
         {
-            return WhereAnyFilterMatches(entities, filters, [], null, maxLimit);
+            return WhereAnyFilterMatchesForInitialQuery(
+                entities,
+                filters,
+                [],
+                Array.Empty<string>(),
+                maxLimit,
+                useFullTextSearch: false);
+        }
+
+        private static IQueryable<EventEntity> ApplyFilterPredicates(
+            IQueryable<EventEntity> entities,
+            SubscriptionFilter filter,
+            IEnumerable<long> protectedKinds,
+            IReadOnlyCollection<string> authenticatedPublicKeys,
+            bool useFullTextSearch)
+        {
+            return entities
+                .Where(x =>
+                    (filter.Authors.Contains(x.EventPublicKey) || !filter.Authors.Any()) &&
+                    (filter.Ids.Contains(x.EventId) || !filter.Ids.Any()) &&
+                    (filter.Kinds.Contains(x.EventKind) || !filter.Kinds.Any()) &&
+                    (filter.Since <= x.EventCreatedAt || !filter.Since.HasValue) &&
+                    (filter.Until >= x.EventCreatedAt || !filter.Until.HasValue))
+                .WhereMatchesSearch(filter.Search, useFullTextSearch)
+                .WhereOrTags(filter.OrTags)
+                .WhereAndTags(filter.AndTags)
+                .Where(x =>
+                    !protectedKinds.Contains(x.EventKind) ||
+                    authenticatedPublicKeys.Contains(x.EventPublicKey) ||
+                    x.Tags.Any(tag => tag.Name == EventTag.PublicKey &&
+                                      authenticatedPublicKeys.Contains(tag.Value)));
         }
 
         private static IQueryable<EventEntity> WhereOrTags(this IQueryable<EventEntity> entities, IDictionary<string, string[]> tags)
@@ -99,34 +268,58 @@ namespace Netstr.Messaging.Subscriptions
             return entities;
         }
 
-        private static IQueryable<EventEntity> WhereMatchesSearchAny(this IQueryable<EventEntity> entities, SubscriptionFilter[] filters)
+        private static IQueryable<SearchRankedEvent> ApplyFilterPredicatesWithSearchRank(
+            IQueryable<EventEntity> entities,
+            SubscriptionFilter filter,
+            IEnumerable<long> protectedKinds,
+            IReadOnlyCollection<string> authenticatedPublicKeys,
+            bool useFullTextSearch,
+            int max)
         {
-            // Apply search filters (for now, apply each one - this could be optimized further)
-            foreach (var filter in filters.Where(f => !string.IsNullOrEmpty(f.Search)))
+            var filtered = ApplyFilterPredicates(
+                entities,
+                filter,
+                protectedKinds,
+                authenticatedPublicKeys,
+                useFullTextSearch);
+
+            var parsed = SearchQueryParser.Parse(filter.Search);
+            var limit = max;
+
+            if (useFullTextSearch && parsed.HasBasicTerms)
             {
-                entities = entities.WhereMatchesSearch(filter.Search);
+                var basicTerms = parsed.BasicTerms.Trim();
+                var tsQuery = ConvertToTsQuery(basicTerms);
+
+                return filtered
+                    .Select(x => new SearchRankedEvent(
+                        x.EventId,
+                        EF.Functions.ToTsVector("english", x.EventContent)
+                            .RankCoverDensity(EF.Functions.ToTsQuery("english", tsQuery))))
+                    .OrderByDescending(x => x.SearchRank)
+                    .ThenBy(x => x.EventId)
+                    .Take(limit);
             }
-            return entities;
+
+            return filtered
+                .Select(x => new SearchRankedEvent(x.EventId, 0))
+                .OrderBy(x => x.EventId)
+                .Take(limit);
         }
 
-        private static IQueryable<EventEntity> WhereOrTagsAny(this IQueryable<EventEntity> entities, SubscriptionFilter[] filters)
+        private sealed record SearchRankedEvent(string EventId, double SearchRank);
+
+        private static string ConvertToTsQuery(string basicTerms)
         {
-            // Apply OR tag filters from any filter
-            foreach (var filter in filters)
-            {
-                entities = entities.WhereOrTags(filter.OrTags);
-            }
-            return entities;
+            // Split terms and join with AND operator
+            var terms = basicTerms.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(term => term.Replace("'", "''")) // Escape single quotes
+                .Where(term => !string.IsNullOrWhiteSpace(term))
+                .Select(term => $"'{term}'")
+                .ToArray();
+
+            return string.Join(" & ", terms);
         }
 
-        private static IQueryable<EventEntity> WhereAndTagsAny(this IQueryable<EventEntity> entities, SubscriptionFilter[] filters)
-        {
-            // Apply AND tag filters from any filter
-            foreach (var filter in filters)
-            {
-                entities = entities.WhereAndTags(filter.AndTags);
-            }
-            return entities;
-        }
     }
 }

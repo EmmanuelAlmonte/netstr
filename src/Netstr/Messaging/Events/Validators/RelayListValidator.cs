@@ -16,7 +16,7 @@ namespace Netstr.Messaging.Events.Validators
         /// <exception cref="EventProcessingException">Thrown when the event format is invalid</exception>
         public static void Validate(Event @event)
         {
-            if (!@event.Kind.Equals(EventKind.RelayList))
+            if (@event.Kind != (long)EventKind.RelayList)
             {
                 throw new EventProcessingException(@event, "Event must be of kind 10002 (RelayList)");
             }

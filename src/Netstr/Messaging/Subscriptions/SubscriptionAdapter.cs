@@ -1,5 +1,5 @@
 ﻿using Netstr.Messaging.Models;
-using System.Collections.Concurrent;
+using System.Threading.Channels;
 
 namespace Netstr.Messaging.Subscriptions
 {
@@ -7,15 +7,21 @@ namespace Netstr.Messaging.Subscriptions
     {
         private readonly IWebSocketAdapter webSocketAdapter;
         private readonly string subscriptionId;
-        private readonly ConcurrentQueue<Event> eventsQueue;
+        private readonly Channel<Event> eventsQueue;
         private MessageBatch? storedEventsBatch;
 
-        public SubscriptionAdapter(IWebSocketAdapter webSocketAdapter, string subscriptionId, SubscriptionFilter[] filters)
+        public SubscriptionAdapter(IWebSocketAdapter webSocketAdapter, string subscriptionId, SubscriptionFilter[] filters, int maxQueueSize)
         {
             this.webSocketAdapter = webSocketAdapter;
             this.subscriptionId = subscriptionId;
-            this.eventsQueue = new ConcurrentQueue<Event>();
-            
+            this.eventsQueue = Channel.CreateBounded<Event>(
+                new BoundedChannelOptions(maxQueueSize)
+                {
+                    FullMode = BoundedChannelFullMode.DropOldest,
+                    SingleReader = true,
+                    SingleWriter = false
+                });
+
             Filters = filters;
         }
 
@@ -28,11 +34,11 @@ namespace Netstr.Messaging.Subscriptions
             if (StoredEventsSent)
             {
                 this.webSocketAdapter.Send(EventToMessage(e));
-            } 
-            else
-            {
-                this.eventsQueue.Enqueue(e);
+                return;
             }
+
+            // Bounded channel - drops oldest automatically when full
+            this.eventsQueue.Writer.TryWrite(e);
         }
 
         public void SendStoredEvents(IEnumerable<Event> events)
@@ -43,9 +49,13 @@ namespace Netstr.Messaging.Subscriptions
             }
 
             var storedMessages = events.Select(EventToMessage).ToArray();
-            var dequeuedMessages = this.eventsQueue.Select(EventToMessage).ToArray();
-            
-            this.eventsQueue.Clear();
+
+            // Drain queued events that arrived before stored events were sent
+            var dequeuedMessages = new List<object[]>();
+            while (this.eventsQueue.Reader.TryRead(out var ev))
+            {
+                dequeuedMessages.Add(EventToMessage(ev));
+            }
 
             // stored events, EOSE, queue events
             var batch = new MessageBatch(this.subscriptionId, [
@@ -57,23 +67,30 @@ namespace Netstr.Messaging.Subscriptions
                 ..dequeuedMessages
             ]);
 
-
             this.webSocketAdapter.Send(batch);
 
             this.storedEventsBatch = batch;
 
-            // check again in case more messages arrive while initial batch was being sent
-            if (!batch.IsCancelled && !this.eventsQueue.IsEmpty)
+            // Drain any late arrivals after sending the initial batch
+            if (!batch.IsCancelled)
             {
-                var messages = this.eventsQueue.Select(EventToMessage).ToArray();
-                this.webSocketAdapter.Send(new MessageBatch(this.subscriptionId, [ messages ]));
+                var lateMessages = new List<object[]>();
+                while (this.eventsQueue.Reader.TryRead(out var ev))
+                {
+                    lateMessages.Add(EventToMessage(ev));
+                }
+
+                if (lateMessages.Count > 0)
+                {
+                    this.webSocketAdapter.Send(new MessageBatch(this.subscriptionId, [.. lateMessages]));
+                }
             }
         }
 
         public void Dispose()
         {
             this.storedEventsBatch?.Cancel();
-
+            this.eventsQueue.Writer.TryComplete();
         }
 
         private object[] EventToMessage(Event e)

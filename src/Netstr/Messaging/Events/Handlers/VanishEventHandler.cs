@@ -34,15 +34,17 @@ namespace Netstr.Messaging.Events.Handlers
         protected override async Task HandleEventCoreAsync(IWebSocketAdapter sender, Event e)
         {
             var ctx = this.http.HttpContext?.Request ?? throw new InvalidOperationException("HttpContext not set");
-            var user = this.userCache.GetByPublicKey(e.PublicKey);
-
             var path = ctx.GetNormalizedUrl();
-            var relays = e.GetNormalizedRelayValues();
+            var relays = e.GetTagValues(EventTag.Relay)
+                .Concat(e.GetTagValues(EventTag.AuthRelay))
+                .Select(x => HttpExtensions.NormalizeRelayUrl(x))
+                .Distinct();
 
             // check 'relay' tag matches current url or is set to ALL_RELAYS
             if (!relays.Any(x => x == path || x == AllRelaysValue))
             {
-                throw new EventProcessingException(e, string.Format(Messages.InvalidWrongTagValue, EventTag.Relay));
+                sender.SendNotOk(e.Id, string.Format(Messages.InvalidWrongTagValue, EventTag.AuthRelay));
+                return;
             }
 
             using var db = this.db.CreateDbContext();
@@ -51,18 +53,22 @@ namespace Netstr.Messaging.Events.Handlers
 
             // Use execution strategy to handle transactions with retry logic
             var strategy = db.Database.CreateExecutionStrategy();
-            var deletedCount = await strategy.ExecuteAsync(async () =>
+            var deletedResult = await strategy.ExecuteAsync(async () =>
             {
                 await using var tx = await db.Database.BeginTransactionAsync();
 
-                // delete all user's events (or tagged GiftWraps) from before the vanish event
-                var deleted = await db.Events
-                    .Include(x => x.Tags)
+                var eventsToDelete = db.Events
                     .Where(x =>
                         (x.EventPublicKey == e.PublicKey ||
                         (x.EventKind == (long)EventKind.GiftWrap && x.Tags.Any(t => t.Name == EventTag.PublicKey && t.Value == e.PublicKey))) &&
-                        x.EventCreatedAt <= e.CreatedAt)
-                    .ExecuteDeleteAsync();
+                        x.EventCreatedAt <= e.CreatedAt);
+
+                var deletedEventIds = await eventsToDelete
+                    .Select(x => x.EventId)
+                    .ToArrayAsync();
+
+                // delete all user's events (or tagged GiftWraps) from before the vanish event
+                var deleted = await eventsToDelete.ExecuteDeleteAsync();
 
                 // insert vanish entity to db
                 db.Events.Add(e.ToEntity(DateTimeOffset.UtcNow));
@@ -71,19 +77,21 @@ namespace Netstr.Messaging.Events.Handlers
                 await db.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                return deleted;
+                return (DeletedCount: deleted, DeletedEventIds: deletedEventIds);
             });
+
+            this.userCache.TrackVanishDeletedEvents(deletedResult.DeletedEventIds);
 
             var vanishTime = DateTimeOffset.UtcNow - vanishStart;
 
             if (vanishTime.TotalMilliseconds > 5000)
             {
                 this.logger.LogWarning("Slow vanish operation for user {PubKey}: {Duration}ms, deleted {Count} events",
-                    e.PublicKey, vanishTime.TotalMilliseconds, deletedCount);
+                    e.PublicKey, vanishTime.TotalMilliseconds, deletedResult.DeletedCount);
             }
 
             this.logger.LogInformation("Vanish request processed for user {PubKey}: deleted {Count} events in {Duration}ms",
-                e.PublicKey, deletedCount, vanishTime.TotalMilliseconds);
+                e.PublicKey, deletedResult.DeletedCount, vanishTime.TotalMilliseconds);
 
             // set vanished in cache
             this.userCache.Vanish(e.PublicKey, e.CreatedAt);

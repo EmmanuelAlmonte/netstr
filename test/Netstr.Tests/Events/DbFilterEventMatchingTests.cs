@@ -34,7 +34,7 @@ namespace Netstr.Tests.Events
                 ]
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             results.Should().BeEquivalentTo(filter.Ids);
         }
@@ -52,7 +52,7 @@ namespace Netstr.Tests.Events
                 ]
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "1a621c1ff8f6ea2641205bcb8a2908c80f7e70338179ac6f0dab8dfebf748132",
@@ -72,7 +72,7 @@ namespace Netstr.Tests.Events
                 Kinds = [5, 6, 150]
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "20942205680e130a7602fd735fe715f52edf814a0b6e6e7f0990a02b257504ed",
@@ -81,6 +81,124 @@ namespace Netstr.Tests.Events
             ];
 
             results.Should().BeEquivalentTo(expectedIds);
+        }
+
+        [Fact]
+        public void FindEventsByWalletAndNutzapKinds()
+        {
+            var db = this.context;
+            var firstSeen = DateTimeOffset.UtcNow;
+            var author = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+            var walletRecord = new Event
+            {
+                Id = "5111111111111111111111111111111111111111111111111111111111111111",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000000),
+                Kind = (long)EventKind.CashuWalletEvent,
+                Tags = [],
+                Content = "wallet record",
+                Signature = "sig-wallet-record"
+            };
+
+            var walletResponse = new Event
+            {
+                Id = "5222222222222222222222222222222222222222222222222222222222222222",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000001),
+                Kind = (long)EventKind.WalletResponse,
+                Tags = [],
+                Content = "wallet response",
+                Signature = "sig-wallet-response"
+            };
+
+            var walletToken = new Event
+            {
+                Id = "5444444444444444444444444444444444444444444444444444444444444444",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000002),
+                Kind = (long)EventKind.CashuWalletToken,
+                Tags = [],
+                Content = "wallet token",
+                Signature = "sig-wallet-token"
+            };
+
+            var walletHistory = new Event
+            {
+                Id = "5555555555555555555555555555555555555555555555555555555555555555",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000003),
+                Kind = (long)EventKind.CashuWalletHistory,
+                Tags = [],
+                Content = "wallet history",
+                Signature = "sig-wallet-history"
+            };
+
+            var nutzapInfo = new Event
+            {
+                Id = "5666666666666666666666666666666666666666666666666666666666666666",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000004),
+                Kind = (long)EventKind.NutzapMintRecommendation,
+                Tags = [],
+                Content = "nutzap info",
+                Signature = "sig-nutzap-info"
+            };
+
+            var nutzap = new Event
+            {
+                Id = "5777777777777777777777777777777777777777777777777777777777777777",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000005),
+                Kind = (long)EventKind.Nutzap,
+                Tags = [],
+                Content = "nutzap event",
+                Signature = "sig-nutzap"
+            };
+
+            var unrelated = new Event
+            {
+                Id = "5333333333333333333333333333333333333333333333333333333333333333",
+                PublicKey = author,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000006),
+                Kind = (long)EventKind.ShortTextNote,
+                Tags = [],
+                Content = "not wallet",
+                Signature = "sig-not-wallet"
+            };
+
+            db.Events.AddRange(
+                walletRecord.ToEntity(firstSeen),
+                walletResponse.ToEntity(firstSeen),
+                walletToken.ToEntity(firstSeen),
+                walletHistory.ToEntity(firstSeen),
+                nutzapInfo.ToEntity(firstSeen),
+                nutzap.ToEntity(firstSeen),
+                unrelated.ToEntity(firstSeen));
+            db.SaveChanges();
+
+            var filter = new SubscriptionFilter
+            {
+                Kinds =
+                [
+                    (long)EventKind.CashuWalletEvent,
+                    (long)EventKind.WalletResponse,
+                    (long)EventKind.CashuWalletToken,
+                    (long)EventKind.CashuWalletHistory,
+                    (long)EventKind.NutzapMintRecommendation,
+                    (long)EventKind.Nutzap
+                ]
+            };
+
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
+
+            results.Should().Contain(walletRecord.Id);
+            results.Should().Contain(walletResponse.Id);
+            results.Should().Contain(walletToken.Id);
+            results.Should().Contain(walletHistory.Id);
+            results.Should().Contain(nutzapInfo.Id);
+            results.Should().Contain(nutzap.Id);
+            results.Should().NotContain(unrelated.Id);
         }
 
         [Fact]
@@ -93,7 +211,7 @@ namespace Netstr.Tests.Events
                 Until = DateTimeOffset.FromUnixTimeSeconds(1660424316)
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "cf8de9db67a1d7203512d1d81e6190f5e53abfdc0ac90275f67172b65a5b09a0",
@@ -114,7 +232,7 @@ namespace Netstr.Tests.Events
                 Limit = 2
             };
 
-            var results = db.Events.WhereAnyFilterMatches([filter], 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery([filter], 100).Select(x => x.EventId).ToArray();
 
             string[] expectedIds = [
                 "444cec7f44c53eee60ba62858920c74173aa6bbb76c622f484a88cfcca2e07ad",
@@ -141,7 +259,7 @@ namespace Netstr.Tests.Events
                 new SubscriptionFilter { Kinds = [5], Since = DateTimeOffset.FromUnixTimeSeconds(1660449145) },
             };
 
-            var results = db.Events.WhereAnyFilterMatches(filters, 3).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery(filters, 3).Select(x => x.EventId).ToArray();
 
             var expectedIds = new[] {
                 "444cec7f44c53eee60ba62858920c74173aa6bbb76c622f484a88cfcca2e07ad",
@@ -168,7 +286,7 @@ namespace Netstr.Tests.Events
                 },
             };
 
-            var results = db.Events.WhereAnyFilterMatches(filters, 100).Select(x => x.EventId).ToArray();
+            var results = db.Events.WhereAnyFilterMatchesForInitialQuery(filters, 100).Select(x => x.EventId).ToArray();
 
             var expectedIds = new[] { "23677e3d035be5de01172de203103e292126d542897086bf797d8794fe6b1081" };
 

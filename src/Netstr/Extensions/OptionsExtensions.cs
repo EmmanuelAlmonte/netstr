@@ -21,6 +21,7 @@ namespace Netstr.Extensions
                 .AddApplicationOptions<RelayInformationOptions>("RelayInformation")
                 .AddApplicationOptions<LimitsOptions>("Limits")
                 .AddApplicationOptions<AuthOptions>("Auth")
+                .AddApplicationOptions<FiltersOptions>("Filters")
                 .AddApplicationOptions<CleanupOptions>("Cleanup")
                 .AddApplicationOptions<WhitelistOptions>("Whitelist");
         }

@@ -4,6 +4,7 @@
     {
         public const string Event = "e";
         public const string ReplaceableEvent = "a";
+        public const string Kind = "k";
         public const string PublicKey = "p";
         public const string Deduplication = "d";
         public const string Nonce = "nonce";

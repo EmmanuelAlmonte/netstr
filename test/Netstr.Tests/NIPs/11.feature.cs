@@ -89,7 +89,7 @@ namespace Netstr.Tests.NIPs
                         "PrivateKey"});
             table116.AddRow(new string[] {
                         "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
-                        "nsec12y4pgafw6kpcqjtfyrdyxtcupnddj5kdft768kdl55wzq50ervpqauqnw4"});
+                        "512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02"});
 #line 7
  testRunner.And("Alice is connected to relay", ((string)(null)), table116, "And ");
 #line hidden
@@ -137,6 +137,12 @@ this.FeatureBackground();
                 table118.AddRow(new string[] {
                             "Access-Control-Allow-Origin",
                             "*"});
+                table118.AddRow(new string[] {
+                            "Access-Control-Allow-Headers",
+                            "*"});
+                table118.AddRow(new string[] {
+                            "Access-Control-Allow-Methods",
+                            "GET, OPTIONS"});
 #line 17
  testRunner.Then("Alice receives a response with headers", ((string)(null)), table118, "Then ");
 #line hidden
@@ -164,8 +170,84 @@ this.FeatureBackground();
                 table119.AddRow(new string[] {
                             "supported_nips",
                             "int[]"});
-#line 20
+#line 22
  testRunner.And("Alice receives a response with json content", ((string)(null)), table119, "And ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Relay accepts multi-value metadata Accept header")]
+        [Xunit.TraitAttribute("FeatureTitle", "NIP-11")]
+        [Xunit.TraitAttribute("Description", "Relay accepts multi-value metadata Accept header")]
+        public void RelayAcceptsMulti_ValueMetadataAcceptHeader()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Relay accepts multi-value metadata Accept header", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 32
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 5
+this.FeatureBackground();
+#line hidden
+                TechTalk.SpecFlow.Table table120 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Header",
+                            "Value"});
+                table120.AddRow(new string[] {
+                            "Accept",
+                            "text/html, application/nostr+json; q=0.9"});
+#line 33
+ testRunner.When("Alice sends a GET HTTP request to its websockets endpoint", ((string)(null)), table120, "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table121 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Header",
+                            "Value"});
+                table121.AddRow(new string[] {
+                            "Access-Control-Allow-Origin",
+                            "*"});
+                table121.AddRow(new string[] {
+                            "Access-Control-Allow-Headers",
+                            "*"});
+                table121.AddRow(new string[] {
+                            "Access-Control-Allow-Methods",
+                            "GET, OPTIONS"});
+#line 36
+ testRunner.Then("Alice receives a response with headers", ((string)(null)), table121, "Then ");
+#line hidden
+                TechTalk.SpecFlow.Table table122 = new TechTalk.SpecFlow.Table(new string[] {
+                            "Field",
+                            "Type"});
+                table122.AddRow(new string[] {
+                            "name",
+                            "string"});
+                table122.AddRow(new string[] {
+                            "description",
+                            "string"});
+                table122.AddRow(new string[] {
+                            "contact",
+                            "string"});
+                table122.AddRow(new string[] {
+                            "pubkey",
+                            "string"});
+                table122.AddRow(new string[] {
+                            "software",
+                            "string"});
+                table122.AddRow(new string[] {
+                            "version",
+                            "string"});
+                table122.AddRow(new string[] {
+                            "supported_nips",
+                            "int[]"});
+#line 41
+ testRunner.And("Alice receives a response with json content", ((string)(null)), table122, "And ");
 #line hidden
             }
             this.ScenarioCleanup();

@@ -83,23 +83,23 @@ namespace Netstr.Tests.NIPs
 #line 6
  testRunner.Given("a relay is running", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table175 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table186 = new TechTalk.SpecFlow.Table(new string[] {
                         "PublicKey",
                         "PrivateKey"});
-            table175.AddRow(new string[] {
+            table186.AddRow(new string[] {
                         "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
                         "512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02"});
 #line 7
- testRunner.And("Alice is connected to relay", ((string)(null)), table175, "And ");
+ testRunner.And("Alice is connected to relay", ((string)(null)), table186, "And ");
 #line hidden
-            TechTalk.SpecFlow.Table table176 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table187 = new TechTalk.SpecFlow.Table(new string[] {
                         "PublicKey",
                         "PrivateKey"});
-            table176.AddRow(new string[] {
+            table187.AddRow(new string[] {
                         "5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627",
                         "3551fc7617f76632e4542992c0bc01fecb224de639c4b6a1e0956946e8bb8a29"});
 #line 10
- testRunner.And("Bob is connected to relay", ((string)(null)), table176, "And ");
+ testRunner.And("Bob is connected to relay", ((string)(null)), table187, "And ");
 #line hidden
         }
         
@@ -129,13 +129,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table177 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table188 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table177.AddRow(new string[] {
+                table188.AddRow(new string[] {
                             "1111111111111111111111111111111111111111111111111111111111111111",
                             "*",
                             "10000",
@@ -143,18 +143,18 @@ this.FeatureBackground();
                                 "55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd18dcc4\"]]",
                             "1722337838"});
 #line 16
- testRunner.When("Alice publishes an event", ((string)(null)), table177, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table188, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table178 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table189 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table178.AddRow(new string[] {
+                table189.AddRow(new string[] {
                             "OK",
                             "1111111111111111111111111111111111111111111111111111111111111111",
                             "true"});
 #line 19
- testRunner.Then("Alice receives a message", ((string)(null)), table178, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table189, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -181,31 +181,31 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table179 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table190 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table179.AddRow(new string[] {
+                table190.AddRow(new string[] {
                             "2222222222222222222222222222222222222222222222222222222222222222",
                             "*",
                             "10000",
                             "[[\"t\",\"spam\"],[\"word\",\"scam\"],[\"word\",\"rugpull\"]]",
                             "1722337838"});
 #line 24
- testRunner.When("Alice publishes an event", ((string)(null)), table179, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table190, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table180 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table191 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table180.AddRow(new string[] {
+                table191.AddRow(new string[] {
                             "OK",
                             "2222222222222222222222222222222222222222222222222222222222222222",
                             "true"});
 #line 27
- testRunner.Then("Alice receives a message", ((string)(null)), table180, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table191, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -232,44 +232,44 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table181 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table192 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table181.AddRow(new string[] {
+                table192.AddRow(new string[] {
                             "3333333333333333333333333333333333333333333333333333333333333333",
                             "*",
                             "10000",
                             "[[\"p\",\"07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9\"]]",
                             "1722337838"});
 #line 32
- testRunner.When("Alice publishes an event", ((string)(null)), table181, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table192, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table182 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table193 = new TechTalk.SpecFlow.Table(new string[] {
                             "Authors",
                             "Kinds"});
-                table182.AddRow(new string[] {
+                table193.AddRow(new string[] {
                             "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
                             "10000"});
 #line 35
- testRunner.And("Bob sends a subscription request mute_sub", ((string)(null)), table182, "And ");
+ testRunner.And("Bob sends a subscription request mute_sub", ((string)(null)), table193, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table183 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table194 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "EventId"});
-                table183.AddRow(new string[] {
+                table194.AddRow(new string[] {
                             "EVENT",
                             "mute_sub",
                             "3333333333333333333333333333333333333333333333333333333333333333"});
-                table183.AddRow(new string[] {
+                table194.AddRow(new string[] {
                             "EOSE",
                             "mute_sub",
                             ""});
 #line 38
- testRunner.Then("Bob receives messages", ((string)(null)), table183, "Then ");
+ testRunner.Then("Bob receives messages", ((string)(null)), table194, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -296,13 +296,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table184 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table195 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table184.AddRow(new string[] {
+                table195.AddRow(new string[] {
                             "4444444444444444444444444444444444444444444444444444444444444444",
                             "*",
                             "10003",
@@ -311,18 +311,18 @@ this.FeatureBackground();
                                 "]",
                             "1722337838"});
 #line 45
- testRunner.When("Alice publishes an event", ((string)(null)), table184, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table195, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table185 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table196 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table185.AddRow(new string[] {
+                table196.AddRow(new string[] {
                             "OK",
                             "4444444444444444444444444444444444444444444444444444444444444444",
                             "true"});
 #line 48
- testRunner.Then("Alice receives a message", ((string)(null)), table185, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table196, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -349,31 +349,31 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table186 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table197 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table186.AddRow(new string[] {
+                table197.AddRow(new string[] {
                             "5555555555555555555555555555555555555555555555555555555555555555",
                             "*",
                             "10006",
                             "[[\"relay\",\"wss://badrelay1.com\"],[\"relay\",\"wss://badrelay2.com\"]]",
                             "1722337838"});
 #line 54
- testRunner.When("Alice publishes an event", ((string)(null)), table186, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table197, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table187 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table198 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table187.AddRow(new string[] {
+                table198.AddRow(new string[] {
                             "OK",
                             "5555555555555555555555555555555555555555555555555555555555555555",
                             "true"});
 #line 57
- testRunner.Then("Alice receives a message", ((string)(null)), table187, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table198, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -400,31 +400,31 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table188 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table199 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table188.AddRow(new string[] {
+                table199.AddRow(new string[] {
                             "6666666666666666666666666666666666666666666666666666666666666666",
                             "*",
                             "10015",
                             "[[\"t\",\"bitcoin\"],[\"t\",\"nostr\"],[\"t\",\"programming\"]]",
                             "1722337838"});
 #line 63
- testRunner.When("Alice publishes an event", ((string)(null)), table188, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table199, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table189 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table200 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table189.AddRow(new string[] {
+                table200.AddRow(new string[] {
                             "OK",
                             "6666666666666666666666666666666666666666666666666666666666666666",
                             "true"});
 #line 66
- testRunner.Then("Alice receives a message", ((string)(null)), table189, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table200, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -451,13 +451,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table190 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table201 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table190.AddRow(new string[] {
+                table201.AddRow(new string[] {
                             "7777777777777777777777777777777777777777777777777777777777777777",
                             "*",
                             "10030",
@@ -465,18 +465,18 @@ this.FeatureBackground();
                                 "e.com/sad.png\"]]",
                             "1722337838"});
 #line 72
- testRunner.When("Alice publishes an event", ((string)(null)), table190, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table201, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table191 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table202 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table191.AddRow(new string[] {
+                table202.AddRow(new string[] {
                             "OK",
                             "7777777777777777777777777777777777777777777777777777777777777777",
                             "true"});
 #line 75
- testRunner.Then("Alice receives a message", ((string)(null)), table191, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table202, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -503,13 +503,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table192 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table203 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table192.AddRow(new string[] {
+                table203.AddRow(new string[] {
                             "8888888888888888888888888888888888888888888888888888888888888888",
                             "*",
                             "30000",
@@ -518,18 +518,18 @@ this.FeatureBackground();
                                 "]]",
                             "1722337838"});
 #line 81
- testRunner.When("Alice publishes an event", ((string)(null)), table192, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table203, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table193 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table204 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table193.AddRow(new string[] {
+                table204.AddRow(new string[] {
                             "OK",
                             "8888888888888888888888888888888888888888888888888888888888888888",
                             "true"});
 #line 84
- testRunner.Then("Alice receives a message", ((string)(null)), table193, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table204, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -556,33 +556,33 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table194 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table205 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table194.AddRow(new string[] {
+                table205.AddRow(new string[] {
                             "9999999999999999999999999999999999999999999999999999999999999999",
                             "*",
                             "30000",
                             "[[\"p\",\"07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc1da3a9\"]]",
                             "1722337838"});
 #line 90
- testRunner.When("Alice publishes an event", ((string)(null)), table194, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table205, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table195 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table206 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success",
                             "Message"});
-                table195.AddRow(new string[] {
+                table206.AddRow(new string[] {
                             "OK",
                             "9999999999999999999999999999999999999999999999999999999999999999",
                             "false",
                             "*"});
 #line 93
- testRunner.Then("Alice receives a message", ((string)(null)), table195, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table206, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -609,13 +609,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table196 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table207 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table196.AddRow(new string[] {
+                table207.AddRow(new string[] {
                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                             "*",
                             "30002",
@@ -623,18 +623,18 @@ this.FeatureBackground();
                                 "ample.com\"]]",
                             "1722337838"});
 #line 99
- testRunner.When("Alice publishes an event", ((string)(null)), table196, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table207, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table197 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table208 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table197.AddRow(new string[] {
+                table208.AddRow(new string[] {
                             "OK",
                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                             "true"});
 #line 102
- testRunner.Then("Alice receives a message", ((string)(null)), table197, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table208, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -661,13 +661,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table198 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table209 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table198.AddRow(new string[] {
+                table209.AddRow(new string[] {
                             "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                             "*",
                             "30003",
@@ -676,18 +676,18 @@ this.FeatureBackground();
                                 "1d0593a0c:95ODQzw3\"]]",
                             "1722337838"});
 #line 108
- testRunner.When("Alice publishes an event", ((string)(null)), table198, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table209, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table199 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table210 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table199.AddRow(new string[] {
+                table210.AddRow(new string[] {
                             "OK",
                             "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                             "true"});
 #line 111
- testRunner.Then("Alice receives a message", ((string)(null)), table199, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table210, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -714,13 +714,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table200 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table211 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table200.AddRow(new string[] {
+                table211.AddRow(new string[] {
                             "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
                             "*",
                             "30007",
@@ -728,18 +728,18 @@ this.FeatureBackground();
                                 "\"],[\"p\",\"a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd18dcc4\"]]",
                             "1722337838"});
 #line 117
- testRunner.When("Alice publishes an event", ((string)(null)), table200, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table211, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table201 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table212 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table201.AddRow(new string[] {
+                table212.AddRow(new string[] {
                             "OK",
                             "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
                             "true"});
 #line 120
- testRunner.Then("Alice receives a message", ((string)(null)), table201, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table212, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -766,31 +766,31 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table202 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table213 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table202.AddRow(new string[] {
+                table213.AddRow(new string[] {
                             "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
                             "*",
                             "30015",
                             "[[\"d\",\"tech\"],[\"t\",\"bitcoin\"],[\"t\",\"programming\"]]",
                             "1722337838"});
 #line 126
- testRunner.When("Alice publishes an event", ((string)(null)), table202, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table213, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table203 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table214 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table203.AddRow(new string[] {
+                table214.AddRow(new string[] {
                             "OK",
                             "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
                             "true"});
 #line 129
- testRunner.Then("Alice receives a message", ((string)(null)), table203, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table214, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -817,13 +817,13 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table204 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table215 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table204.AddRow(new string[] {
+                table215.AddRow(new string[] {
                             "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
                             "*",
                             "30030",
@@ -831,18 +831,18 @@ this.FeatureBackground();
                                 "i\",\"fire\",\"https://example.com/fire.png\"]]",
                             "1722337838"});
 #line 135
- testRunner.When("Alice publishes an event", ((string)(null)), table204, "When ");
+ testRunner.When("Alice publishes an event", ((string)(null)), table215, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table205 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table216 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "Success"});
-                table205.AddRow(new string[] {
+                table216.AddRow(new string[] {
                             "OK",
                             "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
                             "true"});
 #line 138
- testRunner.Then("Alice receives a message", ((string)(null)), table205, "Then ");
+ testRunner.Then("Alice receives a message", ((string)(null)), table216, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -869,52 +869,52 @@ this.ScenarioInitialize(scenarioInfo);
 #line 5
 this.FeatureBackground();
 #line hidden
-                TechTalk.SpecFlow.Table table206 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table217 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Content",
                             "Kind",
                             "Tags",
                             "CreatedAt"});
-                table206.AddRow(new string[] {
-                            "f111111111111111111111111111111111111111111111111111111111111111",
+                table217.AddRow(new string[] {
+                            "*",
                             "*",
                             "30000",
                             "[[\"d\",\"friends\"],[\"p\",\"07caba282f76441955b695551c3c5c742e5b9202a3784780f8086fdcdc" +
                                 "1da3a9\"]]",
                             "1722337838"});
-                table206.AddRow(new string[] {
-                            "f222222222222222222222222222222222222222222222222222222222222222",
+                table217.AddRow(new string[] {
+                            "*",
                             "*",
                             "30000",
                             "[[\"d\",\"friends\"],[\"p\",\"a55c15f5e41d5aebd236eca5e0142789c5385703f1a7485aa4b38d94fd" +
                                 "18dcc4\"]]",
                             "1722337848"});
 #line 144
- testRunner.When("Alice publishes events", ((string)(null)), table206, "When ");
+ testRunner.When("Alice publishes events", ((string)(null)), table217, "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table207 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table218 = new TechTalk.SpecFlow.Table(new string[] {
                             "Authors",
                             "Kinds"});
-                table207.AddRow(new string[] {
+                table218.AddRow(new string[] {
                             "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
                             "30000"});
 #line 148
- testRunner.And("Bob sends a subscription request set_sub", ((string)(null)), table207, "And ");
+ testRunner.And("Bob sends a subscription request set_sub", ((string)(null)), table218, "And ");
 #line hidden
-                TechTalk.SpecFlow.Table table208 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table219 = new TechTalk.SpecFlow.Table(new string[] {
                             "Type",
                             "Id",
                             "EventId"});
-                table208.AddRow(new string[] {
+                table219.AddRow(new string[] {
                             "EVENT",
                             "set_sub",
-                            "f222222222222222222222222222222222222222222222222222222222222222"});
-                table208.AddRow(new string[] {
+                            "*"});
+                table219.AddRow(new string[] {
                             "EOSE",
                             "set_sub",
                             ""});
 #line 151
- testRunner.Then("Bob receives messages", ((string)(null)), table208, "Then ");
+ testRunner.Then("Bob receives messages", ((string)(null)), table219, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

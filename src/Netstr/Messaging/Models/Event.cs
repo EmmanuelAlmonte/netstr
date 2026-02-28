@@ -1,4 +1,5 @@
-﻿﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Netstr.Extensions;
 using Netstr.Json;
 using System.Linq;
 using System.Numerics;
@@ -31,9 +32,9 @@ namespace Netstr.Messaging.Models
         [JsonConverter(typeof(UnixTimestampJsonConverter))]
         public required DateTimeOffset CreatedAt { get; init; }
 
-        public bool IsRegular() => Kind is > 0 and < 10000 and not 3;
+        public bool IsRegular() => Kind == (long)EventKind.WalletResponse || Kind is > 0 and < 10000 and not 3;
 
-        public bool IsReplaceable() => Kind is >= 10000 and < 20000 or 0 or 3;
+        public bool IsReplaceable() => Kind == (long)EventKind.CashuWalletEvent || Kind is >= 10000 and < 20000 or 0 or 3;
 
         public bool IsEphemeral() => Kind is >= 20000 and < 30000;
 
@@ -81,12 +82,14 @@ namespace Netstr.Messaging.Models
 
         public IEnumerable<string> GetNormalizedRelayValues()
         {
-            return GetTagValues(EventTag.Relay).Select(x => x.Contains("://") ? x.Split("://")[1].TrimEnd('/') : x);
+            return GetTagValues(EventTag.Relay)
+                .Select(x => HttpExtensions.NormalizeRelayUrl(x));
         }
 
         public IEnumerable<string> GetAuthRelayValues()
         {
-            return GetTagValues(EventTag.AuthRelay).Select(x => x.Contains("://") ? x.Split("://")[1].TrimEnd('/') : x);
+            return GetTagValues(EventTag.AuthRelay)
+                .Select(x => HttpExtensions.NormalizeRelayUrl(x));
         }
 
         public DateTimeOffset? GetExpirationValue()

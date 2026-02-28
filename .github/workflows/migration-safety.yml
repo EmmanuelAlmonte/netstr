@@ -1,0 +1,78 @@
+name: Migration Safety
+
+on:
+  pull_request:
+    paths:
+      - "src/Netstr/**"
+      - ".github/workflows/migration-safety.yml"
+  push:
+    branches: [ main ]
+    paths:
+      - "src/Netstr/**"
+      - ".github/workflows/migration-safety.yml"
+
+jobs:
+  upgrade-downgrade-roundtrip:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: netstr
+          POSTGRES_PASSWORD: netstr
+          POSTGRES_DB: netstr_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U netstr -d netstr_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      ConnectionStrings__NetstrDatabase: Host=localhost;Port=5432;Database=netstr_ci;Username=netstr;Password=netstr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore Netstr.sln
+
+      - name: Build startup project
+        run: dotnet build src/Netstr/Netstr.csproj --configuration Release --no-restore
+
+      - name: Install EF CLI
+        run: dotnet tool install --global dotnet-ef --version "9.*"
+
+      - name: Add .NET tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Upgrade to latest migration
+        run: dotnet ef database update --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build
+
+      - name: Resolve latest and previous migrations
+        id: migrations
+        shell: bash
+        run: |
+          mapfile -t migrations < <(dotnet ef migrations list --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build | grep -E '^[0-9]{14}_.+' | sed 's/ (Pending)//')
+          if [ "${#migrations[@]}" -lt 2 ]; then
+            echo "Expected at least two migrations to validate downgrade safety."
+            exit 1
+          fi
+          latest_index=$((${#migrations[@]} - 1))
+          previous_index=$((${#migrations[@]} - 2))
+          echo "latest=${migrations[$latest_index]}" >> "$GITHUB_OUTPUT"
+          echo "previous=${migrations[$previous_index]}" >> "$GITHUB_OUTPUT"
+
+      - name: Downgrade to previous migration
+        run: dotnet ef database update "${{ steps.migrations.outputs.previous }}" --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build
+
+      - name: Re-upgrade to latest migration
+        run: dotnet ef database update "${{ steps.migrations.outputs.latest }}" --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build

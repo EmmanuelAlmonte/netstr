@@ -1,6 +1,6 @@
 Feature: NIP-57
 	Lightning Zaps enable Bitcoin payments on nostr.
-	Zap Request (kind 9734) is sent to initiate a zap.
+	Zap Request (kind 9734) is sent to LNURL callback and is not relay-published.
 	Zap Receipt (kind 9735) is published after payment confirmation.
 
 Background:
@@ -13,45 +13,45 @@ Background:
 	| 5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627 | 3551fc7617f76632e4542992c0bc01fecb224de639c4b6a1e0956946e8bb8a29 |
 
 # Zap Request (9734)
-Scenario: Create valid zap request with required tags
+Scenario: Relay rejects zap request publish with required tags
 	When Alice publishes an event
 	| Id                                                               | Content | Kind | Tags                                                                                                                                                                                       | CreatedAt  |
 	| 1111111111111111111111111111111111111111111111111111111111111111 | *       | 9734 | [["p","04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"],["relays","wss://relay1.example.com","wss://relay2.example.com"]]                                               | 1722337838 |
 	Then Alice receives a message
-	| Type | Id                                                               | Success |
-	| OK   | 1111111111111111111111111111111111111111111111111111111111111111 | true    |
+	| Type | Id                                                               | Success | Message                                                                    |
+	| OK   | 1111111111111111111111111111111111111111111111111111111111111111 | false   | invalid: zap request kind 9734 must be sent to lnurl callback, not to relays |
 
-Scenario: Create zap request with amount and lnurl
+Scenario: Relay rejects zap request publish with amount and lnurl
 	When Alice publishes an event
 	| Id                                                               | Content | Kind | Tags                                                                                                                                                                                                                           | CreatedAt  |
 	| 2222222222222222222222222222222222222222222222222222222222222222 | *       | 9734 | [["p","04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"],["relays","wss://relay1.example.com"],["amount","21000"],["lnurl","lnurl1dp68gurn8ghj7um5v93kketj9ehx2amn9uh8wetvdskkkmn0wahz7mrww4excup0dajx2mrv92x9xp"]] | 1722337838 |
 	Then Alice receives a message
-	| Type | Id                                                               | Success |
-	| OK   | 2222222222222222222222222222222222222222222222222222222222222222 | true    |
+	| Type | Id                                                               | Success | Message                                                                    |
+	| OK   | 2222222222222222222222222222222222222222222222222222222222222222 | false   | invalid: zap request kind 9734 must be sent to lnurl callback, not to relays |
 
-Scenario: Create zap request with e tag for specific event
+Scenario: Relay rejects zap request publish with e tag for specific event
 	When Alice publishes an event
 	| Id                                                               | Content | Kind | Tags                                                                                                                                                                                                                                                  | CreatedAt  |
 	| 3333333333333333333333333333333333333333333333333333333333333333 | *       | 9734 | [["p","04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"],["relays","wss://relay1.example.com"],["e","3624762a1274dd9636e0c552b53086d70bc88c165bc4dc0f9e836a1eaf86c3b8"]]                                                              | 1722337838 |
 	Then Alice receives a message
-	| Type | Id                                                               | Success |
-	| OK   | 3333333333333333333333333333333333333333333333333333333333333333 | true    |
+	| Type | Id                                                               | Success | Message                                                                    |
+	| OK   | 3333333333333333333333333333333333333333333333333333333333333333 | false   | invalid: zap request kind 9734 must be sent to lnurl callback, not to relays |
 
 Scenario: Reject zap request without p tag
 	When Alice publishes an event
 	| Id                                                               | Content | Kind | Tags                                           | CreatedAt  |
 	| 4444444444444444444444444444444444444444444444444444444444444444 | *       | 9734 | [["relays","wss://relay1.example.com"]]       | 1722337838 |
 	Then Alice receives a message
-	| Type | Id                                                               | Success | Message |
-	| OK   | 4444444444444444444444444444444444444444444444444444444444444444 | false   | *       |
+	| Type | Id                                                               | Success | Message                                                                    |
+	| OK   | 4444444444444444444444444444444444444444444444444444444444444444 | false   | invalid: zap request kind 9734 must be sent to lnurl callback, not to relays |
 
 Scenario: Reject zap request without relays tag
 	When Alice publishes an event
 	| Id                                                               | Content | Kind | Tags                                                                       | CreatedAt  |
 	| 5555555555555555555555555555555555555555555555555555555555555555 | *       | 9734 | [["p","04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"]] | 1722337838 |
 	Then Alice receives a message
-	| Type | Id                                                               | Success | Message |
-	| OK   | 5555555555555555555555555555555555555555555555555555555555555555 | false   | *       |
+	| Type | Id                                                               | Success | Message                                                                    |
+	| OK   | 5555555555555555555555555555555555555555555555555555555555555555 | false   | invalid: zap request kind 9734 must be sent to lnurl callback, not to relays |
 
 # Zap Receipt (9735)
 Scenario: Create valid zap receipt with required tags
@@ -102,9 +102,11 @@ Scenario: Query zap requests by kind
 	And Bob sends a subscription request zap_sub
 	| Authors                                                          | Kinds |
 	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 9734  |
+	Then Alice receives a message
+	| Type | Id                                                               | Success | Message                                                                    |
+	| OK   | bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb | false   | invalid: zap request kind 9734 must be sent to lnurl callback, not to relays |
 	Then Bob receives messages
 	| Type  | Id      | EventId                                                          |
-	| EVENT | zap_sub | bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb |
 	| EOSE  | zap_sub |                                                                  |
 
 Scenario: Query zap receipts by kind
