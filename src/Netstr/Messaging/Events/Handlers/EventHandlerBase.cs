@@ -34,6 +34,22 @@ namespace Netstr.Messaging.Events.Handlers
                 this.logger.LogInformation($"Event {e.ToStringUnique()} already exists, ignoring");
                 sender.SendOk(e.Id, Messages.DuplicateEvent);
             }
+            catch (DbUpdateException ex)
+            {
+                this.logger.LogError(ex, "Database update failed for event {EventId} (Kind: {Kind}, PubKey: {PubKey})",
+                    e.Id, e.Kind, e.PublicKey);
+                sender.SendNotOk(e.Id, Messages.DatabaseError);
+            }
+            catch (TimeoutException ex)
+            {
+                this.logger.LogError(ex, "Database timeout while saving event {EventId}", e.Id);
+                sender.SendNotOk(e.Id, Messages.DatabaseTimeout);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Unexpected error handling event {EventId} (Kind: {Kind})", e.Id, e.Kind);
+                sender.SendNotOk(e.Id, Messages.InternalServerError);
+            }
         }
 
         public abstract bool CanHandleEvent(Event e);
@@ -52,16 +68,30 @@ namespace Netstr.Messaging.Events.Handlers
 
         private void BroadcastEventForAdapterAsync(IWebSocketAdapter adapter, Event e)
         {
-            if (
-                this.auth.Value.ProtectedKinds.Contains(e.Kind) &&
-                this.auth.Value.Mode != AuthMode.Disabled &&
-                adapter.Context.PublicKey != e.PublicKey &&
-                e.Tags.Any(x => x.Length >= 2 && x[0] == EventTag.PublicKey && x[1] != adapter.Context.PublicKey))
-            {
-                this.logger.LogInformation($"Not going to broadcast event {e.Id}");
+            var isProtectedKind = this.auth.Value.Mode != AuthMode.Disabled &&
+                this.auth.Value.ProtectedKinds.Contains(e.Kind);
 
-                // not going to send the event to this client
-                return;
+            if (isProtectedKind)
+            {
+                if (!adapter.Context.IsAuthenticated())
+                {
+                    this.logger.LogInformation($"Not going to broadcast event {e.Id}");
+                    return;
+                }
+
+                if (!adapter.Context.IsAuthenticated(e.PublicKey))
+                {
+                    var isRecipient = e.Tags.Any(x =>
+                        x.Length >= 2 &&
+                        x[0] == EventTag.PublicKey &&
+                        adapter.Context.IsAuthenticated(x[1]));
+
+                    if (!isRecipient)
+                    {
+                        this.logger.LogInformation($"Not going to broadcast event {e.Id}");
+                        return;
+                    }
+                }
             }
 
             var subs = adapter.Subscriptions

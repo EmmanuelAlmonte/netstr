@@ -26,10 +26,8 @@ namespace Netstr.Middleware
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            do
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(TimeSpan.FromSeconds(this.options.Value.Negentropy.StaleSubscriptionPeriodSeconds), stoppingToken);
-
                 this.logger.LogInformation("Checking stale negentropy subscriptions");
 
                 // get all active websockets
@@ -37,7 +35,17 @@ namespace Netstr.Middleware
                 {
                     ws.Negentropy.DisposeStaleSubscriptions();
                 }
-            } while (!stoppingToken.IsCancellationRequested);
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(this.options.Value.Negentropy.StaleSubscriptionPeriodSeconds), stoppingToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    // This is expected during shutdown, so we can just break out of the loop
+                    break;
+                }
+            }
         }
     }
 }

@@ -26,6 +26,9 @@ namespace Netstr.Messaging.Models
         [JsonPropertyName("limit")]
         public int? Limit { get; init; }
 
+        [JsonPropertyName("search")]
+        public string? Search { get; init; }
+
         [JsonExtensionData]
         public Dictionary<string, JsonElement>? AdditionalData { get; set; }
     }
@@ -37,11 +40,12 @@ namespace Netstr.Messaging.Models
         DateTimeOffset? Since,
         DateTimeOffset? Until,
         int? Limit,
+        string? Search,
         Dictionary<string, string[]> OrTags,
         Dictionary<string, string[]> AndTags)
     {
         public SubscriptionFilter()
-            : this([], [], [], null, null, null, [], [])
+            : this([], [], [], null, null, null, null, [], [])
         {
         }
     }

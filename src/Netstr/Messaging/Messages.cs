@@ -7,6 +7,7 @@
         public const string InvalidId = "invalid: event id does not match";
         public const string InvalidSignature = "invalid: event signature verification failed";
         public const string InvalidCreatedAt = "invalid: event creation date is too far off from the current time";
+        public const string InvalidSubscriptionIdEmpty = "invalid: subscription id is empty";
         public const string InvalidSubscriptionIdTooLong = "invalid: subscription id is too long";
         public const string InvalidTooManyFilters = "invalid: too many filters";
         public const string InvalidCannotProcessFilters = "invalid: cannot process filters";
@@ -16,7 +17,12 @@
         public const string InvalidEventExpired = "invalid: event is expired";
         public const string InvalidTooFewTagFields = "invalid: too few fields in tag";
         public const string InvalidTooManyTags = "invalid: too many tags";
+        public const string InvalidEmptyTagsForKind13 = "invalid: kind 13 events must not contain tags";
         public const string InvalidCannotDelete = "invalid: cannot delete deletions and someone else's events";
+        public const string InvalidCannotDeleteMissingReference = "invalid: cannot delete without e/a reference";
+        public const string InvalidCannotDeleteMalformedReference = "invalid: cannot delete malformed e/a reference";
+        public const string InvalidCannotDeleteMissingCashuTokenKindMarker = "invalid: deleting kind 7375 requires tag [\"k\",\"7375\"]";
+        public const string InvalidZapRequestRelayPublish = "invalid: zap request kind 9734 must be sent to lnurl callback, not to relays";
         public const string InvalidDeletedEvent = "invalid: this event was already deleted";
         public const string InvalidWrongTagValue = "invalid: this event has an unexpected value of tag {0}";
         public const string AuthRequired = "auth-required: we only allow publishing and subscribing to authenticated clients";
@@ -31,6 +37,11 @@
         public const string PowNoMatch = "pow: difficulty {0} doesn't match target of {1}";
         public const string UnsupportedFilter = "unsupported: filter contains unknown elements";
         public const string RateLimited = "rate-limited: slow down there chief";
+        public const string WhitelistRestricted = "restricted: your public key is not in the whitelist";
+        public const string IgnoredDummyProbe = "ignored: dummy subscription filter (connectivity probe)";
+        public const string DatabaseError = "error: database operation failed";
+        public const string DatabaseTimeout = "error: database timeout";
+        public const string InternalServerError = "error: internal server error";
 
         public const string CannotParseMessage = "unable to parse the message";
         public const string CannotProcessMessageType = "unknown message type";

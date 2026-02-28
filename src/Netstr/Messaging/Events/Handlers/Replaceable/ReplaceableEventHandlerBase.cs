@@ -51,6 +51,14 @@ namespace Netstr.Messaging.Events.Handlers.Replaceable
                     return;
                 }
 
+                if (newEntity.EventCreatedAt == existing.EventCreatedAt &&
+                    string.CompareOrdinal(newEntity.EventId, existing.EventId) >= 0)
+                {
+                    this.logger.LogInformation($"Event {e.ToStringUnique()} loses same timestamp tie-break, ignoring");
+                    sender.SendNotOk(e.Id, Messages.DuplicateReplaceableEvent);
+                    return;
+                }
+
                 // if event was previously deleted only accept newer events if they are newer than the deletion
                 if (existing.DeletedAt.HasValue && newEntity.EventCreatedAt < existing.DeletedAt)
                 {

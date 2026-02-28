@@ -7,7 +7,8 @@ namespace Netstr.Data
         private static readonly string[] UniqueIndexNames = [
             "UNIQUE",
             NetstrDbContext.EventIdIndexName, 
-            NetstrDbContext.ReplaceableUniqueIndexName
+            NetstrDbContext.ReplaceableUniqueIndexName,
+            NetstrDbContext.TagValueIndexName
         ];
 
         public static bool IsUniqueIndexViolation(this DbUpdateException exception)

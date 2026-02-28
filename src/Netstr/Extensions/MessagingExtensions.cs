@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using Netstr.Messaging;
+﻿﻿﻿﻿﻿﻿﻿using Netstr.Messaging;
 using Netstr.Messaging.Events;
 using Netstr.Messaging.Events.Handlers;
 using Netstr.Messaging.Events.Handlers.Replaceable;
@@ -10,6 +10,7 @@ using Netstr.Messaging.Subscriptions;
 using Netstr.Messaging.Subscriptions.Validators;
 using Netstr.Messaging.WebSockets;
 using Netstr.Middleware;
+using Netstr.Services;
 
 namespace Netstr.Extensions
 {
@@ -21,6 +22,14 @@ namespace Netstr.Extensions
             services.AddSingleton<IWebSocketAdapterCollection, WebSocketAdapterCollection>();
             services.AddSingleton<IUserCache, UserCache>();
             services.AddTransient<ICleanupService, CleanupService>();
+            
+            // NIP-05 verification service
+            // Per NIP-05 spec: MUST NOT follow HTTP redirects for security
+            services.AddHttpClient<INip05VerificationService, Nip05VerificationService>()
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    AllowAutoRedirect = false
+                });
 
             // message
             services.AddSingleton<IMessageDispatcher, MessageDispatcher>();
@@ -48,6 +57,7 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventHandler, VanishEventHandler>();
             services.AddSingleton<IEventHandler, RelayListEventHandler>();
             services.AddSingleton<IEventHandler, TestRelayListEventHandler>();
+            services.AddSingleton<IEventHandler, ZapEventHandler>();
 
             // RegularEventHandler needs to go last
             services.AddSingleton<IEventHandler, RegularEventHandler>();
@@ -63,11 +73,25 @@ namespace Netstr.Extensions
             services.AddSingleton<IEventValidator, EventHashValidator>();
             services.AddSingleton<IEventValidator, EventSignatureValidator>();
             services.AddSingleton<IEventValidator, EventPowValidator>();
+            services.AddSingleton<IEventValidator, AuthCreatedAtValidator>();
             services.AddSingleton<IEventValidator, EventCreatedAtValidator>();
+            services.AddSingleton<IEventValidator, SealEventValidator>();
             services.AddSingleton<IEventValidator, ProtectedEventValidator>();
             services.AddSingleton<IEventValidator, ExpiredEventValidator>();
             services.AddSingleton<IEventValidator, EventTagsValidator>();
             services.AddSingleton<IEventValidator, UserVanishedValidator>();
+
+            //services.AddSingleton<IEventValidator, ZapEventValidator>();
+            services.AddSingleton<IEventValidator, WhitelistValidator>();
+            services.AddSingleton<IEventValidator, Nip05Validator>();
+
+            services.AddSingleton<IEventValidator, Nip04DirectMessageValidator>();
+            services.AddSingleton<IEventValidator, ZapEventValidator>();
+            services.AddSingleton<IEventValidator, ChessEventValidator>();
+            services.AddSingleton<IEventValidator, FollowListValidator>();
+            services.AddSingleton<IEventValidator, RelayListEventValidator>();
+            services.AddSingleton<IEventValidator, ListEventValidator>();
+
             return services;
         }
 
@@ -76,6 +100,7 @@ namespace Netstr.Extensions
             services.AddSingleton<ISubscriptionRequestValidator, SubscriptionLimitsValidator>();
             services.AddSingleton<ISubscriptionRequestValidator, NegentropyLimitsValidator>();
             services.AddSingleton<ISubscriptionRequestValidator, AuthProtectedKindsValidator>();
+            services.AddSingleton<ISubscriptionRequestValidator, WhitelistSubscriptionValidator>();
 
             return services;
         }

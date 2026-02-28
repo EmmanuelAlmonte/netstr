@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using Netstr.Data;
 using Netstr.Extensions;
 using Netstr.Json;
@@ -10,6 +11,7 @@ using Netstr.Options.Limits;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 
 namespace Netstr.Messaging.MessageHandlers
@@ -21,10 +23,12 @@ namespace Netstr.Messaging.MessageHandlers
     {
         const char TagModifierOr = '#';
         const char TagModifierAnd = '&';
+        private static readonly Regex Hex64Pattern = new("^[0-9a-f]{64}$", RegexOptions.Compiled);
 
         protected readonly IEnumerable<ISubscriptionRequestValidator> validators;
         protected readonly IOptions<LimitsOptions> limits;
         protected readonly IOptions<AuthOptions> auth;
+        protected readonly IOptions<FiltersOptions> filters;
         protected readonly ILogger<FilterMessageHandlerBase> logger;
         protected readonly PartitionedRateLimiter<string> rateLimiter;
 
@@ -32,11 +36,13 @@ namespace Netstr.Messaging.MessageHandlers
             IEnumerable<ISubscriptionRequestValidator> validators,
             IOptions<LimitsOptions> limits,
             IOptions<AuthOptions> auth,
+            IOptions<FiltersOptions> filters,
             ILogger<FilterMessageHandlerBase> logger)
         {
             this.validators = validators;
             this.limits = limits;
             this.auth = auth;
+            this.filters = filters;
             this.logger = logger;
             this.rateLimiter = PartitionedRateLimiter.Create<string, string>(
                 x => RateLimitPartition.GetSlidingWindowLimiter(x, _ => {
@@ -78,12 +84,8 @@ namespace Netstr.Messaging.MessageHandlers
                 RaiseSubscriptionException(id, Messages.AuthRequired);
             }
 
-            // limit number of filters, pass whatever follows the filter list to Core method (JsonDocument)
-            var filters = parameters
-                .Skip(2)
-                .Take(SingleFilter ? 1 : int.MaxValue)
-                .Select(x => GetSubscriptionFilter(id, x))
-                .ToArray();
+            // parse filters, then pass remaining parameters to the concrete handler
+            var (filters, consumedFilterParameters) = ParseFilters(id, parameters);
 
             var validationError = this.validators.CanSubscribe(id, adapter.Context, filters, this);
             if (validationError != null)
@@ -93,7 +95,20 @@ namespace Netstr.Messaging.MessageHandlers
 
             this.logger.LogInformation($"Subscription request {id} passed validations, processing further ({adapter.Context})");
 
-            await HandleMessageCoreAsync(adapter, id, filters, parameters.Skip(filters.Length + 2).ToArray());
+            await HandleMessageCoreAsync(adapter, id, filters, parameters.Skip(consumedFilterParameters + 2).ToArray());
+        }
+
+        protected virtual (SubscriptionFilter[] Filters, int ConsumedFilterParameters) ParseFilters(
+            string subscriptionId,
+            JsonDocument[] parameters)
+        {
+            var filters = parameters
+                .Skip(2)
+                .Take(SingleFilter ? 1 : int.MaxValue)
+                .Select(x => GetSubscriptionFilter(subscriptionId, x))
+                .ToArray();
+
+            return (filters, filters.Length);
         }
 
         protected abstract Task HandleMessageCoreAsync(
@@ -107,21 +122,55 @@ namespace Netstr.Messaging.MessageHandlers
             return this.limits.Value.Subscriptions;
         }
 
-        protected IQueryable<EventEntity> GetFilteredEvents(NetstrDbContext db, IEnumerable<SubscriptionFilter> filters, string? clientPublicKey)
+        protected IQueryable<EventEntity> GetFilteredEvents(
+            NetstrDbContext db,
+            IEnumerable<SubscriptionFilter> filters,
+            IReadOnlyCollection<string> authenticatedPublicKeys)
         {
             // if auth is disabled ignore any set ProtectedKinds
             var auth = this.auth.Value;
             var protectedKinds = auth.Mode == AuthMode.Disabled ? [] : auth.ProtectedKinds;
             var now = DateTimeOffset.UtcNow;
             var limits = GetLimits();
+            var searchLimits = this.limits.Value.Search;
+            var isPostgres = db.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+            var useFullTextSearch = searchLimits.EnableFullTextSearch && isPostgres;
 
             return db.Events
-                .WhereAnyFilterMatches(filters, protectedKinds, clientPublicKey, limits.MaxInitialLimit)
                 .Where(x =>
                     !x.DeletedAt.HasValue &&
                     (!x.EventExpiration.HasValue || x.EventExpiration.Value > now))
-                .OrderByDescending(x => x.EventCreatedAt)
-                .ThenBy(x => x.EventId);
+                .WhereAnyFilterMatchesForInitialQuery(
+                    filters,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    limits.MaxInitialLimit,
+                    useFullTextSearch);
+        }
+
+        protected IQueryable<EventEntity> GetFilteredEventsForCount(
+            NetstrDbContext db,
+            IEnumerable<SubscriptionFilter> filters,
+            IReadOnlyCollection<string> authenticatedPublicKeys)
+        {
+            // if auth is disabled ignore any set ProtectedKinds
+            var auth = this.auth.Value;
+            var protectedKinds = auth.Mode == AuthMode.Disabled ? [] : auth.ProtectedKinds;
+            var now = DateTimeOffset.UtcNow;
+            var searchLimits = this.limits.Value.Search;
+            var isPostgres = db.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+            var useFullTextSearch = searchLimits.EnableFullTextSearch && isPostgres;
+
+            return db.Events
+                .Where(x =>
+                    !x.DeletedAt.HasValue &&
+                    (!x.EventExpiration.HasValue || x.EventExpiration.Value > now))
+                .WhereAnyFilterMatchesBase(
+                    filters,
+                    protectedKinds,
+                    authenticatedPublicKeys,
+                    useFullTextSearch)
+                .AsNoTracking();
         }
 
         protected virtual void RaiseSubscriptionException(string subscriptionId, string message, string? logMessage = null)
@@ -129,12 +178,27 @@ namespace Netstr.Messaging.MessageHandlers
             throw new SubscriptionProcessingException(subscriptionId, message, logMessage);
         }
 
-        private SubscriptionFilter GetSubscriptionFilter(string subscriptionId, JsonDocument json)
+        protected SubscriptionFilter GetSubscriptionFilter(string subscriptionId, JsonDocument json)
         {
             var r = DeserializeFilter(subscriptionId, json);
 
+            if (!IsValidHexFilterValueList(r.Ids))
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
+
+            if (!IsValidHexFilterValueList(r.Authors))
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
+
+            var allowAndTagFilters = this.filters.Value.AllowAndTagFilters;
+
             // only single letter tags with AND and OR modifiers are allowed as tag filters
-            if (r.AdditionalData?.Any(x => (!x.Key.StartsWith(TagModifierOr) && !x.Key.StartsWith(TagModifierAnd)) || x.Key.Length != 2) ?? false)
+            if (r.AdditionalData?.Any(x =>
+                x.Key.Length != 2 ||
+                (x.Key[0] != TagModifierOr && x.Key[0] != TagModifierAnd) ||
+                (x.Key[0] == TagModifierAnd && !allowAndTagFilters)) ?? false)
             {
                 RaiseSubscriptionException(subscriptionId, Messages.UnsupportedFilter);
             }
@@ -145,7 +209,13 @@ namespace Netstr.Messaging.MessageHandlers
                 ?? new();
 
             var orTags = getTags(r.AdditionalData, TagModifierOr);
-            var andTags = getTags(r.AdditionalData, TagModifierAnd);
+            var andTags = allowAndTagFilters ? getTags(r.AdditionalData, TagModifierAnd) : new();
+
+            if (!IsValidHexFilterTagValues(orTags, "e") || !IsValidHexFilterTagValues(orTags, "p")
+                || !IsValidHexFilterTagValues(andTags, "e") || !IsValidHexFilterTagValues(andTags, "p"))
+            {
+                RaiseSubscriptionException(subscriptionId, Messages.InvalidCannotProcessFilters);
+            }
 
             return new SubscriptionFilter(
                 r.Ids.EmptyIfNull(),
@@ -154,8 +224,32 @@ namespace Netstr.Messaging.MessageHandlers
                 r.Since,
                 r.Until,
                 r.Limit,
+                r.Search,
                 orTags,
                 andTags);
+        }
+
+        private static bool IsValidHexFilterValueList(string[]? values)
+        {
+            if (values == null || values.Length == 0)
+            {
+                return true;
+            }
+
+            foreach (var value in values)
+            {
+                if (string.IsNullOrWhiteSpace(value) || !Hex64Pattern.IsMatch(value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsValidHexFilterTagValues(Dictionary<string, string[]> tags, string tag)
+        {
+            return !tags.TryGetValue(tag, out var values) || IsValidHexFilterValueList(values);
         }
 
         private SubscriptionFilterRequest DeserializeFilter(string subscriptionId, JsonDocument json)

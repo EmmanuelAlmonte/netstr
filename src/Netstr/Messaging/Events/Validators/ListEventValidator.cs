@@ -27,6 +27,11 @@ namespace Netstr.Messaging.Events.Validators
                 return InvalidSetIdentifier;
             }
 
+            if ((EventKind)e.Kind == EventKind.DmRelays && !HasRelayTag(e))
+            {
+                return InvalidListTags;
+            }
+
             // Validate specific list types
             return ValidateListType(e);
         }
@@ -38,12 +43,19 @@ namespace Netstr.Messaging.Events.Validators
 
         private static bool IsSetEvent(long kind)
         {
-            return kind >= 30000L && kind <= 30999L;
+            return kind == 30000L || kind == 30002L || kind == 30003L || kind == 30004L
+                || kind == 30005L || kind == 30007L || kind == 30015L
+                || kind == 30030L || kind == 30063L || kind == 30267L || kind == (long)EventKind.ApplicationSpecificData;
         }
 
         private static bool HasDTag(Event e)
         {
             return e.Tags.Any(t => t.Length > 0 && t[0] == "d");
+        }
+
+        private static bool HasRelayTag(Event e)
+        {
+            return e.Tags.Any(t => t.Length > 0 && t[0] == "relay");
         }
 
         private static string? ValidateListType(Event e)

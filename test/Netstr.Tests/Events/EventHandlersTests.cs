@@ -52,7 +52,8 @@ namespace Netstr.Tests.Events
                     MaxPendingEvents = 10
                 },
                 Subscriptions = new Options.Limits.SubscriptionLimits(),
-                Negentropy = new Options.Limits.NegentropyLimits()
+                Negentropy = new Options.Limits.NegentropyLimits(),
+                Search = new Options.Limits.SearchLimits()
             });
 
             // receiver is a client with 2 registered subscriptions
@@ -62,7 +63,7 @@ namespace Netstr.Tests.Events
                 auth,
                 Mock.Of<IMessageDispatcher>(),
                 Mock.Of<INegentropyAdapterFactory>(),
-                new SubscriptionsAdapterFactory(Mock.Of<ILogger<SubscriptionsAdapter>>()),
+                new SubscriptionsAdapterFactory(Mock.Of<ILogger<SubscriptionsAdapter>>(), limits),
                 CancellationToken.None,
                 this.ws.Object,
                 Mock.Of<IHeaderDictionary>(),
@@ -75,6 +76,16 @@ namespace Netstr.Tests.Events
                 new EphemeralEventHandler(Mock.Of<ILogger<EphemeralEventHandler>>(), auth, this.clients),
                 new ReplaceableEventHandler(Mock.Of<ILogger<ReplaceableEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object),
                 new AddressableEventHandler(Mock.Of<ILogger<ReplaceableEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object),
+                new DeleteEventHandler(
+                    Mock.Of<ILogger<DeleteEventHandler>>(),
+                    auth,
+                    this.clients,
+                    this.dbFactoryMock.Object),
+                new ZapEventHandler(
+                    Mock.Of<ILogger<ZapEventHandler>>(),
+                    auth,
+                    this.clients,
+                    this.dbFactoryMock.Object),
                 new RegularEventHandler(Mock.Of<ILogger<RegularEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object)
             };
             this.dispatcher = new EventDispatcher(Mock.Of<ILogger<EventDispatcher>>(), handlers);
@@ -213,6 +224,97 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
+        public async Task RegularEventHandler_WalletResponseKind375_DoesNotReplaceEvents()
+        {
+            var e1 = new Event
+            {
+                Id = "4111111111111111111111111111111111111111111111111111111111111111",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                Kind = (long)EventKind.WalletResponse,
+                Tags = [],
+                Content = "wallet response 1",
+                Signature = "sig-1"
+            };
+
+            var e2 = new Event
+            {
+                Id = "4222222222222222222222222222222222222222222222222222222222222222",
+                PublicKey = e1.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741820),
+                Kind = (long)EventKind.WalletResponse,
+                Tags = [],
+                Content = "wallet response 2",
+                Signature = "sig-2"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, e1);
+            await this.dispatcher.DispatchEventAsync(this.adapter, e2);
+
+            var expected1 = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, e1.Id, true, "" });
+            var expected2 = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, e2.Id, true, "" });
+            this.ws.Verify(x => x.SendAsync(expected1, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(expected2, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == e1.Id).Should().Be(1);
+            db.Events.Count(x => x.EventId == e2.Id).Should().Be(1);
+            db.Events.Count(x => x.EventPublicKey == e1.PublicKey && x.EventKind == (long)EventKind.WalletResponse).Should().Be(2);
+        }
+
+        [Fact]
+        public async Task RegularEventHandler_CashuTokenHistoryAndNutzapKinds_AreStoredAsRegularEvents()
+        {
+            var author = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c";
+            var regularEvents = new[]
+            {
+                new Event
+                {
+                    Id = "4311111111111111111111111111111111111111111111111111111111111111",
+                    PublicKey = author,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                    Kind = (long)EventKind.CashuWalletToken,
+                    Tags = [],
+                    Content = "cashu token",
+                    Signature = "sig-7375"
+                },
+                new Event
+                {
+                    Id = "4322222222222222222222222222222222222222222222222222222222222222",
+                    PublicKey = author,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                    Kind = (long)EventKind.CashuWalletHistory,
+                    Tags = [],
+                    Content = "cashu history",
+                    Signature = "sig-7376"
+                },
+                new Event
+                {
+                    Id = "4333333333333333333333333333333333333333333333333333333333333333",
+                    PublicKey = author,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741820),
+                    Kind = (long)EventKind.Nutzap,
+                    Tags = [[EventTag.PublicKey, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]],
+                    Content = "nutzap event",
+                    Signature = "sig-9321"
+                }
+            };
+
+            foreach (var e in regularEvents)
+            {
+                await this.dispatcher.DispatchEventAsync(this.adapter, e);
+            }
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            foreach (var e in regularEvents)
+            {
+                db.Events.Count(x => x.EventId == e.Id).Should().Be(1);
+                db.Events.Single(x => x.EventId == e.Id).EventKind.Should().Be(e.Kind);
+            }
+        }
+
+        [Fact]
         public async Task ReplaceableEventHandlerTest()
         {
             var e1 = new Event
@@ -270,6 +372,112 @@ namespace Netstr.Tests.Events
         }
 
         [Fact]
+        public async Task ReplaceableEventHandler_Kind17375_NewestWinsWhenPublishedOutOfOrder()
+        {
+            var newer = new Event
+            {
+                Id = "6111111111111111111111111111111111111111111111111111111111111111",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722100000),
+                Kind = (long)EventKind.CashuWalletEvent,
+                Tags = [],
+                Content = "wallet newest",
+                Signature = "sig-newest"
+            };
+
+            var older = new Event
+            {
+                Id = "6222222222222222222222222222222222222222222222222222222222222222",
+                PublicKey = newer.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000000),
+                Kind = (long)EventKind.CashuWalletEvent,
+                Tags = [],
+                Content = "wallet older",
+                Signature = "sig-older"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, newer);
+            await this.dispatcher.DispatchEventAsync(this.adapter, older);
+
+            var newerOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, newer.Id, true, string.Empty });
+            var olderRejected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, older.Id, false, Messages.DuplicateReplaceableEvent });
+
+            this.ws.Verify(x => x.SendAsync(newerOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(olderRejected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == older.Id).Should().Be(0);
+            db.Events.Single(x => x.EventId == newer.Id).EventContent.Should().Be(newer.Content);
+
+            var filter = new SubscriptionFilter
+            {
+                Authors = [newer.PublicKey],
+                Kinds = [(long)EventKind.CashuWalletEvent]
+            };
+
+            var resultIds = db.Events
+                .WhereAnyFilterMatchesForInitialQuery([filter], 100)
+                .Select(x => x.EventId)
+                .ToArray();
+
+            resultIds.Should().ContainSingle().Which.Should().Be(newer.Id);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind10019_NewestWinsWhenPublishedOutOfOrder()
+        {
+            var newer = new Event
+            {
+                Id = "6333333333333333333333333333333333333333333333333333333333333333",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722100002),
+                Kind = (long)EventKind.NutzapMintRecommendation,
+                Tags = [],
+                Content = "nutzap info newest",
+                Signature = "sig-newest-10019"
+            };
+
+            var older = new Event
+            {
+                Id = "6444444444444444444444444444444444444444444444444444444444444444",
+                PublicKey = newer.PublicKey,
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1722000002),
+                Kind = (long)EventKind.NutzapMintRecommendation,
+                Tags = [],
+                Content = "nutzap info older",
+                Signature = "sig-older-10019"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, newer);
+            await this.dispatcher.DispatchEventAsync(this.adapter, older);
+
+            var newerOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, newer.Id, true, string.Empty });
+            var olderRejected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, older.Id, false, Messages.DuplicateReplaceableEvent });
+
+            this.ws.Verify(x => x.SendAsync(newerOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(olderRejected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == older.Id).Should().Be(0);
+            db.Events.Single(x => x.EventId == newer.Id).EventContent.Should().Be(newer.Content);
+
+            var filter = new SubscriptionFilter
+            {
+                Authors = [newer.PublicKey],
+                Kinds = [(long)EventKind.NutzapMintRecommendation]
+            };
+
+            var resultIds = db.Events
+                .WhereAnyFilterMatchesForInitialQuery([filter], 100)
+                .Select(x => x.EventId)
+                .ToArray();
+
+            resultIds.Should().ContainSingle().Which.Should().Be(newer.Id);
+        }
+
+        [Fact]
         public async Task AddressableEventHandlerTest()
         {
             var e1 = new Event
@@ -324,6 +532,317 @@ namespace Netstr.Tests.Events
             db.Events.Count(x => x.EventId == e1.Id).Should().Be(0);
             db.Events.Single(x => x.EventId == e2.Id).EventContent.Should().Be(e2.Content);
             db.Events.Single(x => x.EventId == e3.Id).EventContent.Should().Be(e3.Content);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind0_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.UserMetadata, []);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind10002_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.RelayList, []);
+        }
+
+        [Fact]
+        public async Task ReplaceableEventHandler_Kind17375_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.CashuWalletEvent, []);
+        }
+
+        [Fact]
+        public async Task AddressableEventHandler_Kind30078_SameTimestampKeepsLexicallyLowestId()
+        {
+            await AssertSameTimestampTieBreakForUniqueEntity((long)EventKind.ApplicationSpecificData, [["d", "settings"]]);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsDeletionWithoutReferences()
+        {
+            var existingEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "Keep me",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = 1,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMissingReference });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events
+                .Single(x => x.EventId == existingEvent.Id)
+                .DeletedAt
+                .Should()
+                .BeNull();
+
+            db.Events.Count(x => x.EventId == deleteEvent.Id).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsCashuTokenDeletionWithoutKindMarker()
+        {
+            var existingTokenEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "cashu token",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = (long)EventKind.CashuWalletToken,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.Event, existingTokenEvent.Id ]],
+                Kind = (long)EventKind.Delete,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingTokenEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMissingCashuTokenKindMarker });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            db.Events.Single(x => x.EventId == existingTokenEvent.Id).DeletedAt.Should().BeNull();
+            db.Events.Count(x => x.EventId == deleteEvent.Id).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerAcceptsCashuTokenDeletionWithKindMarker()
+        {
+            var existingTokenEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "cashu token",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741820),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = (long)EventKind.CashuWalletToken,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741821),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags =
+                [
+                    [ EventTag.Event, existingTokenEvent.Id ],
+                    [ EventTag.Kind, ((long)EventKind.CashuWalletToken).ToString() ]
+                ],
+                Kind = (long)EventKind.Delete,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingTokenEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, true, "" });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            db.Events.Single(x => x.EventId == existingTokenEvent.Id).DeletedAt.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerAcceptsDeletionWithRegularEventReference()
+        {
+            var existingEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "Delete me",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741818),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [],
+                Kind = 1,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.Event, existingEvent.Id ]],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, existingEvent);
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, true, "" });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events
+                .Single(x => x.EventId == existingEvent.Id)
+                .DeletedAt
+                .Should()
+                .NotBeNull();
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsDeletionWithMalformedRegularEventReference()
+        {
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.Event, "not-a-hex-id" ]],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMalformedReference });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events
+                .Count(x => x.EventId == deleteEvent.Id)
+                .Should()
+                .Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteEventHandlerRejectsDeletionWithMalformedReplaceableEventReference()
+        {
+            var deleteEvent = Netstr.Tests.NIPs.Helpers.FinalizeEvent(new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                PublicKey = Netstr.Tests.Alice.PublicKey,
+                Tags = [[ EventTag.ReplaceableEvent, "nonnumeric:not-hex" ]],
+                Kind = 5,
+            }, Netstr.Tests.Alice.PrivateKey);
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, deleteEvent);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, deleteEvent.Id, false, Messages.InvalidCannotDeleteMalformedReference });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+        }
+
+        [Fact]
+        public async Task ZapRequestEventHandlerRejectsRelayPublishedZapRequests()
+        {
+            var zapRequest = new Event
+            {
+                Id = "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(1721741819),
+                Kind = (long)EventKind.ZapRequest,
+                Tags =
+                [
+                    [EventTag.PublicKey, "04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9"],
+                    [EventTag.Relays, "wss://relay1.example.com"]
+                ],
+                Content = "",
+                Signature = "sig"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, zapRequest);
+
+            var expected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, zapRequest.Id, false, Messages.InvalidZapRequestRelayPublish });
+            this.ws.Verify(x => x.SendAsync(expected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+            db.Events.Count(x => x.EventId == zapRequest.Id).Should().Be(0);
+        }
+
+        private async Task AssertSameTimestampTieBreakForUniqueEntity(long kind, string[][] tags)
+        {
+            var ts = DateTimeOffset.FromUnixTimeSeconds(1722000000);
+
+            var firstHigher = new Event
+            {
+                Id = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                PublicKey = "07d8fd2ea9040aadd608d3a523f0e150d9811afc826a896f8f5be2a1ed25187c",
+                CreatedAt = ts,
+                Kind = kind,
+                Tags = tags,
+                Content = "higher",
+                Signature = "sig"
+            };
+
+            var secondLower = new Event
+            {
+                Id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                PublicKey = firstHigher.PublicKey,
+                CreatedAt = ts,
+                Kind = kind,
+                Tags = tags,
+                Content = "lower",
+                Signature = "sig"
+            };
+
+            var thirdMiddle = new Event
+            {
+                Id = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                PublicKey = firstHigher.PublicKey,
+                CreatedAt = ts,
+                Kind = kind,
+                Tags = tags,
+                Content = "middle",
+                Signature = "sig"
+            };
+
+            await this.dispatcher.DispatchEventAsync(this.adapter, firstHigher);
+            await this.dispatcher.DispatchEventAsync(this.adapter, secondLower);
+            await this.dispatcher.DispatchEventAsync(this.adapter, thirdMiddle);
+
+            var firstOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, firstHigher.Id, true, "" });
+            var secondOk = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, secondLower.Id, true, "" });
+            var thirdRejected = JsonSerializer.SerializeToUtf8Bytes(new object[] { MessageType.Ok, thirdMiddle.Id, false, Messages.DuplicateReplaceableEvent });
+
+            this.ws.Verify(x => x.SendAsync(firstOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(secondOk, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+            this.ws.Verify(x => x.SendAsync(thirdRejected, WebSocketMessageType.Text, true, CancellationToken.None), Times.Once());
+
+            using var db = this.dbFactoryMock.Object.CreateDbContext();
+
+            db.Events.Count(x => x.EventId == firstHigher.Id).Should().Be(0);
+            db.Events.Count(x => x.EventId == thirdMiddle.Id).Should().Be(0);
+            db.Events.Single(x => x.EventId == secondLower.Id).EventContent.Should().Be(secondLower.Content);
         }
     }
 }

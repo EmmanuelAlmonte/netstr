@@ -396,3 +396,27 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Local relay development overrides
+src/Netstr/appsettings.Development.json
+
+.vscode/tasks.json
+.vscode/launch.json
+
+# Local configuration files (secrets)
+appsettings.local.json
+appsettings.*.local.json
+.env
+*.env
+
+.claude/
+src/Netstr/.claude/
+test/Netstr.Tests/.claude/
+# Excluded local deployment/design artifacts
+docs/Local-Messaging-System-Design.md
+docs/Architecture-Context-Engineering.md
+run-lan.sh
+scripts/netstr-nginx.conf
+scripts/netstr.service
+src/Netstr/nips-master/
+docs/nip-alignment-baseline-2026-02-15.md

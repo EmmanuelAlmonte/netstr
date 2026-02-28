@@ -5,9 +5,14 @@ using Netstr.Extensions;
 using Netstr.Middleware;
 using Netstr.Options;
 using Netstr.RelayInformation;
+using Netstr.Services;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load local configuration for secrets (not committed to git)
+builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
+
 var connectionString = builder.Configuration.GetConnectionString("NetstrDatabase");
 
 // Setup Serilog logging
@@ -23,18 +28,45 @@ builder.Services
     .AddHostedService<NegentropyBackgroundWatcher>()
     .AddHostedService<CleanupBackgroundService>()
     .AddScoped<IRelayInformationService, RelayInformationService>()
-    .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString));
+    .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString, options =>
+    {
+        // Enable automatic retry on transient failures (network issues, timeouts, deadlocks)
+        options.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorCodesToAdd: null);
+
+        // Set command timeout to 30 seconds (default is 30, but being explicit)
+        options.CommandTimeout(30);
+
+        // Enable connection pooling optimization for Supabase
+        options.MaxBatchSize(100);
+    }))
+    .AddSingleton<IConfigurationWriter, ConfigurationWriter>();
 
 var app = builder.Build();
 var options = app.Services.GetRequiredService<IOptions<ConnectionOptions>>();
+
+// Log environment and configuration
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
+logger.LogInformation("HTTPS Redirect Enabled: {Enabled}", options.Value.UseHttpsRedirection);
+logger.LogInformation("WebSocket Path: {Path}", options.Value.WebSocketsPath);
 
 // Setup pipeline + init DB
 app
     .UseCors()
     .UseWebSockets()
     .UseStaticFiles()
-    .UseRouting()
-    .UseHttpsRedirection()
+    .UseRouting();
+
+// Conditionally apply HTTPS redirection based on configuration
+if (options.Value.UseHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
+
+app
     .AcceptWebSocketsConnections()
     .EnsureDbContextMigrations<NetstrDbContext>();
 

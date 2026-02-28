@@ -1,44 +1,77 @@
-Feature: NIP-65 Relay List Metadata
-    As a NOSTR client
-    I want to publish and retrieve my relay preferences
-    So that other clients know which relays I use
+Feature: NIP-65
+	Relay List Metadata events (kind 10002) advertise the relays users prefer for reading and writing.
+	These are replaceable events.
 
-    Background:
-        Given I am connected to the relay
-        And I am authenticated
+Background:
+	Given a relay is running
+	And Alice is connected to relay
+	| PublicKey                                                        | PrivateKey                                                       |
+	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 512a14752ed58380496920da432f1c0cdad952cd4afda3d9bfa51c2051f91b02 |
+	And Bob is connected to relay
+	| PublicKey                                                        | PrivateKey                                                       |
+	| 5bc683a5d12133a96ac5502c15fe1c2287986cff7baf6283600360e6bb01f627 | 3551fc7617f76632e4542992c0bc01fecb224de639c4b6a1e0956946e8bb8a29 |
 
-    Scenario: Publishing valid relay list
-        When I publish an event with kind 10002 and tags:
-            | r | wss://relay1.com | read  | write |
-            | r | wss://relay2.com | read  |       |
-            | r | wss://relay3.com | write |       |
-        Then I should receive an "OK" message
-        And the relay configurations should be stored for my public key
+Scenario: Publish valid relay list with read/write markers
+	When Alice publishes an event
+	| Id                                                               | Content | Kind  | Tags                                                                                                                            | CreatedAt  |
+	| 1111111111111111111111111111111111111111111111111111111111111111 | *       | 10002 | [["r","wss://relay1.example.com","read"],["r","wss://relay2.example.com","write"],["r","wss://relay3.example.com"]]             | 1722337838 |
+	Then Alice receives a message
+	| Type | Id                                                               | Success |
+	| OK   | 1111111111111111111111111111111111111111111111111111111111111111 | true    |
 
-    Scenario: Updating existing relay list
-        Given I have published relay configurations
-        When I publish an event with kind 10002 and tags:
-            | r | wss://relay1.com | read |
-            | r | wss://relay4.com | write |
-        Then I should receive an "OK" message
-        And my old relay configurations should be replaced
-        And the new relay configurations should be stored
+Scenario: Query relay list by author
+	When Alice publishes an event
+	| Id                                                               | Content | Kind  | Tags                                                                               | CreatedAt  |
+	| 2222222222222222222222222222222222222222222222222222222222222222 | *       | 10002 | [["r","wss://relay1.example.com","read"],["r","wss://relay2.example.com","write"]] | 1722337838 |
+	And Bob sends a subscription request relays
+	| Authors                                                          | Kinds |
+	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 10002 |
+	Then Bob receives messages
+	| Type  | Id     | EventId                                                          |
+	| EVENT | relays | 2222222222222222222222222222222222222222222222222222222222222222 |
+	| EOSE  | relays |                                                                  |
 
-    Scenario: Publishing empty relay list
-        When I publish an event with kind 10002 and no tags
-        Then I should receive an error message containing "must contain at least one relay tag"
+Scenario: Update existing relay list replaces previous
+	When Alice publishes events
+	| Id                                                               | Content | Kind  | Tags                                                  | CreatedAt  |
+	| 3333333333333333333333333333333333333333333333333333333333333333 | *       | 10002 | [["r","wss://relay1.example.com"]]                   | 1722337838 |
+	| 4444444444444444444444444444444444444444444444444444444444444444 | *       | 10002 | [["r","wss://relay2.example.com"]]                   | 1722337848 |
+	And Bob sends a subscription request relays
+	| Authors                                                          | Kinds |
+	| 5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75 | 10002 |
+	Then Bob receives messages
+	| Type  | Id     | EventId                                                          |
+	| EVENT | relays | 4444444444444444444444444444444444444444444444444444444444444444 |
+	| EOSE  | relays |                                                                  |
 
-    Scenario: Publishing invalid relay URL
-        When I publish an event with kind 10002 and tags:
-            | r | invalid-url | read | write |
-        Then I should receive an error message containing "Invalid relay URL format"
+Scenario: Reject relay list with no r tags
+	When Alice publishes an event
+	| Id                                                               | Content | Kind  | Tags | CreatedAt  |
+	| 5555555555555555555555555555555555555555555555555555555555555555 | *       | 10002 |      | 1722337838 |
+	Then Alice receives a message
+	| Type | Id                                                               | Success | Message |
+	| OK   | 5555555555555555555555555555555555555555555555555555555555555555 | false   | *       |
 
-    Scenario: Publishing invalid permission marker
-        When I publish an event with kind 10002 and tags:
-            | r | wss://relay1.com | invalid |
-        Then I should receive an error message containing "Invalid relay permission marker"
+Scenario: Reject relay list with invalid URL
+	When Alice publishes an event
+	| Id                                                               | Content | Kind  | Tags                         | CreatedAt  |
+	| 6666666666666666666666666666666666666666666666666666666666666666 | *       | 10002 | [["r","not-a-valid-url"]]   | 1722337838 |
+	Then Alice receives a message
+	| Type | Id                                                               | Success | Message |
+	| OK   | 6666666666666666666666666666666666666666666666666666666666666666 | false   | *       |
 
-    Scenario: Retrieving relay configurations
-        Given I have published relay configurations
-        When I request relay configurations for my public key
-        Then I should receive my relay configurations
+Scenario: Reject relay list with invalid marker
+	When Alice publishes an event
+	| Id                                                               | Content | Kind  | Tags                                                     | CreatedAt  |
+	| 7777777777777777777777777777777777777777777777777777777777777777 | *       | 10002 | [["r","wss://relay1.example.com","invalid_marker"]]     | 1722337838 |
+	Then Alice receives a message
+	| Type | Id                                                               | Success | Message |
+	| OK   | 7777777777777777777777777777777777777777777777777777777777777777 | false   | *       |
+
+Scenario: Valid relay list with no markers means both read and write
+	When Alice publishes an event
+	| Id                                                               | Content | Kind  | Tags                                 | CreatedAt  |
+	| 8888888888888888888888888888888888888888888888888888888888888888 | *       | 10002 | [["r","wss://relay1.example.com"]] | 1722337838 |
+	Then Alice receives a message
+	| Type | Id                                                               | Success |
+	| OK   | 8888888888888888888888888888888888888888888888888888888888888888 | true    |

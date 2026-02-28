@@ -19,7 +19,8 @@ namespace Netstr.Tests
             this.factory = new WebApplicationFactory();
         }
 
-        [Fact]
+        [Fact
+            ]
         public async Task PublishAuthModeTest()
         {
             using WebSocket ws = await this.factory.ConnectWebSocketAsync(AuthMode.Publishing);
@@ -56,13 +57,42 @@ namespace Netstr.Tests
                     ["relay", "ws://localhost"],
                     ["challenge", auth[1].ToString()]
                 ],
-                Kind = EventKind.Auth
+                Kind = (long)EventKind.Auth
             };
 
             e = Helpers.FinalizeEvent(e, Alice.PrivateKey);
 
             await ws.SendAuthAsync(e);
             ok = await ws.ReceiveOnceAsync();
+
+            ok[2].GetBoolean().Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task PublishAuthMode_AllowsRelayTagWithPortAndTrailingSlash()
+        {
+            using WebSocket ws = await this.factory.ConnectWebSocketAsync(AuthMode.Publishing);
+
+            var auth = await ws.ReceiveOnceAsync();
+
+            var e = new Event
+            {
+                Id = "",
+                Signature = "",
+                Content = "",
+                CreatedAt = DateTimeOffset.UtcNow,
+                PublicKey = Alice.PublicKey,
+                Tags = [
+                    ["relay", "ws://localhost:8443/"],
+                    ["challenge", auth[1].ToString()]
+                ],
+                Kind = (long)EventKind.Auth
+            };
+
+            e = Helpers.FinalizeEvent(e, Alice.PrivateKey);
+
+            await ws.SendAuthAsync(e);
+            var ok = await ws.ReceiveOnceAsync();
 
             ok[2].GetBoolean().Should().BeTrue();
         }
@@ -97,7 +127,7 @@ namespace Netstr.Tests
                     ["relay", "ws://localhost"],
                     ["challenge", auth[1].ToString()]
                 ],
-                Kind = EventKind.Auth + 1
+                Kind = (long)EventKind.Auth + 1
             };
 
             e = Helpers.FinalizeEvent(e, Alice.PrivateKey);

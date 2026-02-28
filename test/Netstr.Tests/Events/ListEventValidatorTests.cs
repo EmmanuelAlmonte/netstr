@@ -11,7 +11,7 @@ namespace Netstr.Tests.Events
         {
             // Arrange
             var validator = new ListEventValidator();
-            var unknownEvent = new Event { Kind = 99999 }; // Unknown kind
+            var unknownEvent = new Event { Kind = 99999, Content = string.Empty, CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = "test", Signature = "test", Tags = [] }; // Unknown kind
 
             // Act
             var result = validator.Validate(unknownEvent, null);
@@ -25,7 +25,7 @@ namespace Netstr.Tests.Events
         {
             // Arrange
             var validator = new ListEventValidator();
-            var muteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "p" } } };
+            var muteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "p" } }, Content = string.Empty, CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = "test", Signature = "test" };
 
             // Act
             var result = validator.Validate(muteListEvent, null);
@@ -39,13 +39,89 @@ namespace Netstr.Tests.Events
         {
             // Arrange
             var validator = new ListEventValidator();
-            var invalidMuteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "invalid" } } };
+            var invalidMuteListEvent = new Event { Kind = (int)EventKind.MuteList, Tags = new[] { new[] { "invalid" } }, Content = string.Empty, CreatedAt = DateTimeOffset.UtcNow, Id = "test", PublicKey = "test", Signature = "test" };
 
             // Act
             var result = validator.Validate(invalidMuteListEvent, null);
 
             // Assert
             Assert.Equal("invalid: list event missing required tags", result);
+        }
+
+        [Fact]
+        public void ValidateSetEvents_ShouldRequireDTag_ForApplicationSpecificData()
+        {
+            var validator = new ListEventValidator();
+            var missingDTag = new Event
+            {
+                Kind = (long)EventKind.ApplicationSpecificData,
+                Tags = new[] { new[] { "foo", "bar" } },
+                Content = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Id = "test",
+                PublicKey = "test",
+                Signature = "test"
+            };
+
+            var missingResult = validator.Validate(missingDTag, null);
+            Assert.Equal("invalid: set event missing 'd' tag identifier", missingResult);
+        }
+
+        [Fact]
+        public void ValidateSetEvents_ShouldAllowAnyTags_WithDTag_ForApplicationSpecificData()
+        {
+            var validator = new ListEventValidator();
+            var withDTag = new Event
+            {
+                Kind = (long)EventKind.ApplicationSpecificData,
+                Tags = new[] { new[] { "d", "app" }, new[] { "foo", "bar" } },
+                Content = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Id = "test",
+                PublicKey = "test",
+                Signature = "test"
+            };
+
+            var result = validator.Validate(withDTag, null);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void ValidateDmRelayList_ShouldReject_WithoutRelayTags()
+        {
+            var validator = new ListEventValidator();
+            var eventWithoutRelayTags = new Event
+            {
+                Kind = (long)EventKind.DmRelays,
+                Tags = Array.Empty<string[]>(),
+                Content = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Id = "test",
+                PublicKey = "test",
+                Signature = "test"
+            };
+
+            var result = validator.Validate(eventWithoutRelayTags, null);
+            Assert.Equal("invalid: list event missing required tags", result);
+        }
+
+        [Fact]
+        public void ValidateDmRelayList_ShouldAllow_WithValidRelayTags()
+        {
+            var validator = new ListEventValidator();
+            var eventWithRelayTags = new Event
+            {
+                Kind = (long)EventKind.DmRelays,
+                Tags = new[] { new[] { "relay", "wss://relay.example.com" } },
+                Content = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Id = "test",
+                PublicKey = "test",
+                Signature = "test"
+            };
+
+            var result = validator.Validate(eventWithRelayTags, null);
+            Assert.Null(result);
         }
     }
 }

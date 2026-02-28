@@ -70,5 +70,14 @@ namespace Netstr.Messaging
                 }
             ]);
         }
+
+        public static void SendEose(this IWebSocketAdapter sender, string subscriptionId)
+        {
+            sender.Send(
+            [
+                MessageType.EndOfStoredEvents,
+                subscriptionId
+            ]);
+        }
     }
 }

@@ -37,10 +37,22 @@ namespace Netstr.Messaging.Events.Handlers
                 return;
             }
 
-            db.Add(e.ToEntity(DateTimeOffset.UtcNow));
+            var entity = e.ToEntity(DateTimeOffset.UtcNow);
+            db.Add(entity);
 
-            // save 
-            await db.SaveChangesAsync();
+            // save with metrics tracking
+            var saveStart = DateTimeOffset.UtcNow;
+            var changes = await db.SaveChangesAsync();
+            var saveTime = DateTimeOffset.UtcNow - saveStart;
+
+            if (saveTime.TotalMilliseconds > 1000)
+            {
+                this.logger.LogWarning("Slow database save for event {EventId}: {Duration}ms",
+                    e.Id, saveTime.TotalMilliseconds);
+            }
+
+            this.logger.LogDebug("Saved event {EventId} (Kind: {Kind}) in {Duration}ms",
+                e.Id, e.Kind, saveTime.TotalMilliseconds);
 
             // reply
             sender.SendOk(e.Id);

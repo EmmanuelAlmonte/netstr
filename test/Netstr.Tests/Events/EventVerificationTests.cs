@@ -3,12 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Netstr.Extensions;
+using Netstr.Messaging.Models.Nip05;
 using Netstr.Messaging;
 using Netstr.Messaging.Events;
 using Netstr.Messaging.Events.Validators;
 using Netstr.Messaging.MessageHandlers;
 using Netstr.Messaging.Models;
 using Netstr.Options;
+using Netstr.Services;
 using System.Text.Json;
 
 namespace Netstr.Tests.Events
@@ -22,10 +24,29 @@ namespace Netstr.Tests.Events
             this.validators = new ServiceCollection()
                 .AddOptions<LimitsOptions>().Services
                 .AddLogging()
+                .AddSingleton<INip05VerificationService, StubNip05VerificationService>()
                 .AddEventValidators()
                 .AddSingleton<IUserCache, UserCache>()
                 .BuildServiceProvider()
                 .GetRequiredService<IEnumerable<IEventValidator>>();
+        }
+
+        private sealed class StubNip05VerificationService : INip05VerificationService
+        {
+            public Task<Nip05Result> VerifyIdentifierAsync(string identifier, string pubkey)
+            {
+                return Task.FromResult(Nip05Result.Valid());
+            }
+
+            public Task<string?> GetVerifiedIdentifierAsync(string pubkey)
+            {
+                return Task.FromResult<string?>(null);
+            }
+
+            public Task<bool> IsIdentifierVerifiedAsync(string identifier, string pubkey)
+            {
+                return Task.FromResult(false);
+            }
         }
 
         [Fact]

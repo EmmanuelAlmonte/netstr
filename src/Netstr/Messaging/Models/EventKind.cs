@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Netstr.Messaging.Models
 {
 /// <summary>
 /// Represents the different kinds of events in the NOSTR protocol.
@@ -7,10 +7,23 @@ public enum EventKind
 {
     // Basic event kinds
     UserMetadata = 0,
+    ShortTextNote = 1,
+    FollowList = 3,
+    EncryptedDirectMessage = 4,
     Delete = 5,
     RequestToVanish = 62,
+    WalletResponse = 375,
+    CashuWalletToken = 7375,
+    CashuWalletHistory = 7376,
+    Nutzap = 9321,
     GiftWrap = 1059,
+    NutzapMintRecommendation = 10019,
+    CashuWalletEvent = 17375,
     Auth = 22242,
+    
+    // NIP-57 Lightning Zaps
+    ZapRequest = 9734,
+    ZapReceipt = 9735,
 
     // NIP-51 Standard Lists (10000-10999)
     MuteList = 10000,
@@ -38,7 +51,13 @@ public enum EventKind
     InterestSets = 30015,
     EmojiSets = 30030,
     ReleaseArtifactSets = 30063,
-    AppCurationSets = 30267
+    AppCurationSets = 30267,
+    
+    // NIP-64 Chess (Portable Game Notation)
+    Chess = 64,
+    
+    // NIP-78 Application-specific Data
+    ApplicationSpecificData = 30078
 }
 
 /// <summary>
