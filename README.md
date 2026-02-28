@@ -122,7 +122,7 @@ Relay metadata can be fully env-driven via:
 * `RelayInformation__Name`
 * `RelayInformation__Description`
 * `RelayInformation__PublicKey`
-* `RelayInformation__Contact`
+* `RelayInformation__Contact` (optional)
 * `RelayInformation__Version`
 
 ### PostgreSQL ops scripts
@@ -130,6 +130,8 @@ Relay metadata can be fully env-driven via:
 * Backup: `bash scripts/db-backup.sh [output.dump]`
 * Restore: `bash scripts/db-restore.sh <backup.dump>`
 * Connectivity + migration status: `bash scripts/db-check.sh`
+* Strict migration check mode: `bash scripts/db-check.sh --strict-migrations`
+  * In default mode, a fresh database without `__EFMigrationsHistory` is reported as pending and not treated as failure.
 * Optional env file override for all scripts: `NETSTR_ENV_FILE=/path/to/netstr.env`
 
 ### Docker run

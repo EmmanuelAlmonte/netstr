@@ -8,12 +8,11 @@ namespace Netstr.Startup
 
     public static class StartupCommandHandler
     {
-        private static readonly string[] RelayMetadataKeys =
+        private static readonly string[] RequiredRelayMetadataKeys =
         [
             "RelayInformation:Name",
             "RelayInformation:Description",
             "RelayInformation:PublicKey",
-            "RelayInformation:Contact",
             "RelayInformation:Version"
         ];
 
@@ -98,7 +97,7 @@ namespace Netstr.Startup
                 yield return "Connection:WebSocketsPath must start with '/'.";
             }
 
-            foreach (var relayMetadataKey in RelayMetadataKeys)
+            foreach (var relayMetadataKey in RequiredRelayMetadataKeys)
             {
                 if (string.IsNullOrWhiteSpace(configuration[relayMetadataKey]))
                 {

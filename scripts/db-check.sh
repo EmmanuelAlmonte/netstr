@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+strict_migrations="${NETSTR_DB_CHECK_STRICT_MIGRATIONS:-false}"
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    --strict-migrations)
+      strict_migrations=true
+      ;;
+    *)
+      echo "Usage: $0 [--strict-migrations]" >&2
+      exit 1
+      ;;
+  esac
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=./db-common.sh
@@ -15,8 +28,14 @@ echo "Connectivity: OK"
 migration_table="$(psql $(postgres_cli_args) -tAc "SELECT to_regclass('\"__EFMigrationsHistory\"')")"
 migration_table="$(trim "$migration_table")"
 if [[ -z "$migration_table" || "$migration_table" == "null" ]]; then
-  echo "Migration status: table __EFMigrationsHistory not found (migrations not applied)." >&2
-  exit 1
+  echo "Migration status: PENDING (table __EFMigrationsHistory not found)."
+  if [[ "$strict_migrations" == "true" ]]; then
+    echo "Strict mode enabled; treating pending migrations as failure." >&2
+    exit 1
+  fi
+
+  echo "Migration status: OK (fresh database before first migration run)."
+  exit 0
 fi
 
 applied_count="$(psql $(postgres_cli_args) -tAc "SELECT COUNT(*) FROM \"__EFMigrationsHistory\"")"

@@ -29,6 +29,25 @@ namespace Netstr.Tests.Startup
         }
 
         [Fact]
+        public void ValidateConfiguration_WhenContactIsMissing_ShouldReturnNoErrors()
+        {
+            var runtimePaths = new RuntimePathsOptions();
+            var configuration = BuildConfiguration(new Dictionary<string, string?>
+            {
+                ["Connection:WebSocketsPath"] = "/",
+                ["ConnectionStrings:NetstrDatabase"] = "Host=localhost;Port=5432;Database=Netstr;Username=netstr;Password=secret",
+                ["RelayInformation:Name"] = "netstr",
+                ["RelayInformation:Description"] = "relay",
+                ["RelayInformation:PublicKey"] = "npub123",
+                ["RelayInformation:Version"] = "v1.0.0"
+            });
+
+            var errors = StartupCommandHandler.ValidateConfiguration(configuration, runtimePaths).ToArray();
+
+            errors.Should().BeEmpty();
+        }
+
+        [Fact]
         public void ValidateConfiguration_WhenConnectionStringIsMissing_ShouldReturnError()
         {
             var runtimePaths = new RuntimePathsOptions();
