@@ -7,8 +7,14 @@ services:
     ports:
       - "${NETSTR_PORT:-8080}:8080"
     environment:
-      ConnectionStrings__NetstrDatabase: Host=db:5432;Database=Netsrt;Username=Netstr;Password=${NETSTR_DB_PASSWORD:?Password must be set}
+      ConnectionStrings__NetstrDatabase: Host=db;Port=5432;Database=Netstr;Username=Netstr;Password=${NETSTR_DB_PASSWORD:?Password must be set}
       RelayInformation__Version: ${NETSTR_VERSION:-v0.0.0}
+      RelayInformation__Name: ${NETSTR_RELAY_NAME:-netstr}
+      RelayInformation__Description: ${NETSTR_RELAY_DESCRIPTION:-A nostr relay}
+      RelayInformation__PublicKey: ${NETSTR_RELAY_PUBLIC_KEY:-NA}
+      RelayInformation__Contact: ${NETSTR_RELAY_CONTACT:-NA}
+      Connection__UseHttpsRedirection: ${NETSTR_USE_HTTPS_REDIRECTION:-false}
+      Connection__UseForwardedHeaders: ${NETSTR_USE_FORWARDED_HEADERS:-true}
       ASPNETCORE_ENVIRONMENT: ${NETSTR_ENVIRONMENT_LONG}
     depends_on: 
       - db

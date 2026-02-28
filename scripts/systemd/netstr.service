@@ -1,0 +1,23 @@
+[Unit]
+Description=Netstr Relay
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=netstr
+Group=netstr
+WorkingDirectory=/var/lib/netstr
+EnvironmentFile=/etc/netstr/netstr.env
+ExecStart=/usr/local/bin/netstr
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/netstr /var/log/netstr
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
