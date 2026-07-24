@@ -29,6 +29,11 @@ RUN dotnet publish "Netstr.csproj" -c Release -o /app/publish
 
 # final
 FROM base AS final
+USER root
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+USER app
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Netstr.dll"]
