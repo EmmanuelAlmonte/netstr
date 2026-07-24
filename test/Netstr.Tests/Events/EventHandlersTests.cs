@@ -89,7 +89,9 @@ namespace Netstr.Tests.Events
                 new RegularEventHandler(Mock.Of<ILogger<RegularEventHandler>>(), auth, this.clients, this.dbFactoryMock.Object)
             };
             this.dispatcher = new EventDispatcher(Mock.Of<ILogger<EventDispatcher>>(), handlers);
-            _ = Task.Run(this.adapter.StartAsync);
+            // Start through the first await so the send loop is ready before
+            // a test dispatches an event and verifies the WebSocket interaction.
+            _ = this.adapter.StartAsync();
         }
 
         public void Dispose()

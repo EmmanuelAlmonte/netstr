@@ -77,8 +77,7 @@ builder.Services
 
         // Enable connection pooling optimization for Supabase
         options.MaxBatchSize(100);
-    }))
-    .AddSingleton<IConfigurationWriter, ConfigurationWriter>();
+    }));
 
 var app = builder.Build();
 var options = app.Services.GetRequiredService<IOptions<ConnectionOptions>>();

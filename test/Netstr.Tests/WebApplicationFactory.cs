@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Netstr.Data;
 using Netstr.Options;
@@ -15,9 +16,9 @@ namespace Netstr.Tests
         {
             builder.ConfigureServices(services =>
             {
-                services.AddScoped<NetstrDbContext>(x => TestDbContext.InitializeAndSeed(false).context);
+                services.AddScoped<NetstrDbContext>(x =>
+                    x.GetRequiredService<IDbContextFactory<NetstrDbContext>>().CreateDbContext());
                 services.AddSingleton<IDbContextFactory<NetstrDbContext>>(x => new DbContextFactory());
-                
                 // Register missing services for tests
                 services.AddHttpClient();
                 services.AddMemoryCache();
@@ -32,12 +33,14 @@ namespace Netstr.Tests
                     // Many fixtures use hard-coded 2024 timestamps; keep tests stable even as wall-clock time moves on.
                     ["Limits:Events:MaxCreatedAtLowerOffset"] = $"{60 * 60 * 24 * 365 * 10}",
                     ["Limits:Events:MaxCreatedAtUpperOffset"] = $"{60 * 60 * 24 * 365 * 10}",
-                    ["Filters:AllowAndTagFilters"] = AllowAndTagFilters.ToString()
+                    ["Limits:Subscriptions:MaxSubscriptionIdLength"] = "64",
+                    ["Filters:AllowAndTagFilters"] = AllowAndTagFilters.ToString(),
+                    ["Whitelist:Enabled"] = bool.FalseString
                 });
                 b.AddInMemoryObject(EventLimits, "Limits:Events");
                 b.AddInMemoryObject(SubscriptionLimits, "Limits:Subscriptions");
                 b.AddInMemoryObject(NegentropyLimits, "Limits:Negentropy");
-                b.AddInMemoryCollection([ KeyValuePair.Create("Auth:Mode", AuthMode.ToString())]);
+                b.AddInMemoryCollection([KeyValuePair.Create("Auth:Mode", AuthMode.ToString())]);
                 b.AddInMemoryObject(WhitelistOptions, "Whitelist");
             });
         }
@@ -57,18 +60,39 @@ namespace Netstr.Tests
         }
     }
 
-    public class DbContextFactory : IDbContextFactory<NetstrDbContext>
+    public class DbContextFactory : IDbContextFactory<NetstrDbContext>, IDisposable
     {
+        private readonly SqliteConnection keepAliveConnection;
         private readonly DbContextOptions<NetstrDbContext> options;
-        
+
         public DbContextFactory()
         {
-            this.options = TestDbContext.InitializeAndSeed(false).options;
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = $"NetstrTests-{Guid.NewGuid():N}",
+                Mode = SqliteOpenMode.Memory,
+                Cache = SqliteCacheMode.Shared,
+                Pooling = false
+            }.ToString();
+
+            this.keepAliveConnection = new SqliteConnection(connectionString);
+            this.keepAliveConnection.Open();
+            this.options = new DbContextOptionsBuilder<NetstrDbContext>()
+                .UseSqlite(connectionString)
+                .Options;
+
+            using var context = new TestDbContext(this.options);
+            context.Database.EnsureCreated();
         }
 
         public NetstrDbContext CreateDbContext()
         {
             return new TestDbContext(this.options);
+        }
+
+        public void Dispose()
+        {
+            this.keepAliveConnection.Dispose();
         }
     }
 }
