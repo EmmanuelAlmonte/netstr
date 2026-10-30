@@ -80,11 +80,12 @@ both received their expected messages in correct order.
 
 ## Setup
 
-Netstr is c# app backed by a Postgres database. You have several options to get up and running:
+Netstr is a C# app backed by PostgreSQL. You have several options to get up and running:
 
 * Using `dotnet run`
 * Using `docker run`
 * Using `docker compose`
+* Using host-native `systemd + nginx` (Relay Wizard installer contract)
 * Deploying to Azure
 
 ### Dotnet run
@@ -95,6 +96,43 @@ Netstr is c# app backed by a Postgres database. You have several options to get 
 * Set `ConnectionStrings:NetstrDatabase` in `src/Netstr/appsettings.local.json` (or set env var `ConnectionStrings__NetstrDatabase`)
 * Use `src/Netstr/appsettings.example.json` as a safe baseline if you need a full config template
 * Run `dotnet run --project .\src\Netstr\Netstr.csproj`
+* Preflight config check: `dotnet run --project .\src\Netstr\Netstr.csproj -- --check-config`
+* Print version: `dotnet run --project .\src\Netstr\Netstr.csproj -- --version`
+
+### Host-native (systemd + nginx)
+
+* Build release artifact: `bash scripts/package-linux-release.sh <version>`
+  * Output archive: `artifacts/release/netstr-<version>-x86_64-linux-gnu.tar.gz`
+  * Archive contains one binary named exactly `netstr`
+  * Sidecar checksum: `artifacts/release/netstr-<version>-x86_64-linux-gnu.tar.gz.sha256`
+* Install binary to `/usr/local/bin/netstr`
+* Copy `scripts/systemd/netstr.service` to `/etc/systemd/system/netstr.service`
+* Copy `scripts/systemd/netstr.env.example` to `/etc/netstr/netstr.env` and set real values
+* Ensure runtime directories exist and are owned by the `netstr` user:
+  * `/etc/netstr`
+  * `/var/lib/netstr`
+  * `/var/log/netstr`
+* Default internal listen is `http://127.0.0.1:8086` (set with `ASPNETCORE_URLS`)
+* For nginx reverse proxy mode, keep `Connection__UseHttpsRedirection=false` and `Connection__UseForwardedHeaders=true`
+* Health check endpoint: `curl -sS http://127.0.0.1:8086/healthz`
+* NIP-11 check through proxy:
+  * `curl -H "Accept: application/nostr+json" https://<domain>/`
+
+Relay metadata can be fully env-driven via:
+* `RelayInformation__Name`
+* `RelayInformation__Description`
+* `RelayInformation__PublicKey`
+* `RelayInformation__Contact` (optional)
+* `RelayInformation__Version`
+
+### PostgreSQL ops scripts
+
+* Backup: `bash scripts/db-backup.sh [output.dump]`
+* Restore: `bash scripts/db-restore.sh <backup.dump>`
+* Connectivity + migration status: `bash scripts/db-check.sh`
+* Strict migration check mode: `bash scripts/db-check.sh --strict-migrations`
+  * In default mode, a fresh database without `__EFMigrationsHistory` is reported as pending and not treated as failure.
+* Optional env file override for all scripts: `NETSTR_ENV_FILE=/path/to/netstr.env`
 
 ### Docker run
 
@@ -114,6 +152,12 @@ Optionally you can also set following variables:
  * NETSTR_PORT - port on which the relay will be accessible (default 8080)
  * NETSTR_ENVIRONMENT - will be used to name the compose instance (default 'prod')
  * NETSTR_ENVIRONMENT_LONG - will be used inside the application to load specific configuration (default 'Production')
+ * NETSTR_RELAY_NAME - relay metadata name
+ * NETSTR_RELAY_DESCRIPTION - relay metadata description
+ * NETSTR_RELAY_PUBLIC_KEY - relay metadata public key
+ * NETSTR_RELAY_CONTACT - relay metadata contact
+ * NETSTR_USE_HTTPS_REDIRECTION - `true|false` (recommended `false` behind nginx)
+ * NETSTR_USE_FORWARDED_HEADERS - `true|false` (recommended `true` behind nginx)
 
 ### Deploying to Azure
 

@@ -23,7 +23,8 @@ namespace Netstr.Extensions
                 .AddApplicationOptions<AuthOptions>("Auth")
                 .AddApplicationOptions<FiltersOptions>("Filters")
                 .AddApplicationOptions<CleanupOptions>("Cleanup")
-                .AddApplicationOptions<WhitelistOptions>("Whitelist");
+                .AddApplicationOptions<WhitelistOptions>("Whitelist")
+                .AddApplicationOptions<RuntimePathsOptions>("RuntimePaths");
         }
     }
 }
