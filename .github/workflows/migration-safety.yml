@@ -55,13 +55,13 @@ jobs:
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Upgrade to latest migration
-        run: dotnet ef database update --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build
+        run: dotnet ef database update --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --configuration Release --no-build
 
       - name: Resolve latest and previous migrations
         id: migrations
         shell: bash
         run: |
-          mapfile -t migrations < <(dotnet ef migrations list --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build | grep -E '^[0-9]{14}_.+' | sed 's/ (Pending)//')
+          mapfile -t migrations < <(dotnet ef migrations list --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --configuration Release --no-build | grep -E '^[0-9]{14}_.+' | sed 's/ (Pending)//')
           if [ "${#migrations[@]}" -lt 2 ]; then
             echo "Expected at least two migrations to validate downgrade safety."
             exit 1
@@ -72,7 +72,7 @@ jobs:
           echo "previous=${migrations[$previous_index]}" >> "$GITHUB_OUTPUT"
 
       - name: Downgrade to previous migration
-        run: dotnet ef database update "${{ steps.migrations.outputs.previous }}" --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build
+        run: dotnet ef database update "${{ steps.migrations.outputs.previous }}" --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --configuration Release --no-build
 
       - name: Re-upgrade to latest migration
-        run: dotnet ef database update "${{ steps.migrations.outputs.latest }}" --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --no-build
+        run: dotnet ef database update "${{ steps.migrations.outputs.latest }}" --project src/Netstr/Netstr.csproj --startup-project src/Netstr/Netstr.csproj --configuration Release --no-build
